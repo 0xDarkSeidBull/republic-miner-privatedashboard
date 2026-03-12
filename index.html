@@ -825,7 +825,9 @@ async function checkChain(){
     if(isLive){
       banner.className='';
       dot.className='chain-dot live';
-      txt.textContent=`✓ Chain LIVE · Block: ${typeof height==='number'?height.toLocaleString():height}${scanTime?' · '+scanTime:''}`;
+      const latestBlock = d.latest_block ? Number(d.latest_block).toLocaleString() : '—';
+const scannedBlock = d.last_scanned ? Number(d.last_scanned).toLocaleString() : '—';
+txt.textContent=`✓ Chain LIVE · Latest: ${latestBlock} · Scanned: ${scannedBlock}`;
     }else{
       banner.className='halted';
       dot.className='chain-dot halted';
