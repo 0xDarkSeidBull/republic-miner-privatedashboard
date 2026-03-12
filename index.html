@@ -282,7 +282,37 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
 .footer-link svg{width:14px;height:14px;flex-shrink:0}
 .footer-copy{font-size:11px;color:var(--muted);font-family:var(--font-mono)}
 
-/* LOADING / EMPTY */
+/* HAMBURGER */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border:none;background:none;border-radius:6px;transition:background .2s}
+.hamburger:hover{background:var(--bg3)}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all .3s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* MOBILE MENU DRAWER */
+.mobile-menu{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(7,9,15,.97);z-index:200;
+  flex-direction:column;padding:24px;
+  animation:slideIn .25s ease;
+}
+.mobile-menu.open{display:flex}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.mobile-menu-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.mobile-menu-logo{font-family:var(--font-mono);font-weight:700;font-size:16px;color:var(--accent)}
+.mobile-close{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:18px;line-height:1}
+.mobile-nav-links{display:flex;flex-direction:column;gap:8px;flex:1}
+.mobile-nav-link{
+  padding:14px 16px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;
+  color:var(--muted);transition:all .2s;border:none;background:var(--bg2);
+  display:flex;align-items:center;gap:10px;text-align:left;text-decoration:none;
+  border:1px solid var(--border);
+}
+.mobile-nav-link:hover,.mobile-nav-link.active{color:var(--accent);background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.2)}
+.mobile-nav-link.points{color:var(--gold);border-color:rgba(245,158,11,.2)}
+.mobile-nav-link.submit{color:var(--accent2);border-color:rgba(59,130,246,.2)}
+
 .loading{color:var(--muted);font-size:13px;font-family:var(--font-mono);padding:24px;text-align:center}
 .error-msg{color:var(--red);font-size:13px;font-family:var(--font-mono);padding:12px 16px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;margin-top:10px}
 .empty-state{padding:40px 24px;text-align:center;color:var(--muted);font-size:13px}
@@ -292,10 +322,9 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
 #toast.show{opacity:1;transform:none}
 
 @media(max-width:768px){
-  nav{padding:0 12px;height:52px;flex-wrap:nowrap;overflow-x:auto}
-  .nav-links{gap:2px;flex-shrink:0}
-  .nav-link{padding:5px 8px;font-size:11px}
-  .nav-btn{padding:5px 8px;font-size:11px}
+  nav{padding:0 12px;height:52px}
+  .nav-links{display:none}
+  .hamburger{display:flex}
   .stats-grid{padding:0 14px 24px;grid-template-columns:repeat(2,1fr)}
   .search-section{padding:0 14px 24px}
   .section{padding:0 14px 30px}
@@ -325,10 +354,29 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
     <button class="nav-link" onclick="showPage('leaderboard',this)"><span class="nav-icon">🏆</span>Leaderboard</button>
     <button class="nav-link" onclick="showPage('ecosystem',this)"><span class="nav-icon">🌐</span>Ecosystem</button>
     <button class="nav-link" onclick="showPage('guides',this)"><span class="nav-icon">📚</span>Guides</button>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLScGvXXXXXXXX/viewform" target="_blank" class="nav-btn points">🎁 Points Form</a>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSei0OhWQq0qfb8pjR9hUKeGmUlZKxII7c1Z3aNwYU8RhRIUTQ/viewform" target="_blank" class="nav-btn points">🎁 Points Form</a>
     <button class="nav-btn submit" onclick="showPage('submit',this)">+ Submit Project</button>
   </div>
+  <button class="hamburger" id="hamburgerBtn" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- MOBILE MENU DRAWER -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+    <div class="mobile-menu-logo">⛏️ REPUBLIC/STATS</div>
+    <button class="mobile-close" onclick="toggleMenu()">✕</button>
+  </div>
+  <div class="mobile-nav-links">
+    <button class="mobile-nav-link active" onclick="showPage('home',this);toggleMenu()">🏠 Home</button>
+    <button class="mobile-nav-link" onclick="showPage('leaderboard',this);toggleMenu()">🏆 Leaderboard</button>
+    <button class="mobile-nav-link" onclick="showPage('ecosystem',this);toggleMenu()">🌐 Ecosystem</button>
+    <button class="mobile-nav-link" onclick="showPage('guides',this);toggleMenu()">📚 Guides</button>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSei0OhWQq0qfb8pjR9hUKeGmUlZKxII7c1Z3aNwYU8RhRIUTQ/viewform" target="_blank" class="mobile-nav-link points">🎁 Points Form</a>
+    <button class="mobile-nav-link submit" onclick="showPage('submit',this);toggleMenu()">+ Submit Project</button>
+  </div>
+</div>
 
 <!-- ═══════════════════════ HOME PAGE ═══════════════════════ -->
 <div id="page-home" class="page active">
@@ -707,8 +755,6 @@ function fmt(n){
   if(n===null||n===undefined||n==='')return'—';
   n=Number(n);
   if(isNaN(n))return'—';
-  if(n>=1e6)return(n/1e6).toFixed(1)+'M';
-  if(n>=1e3)return(n/1e3).toFixed(1)+'K';
   return n.toLocaleString();
 }
 function rankClass(r){return r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':''}
@@ -731,6 +777,16 @@ function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast('
 function copyCode(btn){
   const code=btn.nextElementSibling.textContent;
   navigator.clipboard.writeText(code).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='copy',1500)});
+}
+
+// ─── MOBILE MENU ─────────────────────────────────────────────
+function toggleMenu(){
+  const menu=document.getElementById('mobileMenu');
+  const btn=document.getElementById('hamburgerBtn');
+  const isOpen=menu.classList.contains('open');
+  menu.classList.toggle('open');
+  btn.classList.toggle('open');
+  document.body.style.overflow=isOpen?'':'hidden';
 }
 
 // ─── NAVIGATION ──────────────────────────────────────────────
