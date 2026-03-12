@@ -930,14 +930,14 @@ async function checkChain(){
       d.is_halted===false ||
       d.live===true;
 
-    // ✅ FIXED: height is now properly declared with const
-    const height = d.latest_block || d.height || d.latest_block_height || d.block_height || '—';
-    const scanTime = d.last_scan_time || d.scan_time || '';
+    const latestBlock  = d.latest_block  || d.height || d.latest_block_height || d.block_height || '—';
+    const scannedBlock = d.last_scanned  || d.last_scanned_height || latestBlock;
+    const fmtN = n => (n && n!=='—') ? Number(n).toLocaleString() : '—';
 
     if(isLive){
       banner.className='';
       dot.className='chain-dot live';
-      txt.textContent=`✓ Chain LIVE · Block: ${typeof height==='number'?height.toLocaleString():height}${scanTime?' · '+scanTime:''}`;
+      txt.textContent=`✓ Chain LIVE · Latest: ${fmtN(latestBlock)} · Scanned: ${fmtN(scannedBlock)}`;
     }else{
       banner.className='halted';
       dot.className='chain-dot halted';
@@ -1009,9 +1009,12 @@ async function loadTopMiners(){
         <td class="num-cell">${fmt(m.submit_job_result)}</td>
         <td class="num-cell">${uptimeBadgeHtml(m.uptime)}</td>
         <td class="num-cell" style="color:var(--accent)">${fmt(m.total)}</td>
+        <td style="text-align:center">
+          <button onclick="prefillPointsForm('${m.address}','${m.moniker||''}')" style="background:rgba(0,229,176,.12);border:1px solid rgba(0,229,176,.3);color:var(--accent);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap">📋 Submit</button>
+        </td>
       </tr>`).join('');
   }catch(e){
-    tbody.innerHTML=`<tr><td colspan="6" class="error-msg">Failed to load. Retrying...</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="7" class="error-msg">Failed to load. Retrying...</td></tr>`;
   }
 }
 
@@ -1195,6 +1198,18 @@ function showGuide(id,btn){
   document.querySelectorAll('.guide-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('guide-'+id).classList.add('active');
   btn.classList.add('active');
+}
+
+// ─── PREFILL POINTS FORM FROM TABLE ──────────────────────────
+function prefillPointsForm(address, moniker){
+  showPage('points', document.querySelector('.nav-link[onclick*="points"]'));
+  setTimeout(()=>{
+    if(address) document.getElementById('pf-wallet').value = address;
+    if(moniker) document.getElementById('pf-moniker').value = moniker;
+    // Auto-fetch miner data
+    fetchMinerForPoints(address);
+    document.getElementById('pf-wallet').scrollIntoView({behavior:'smooth', block:'center'});
+  }, 100);
 }
 
 // ─── TRIGGER BOT REFRESH ─────────────────────────────────────
@@ -1409,6 +1424,17 @@ function resetPointsForm(){
 function initPointsForm(){
   jobEntries = [];
   addJobEntry();
+}
+
+async function fetchMinerForPoints(address){
+  if(!address) return;
+  try{
+    const r = await fetch(`${API}/api/miner/${encodeURIComponent(address)}`);
+    const d = await r.json();
+    if(d.moniker) document.getElementById('pf-moniker').value = d.moniker;
+    // Convert rai1 → raivaloper1 style hint
+    showToast(`✅ Found: ${d.moniker||address.slice(0,12)}... · Rank #${d.rank||'?'}`);
+  }catch(e){}
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
