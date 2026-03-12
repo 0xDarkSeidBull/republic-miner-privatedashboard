@@ -160,23 +160,13 @@ nav{border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;
 .scan-tag{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;
   background:var(--bg2);border:1px solid var(--border);padding:4px 10px;border-radius:6px;}
 .lb-table{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
-.lb-header{display:grid;grid-template-columns:56px 120px 1fr 90px 90px 100px 90px;
+.lb-header{display:grid;grid-template-columns:56px 1fr 100px 100px 110px;
   padding:12px 20px;background:var(--bg3);border-bottom:1px solid var(--border);
   font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;
   font-family:'JetBrains Mono',monospace;}
-.lb-row{display:grid;grid-template-columns:56px 120px 1fr 90px 90px 100px 90px;
+.lb-row{display:grid;grid-template-columns:56px 1fr 100px 100px 110px;
   padding:14px 20px;border-bottom:1px solid var(--border);align-items:center;
   transition:background 0.15s;cursor:pointer;}
-.moniker-cell{font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.uptime-cell{font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;}
-.uptime-high{color:var(--green);}
-.uptime-mid{color:var(--accent3);}
-.uptime-low{color:var(--red);}
-.uptime-none{color:var(--muted);}
-@media(max-width:700px){
-  .lb-header,.lb-row{grid-template-columns:40px 1fr 80px 90px;}
-  .lb-col-hide{display:none;}
-}
 .lb-row:last-child{border-bottom:none;}
 .lb-row:hover{background:var(--bg3);}
 .rank-num{font-weight:800;font-size:15px;}
@@ -411,7 +401,6 @@ footer{border-top:1px solid var(--border);padding:40px 0;position:relative;z-ind
       <button class="nav-btn" onclick="showPage('leaderboard',this)">Leaderboard</button>
       <button class="nav-btn" onclick="showPage('ecosystem',this)">Ecosystem</button>
       <button class="nav-btn" onclick="showPage('guides',this)">Guides</button>
-      <button class="nav-btn" onclick="showPage('points',this)" style="color:var(--accent3);border-color:rgba(245,158,11,0.3)">🎁 Points Form</button>
       <button class="nav-submit" onclick="showPage('submit',this)">+ Submit Project</button>
     </div>
     <button class="hamburger" id="hamburger" onclick="toggleMenu()">
@@ -426,7 +415,6 @@ footer{border-top:1px solid var(--border);padding:40px 0;position:relative;z-ind
   <button class="mobile-nav-btn" onclick="mobileNav('leaderboard')">🏆 Leaderboard</button>
   <button class="mobile-nav-btn" onclick="mobileNav('ecosystem')">🌍 Ecosystem</button>
   <button class="mobile-nav-btn" onclick="mobileNav('guides')">📚 Guides</button>
-  <button class="mobile-nav-btn" onclick="mobileNav('points')" style="color:var(--accent3);border-color:rgba(245,158,11,0.3)">🎁 Points Form</button>
   <button class="mobile-nav-btn" onclick="mobileNav('submit')">📝 Submit Project</button>
   <button class="mobile-nav-btn" style="margin-top:20px;border-color:var(--red);color:var(--red)" onclick="toggleMenu()">✕ Close</button>
 </div>
@@ -739,7 +727,7 @@ republicd version  # Must show v0.3.0</pre>
         <div style="font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--text)">Backup Peers (if reconnecting issue)</div>
         <div class="code-block">
           <button class="code-copy" onclick="copyCode(this)">Copy</button>
-          <pre>peers="6313f892ee50ca0b2d6cc6411ac5207dbf2d164b@peers-t.republic.vinjan-inc.com:13356,<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="84b3e2e1e2b2e1b7e6e6b1e7b6b1b0e7b3b3b3b0b0bde1b4bde1bde7e2b4e1e1b0b4e2b0e7e0e1e1b7c4b5bdb1aab6b4b5aab5b2b4aab6b7">[email&#160;protected]</a>:13356,<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="231245401015124114154041164710121a1313111446121b111a1a4211114610474041151b1a47471a6316170d12161a0d1a150d12161b">[email&#160;protected]</a>:26656"
+          <pre>peers="6313f892ee50ca0b2d6cc6411ac5207dbf2d164b@peers-t.republic.vinjan-inc.com:13356,7fef6e3bb5c254c777449e09e9cf0ee40f4cdee3@195.201.160.23:13356,1fc361b76cb5d3190027e18299a22e3dcb689dd9@54.159.96.158:26656"
 sed -i -e "s|^persistent_peers *=.*|persistent_peers = \"$peers\"|" $HOME/.republic/config/config.toml</pre>
         </div>
       </div>
@@ -1057,142 +1045,6 @@ echo "Peer ID:" && republicd comet show-node-id --home /root/.republic</pre></di
 </div>
 
 
-<!-- POINTS FORM -->
-<div id="page-points" class="page">
-  <div class="container">
-    <div style="padding:32px 0 20px">
-      <div class="section-title" style="font-size:22px;margin-bottom:6px">🎁 GPU Miners Point Update</div>
-      <p style="color:var(--muted2);font-size:14px;margin-bottom:20px;max-width:600px;line-height:1.6">Thank you to everyone supporting the RAI network by providing compute resources, validating, and completing jobs. Fill in the form below to submit your information and get points distributed to eligible participants.</p>
-    </div>
-
-    <!-- INFO BOXES -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:28px;">
-      <div class="stat-card accent-card">
-        <div class="stat-label">Who is eligible?</div>
-        <div style="font-size:13px;color:var(--muted2);line-height:1.6;margin-top:6px">GPU miners who have completed jobs on the Republic AI Testnet</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">What you need</div>
-        <div style="font-size:13px;color:var(--muted2);line-height:1.6;margin-top:6px">Job ID, TX hash, nvidia-smi screenshot, and your wallet addresses</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Image uploads</div>
-        <div style="font-size:13px;color:var(--muted2);line-height:1.6;margin-top:6px">Use the Google Form directly for image uploads (max 10MB each)</div>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">
-
-      <!-- STYLED FORM CARD -->
-      <div class="form-card" style="max-width:100%">
-        <div class="form-title">Submit Your Details</div>
-        <div class="form-sub">All fields marked * are required</div>
-
-        <div class="form-group">
-          <label class="form-label">Web App Username (point program) *</label>
-          <input class="form-input" id="pts-webapp" placeholder="Your username on the point program"/>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Discord Username *</label>
-          <input class="form-input" id="pts-discord" placeholder="e.g. username#0000 or username"/>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Validator Moniker *</label>
-          <input class="form-input" id="pts-moniker" placeholder="Your validator moniker name"/>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">raivaloper Address *</label>
-          <input class="form-input" id="pts-valoper" placeholder="raivaloper1..."/>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Operator Wallet Address *</label>
-          <input class="form-input" id="pts-wallet" placeholder="rai1..."/>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Completed Job ID *</label>
-          <input class="form-input" id="pts-jobid" placeholder="Job ID from the network"/>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">TX Hash of Job Submission *</label>
-          <input class="form-input" id="pts-txhash" placeholder="0x... or transaction hash"/>
-        </div>
-
-        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:16px;margin-bottom:18px;">
-          <div style="font-size:11px;color:var(--accent3);letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:8px;">📸 Image Proofs Required</div>
-          <div style="font-size:13px;color:var(--muted2);line-height:1.7">
-            Two images are required:<br>
-            <span style="color:var(--text)">1.</span> Proof of job submission screenshot<br>
-            <span style="color:var(--text)">2.</span> <code style="background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:12px">nvidia-smi</code> output from your mining machine<br>
-            <br>
-            <span style="color:var(--muted)">Images must be uploaded directly on the Google Form (max 10MB each). Click the button below to open it.</span>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" style="width:100%;font-size:15px;padding:14px;margin-bottom:10px" onclick="openGoogleForm()">
-          📋 Open Full Form with Image Upload →
-        </button>
-        <button class="btn btn-outline" style="width:100%;font-size:13px" onclick="prefillAndOpen()">
-          ✏️ Pre-fill Google Form with my inputs above
-        </button>
-        <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px;font-family:'JetBrains Mono',monospace">
-          Image uploads only work on Google Form · Your data is safe
-        </div>
-      </div>
-
-      <!-- RIGHT SIDE: TIPS + EMBED PREVIEW -->
-      <div>
-        <div class="form-card" style="margin-bottom:16px">
-          <div style="font-size:14px;font-weight:700;margin-bottom:12px">📖 How to get your details</div>
-
-          <div style="font-size:13px;color:var(--muted2);line-height:1.8">
-            <div style="margin-bottom:10px"><span style="color:var(--accent);font-weight:600">Job ID & TX Hash</span><br>
-            Check your wallet's transaction history or use the Republic AI explorer to find jobs you completed.</div>
-
-            <div style="margin-bottom:10px"><span style="color:var(--accent);font-weight:600">nvidia-smi command</span></div>
-            <div class="code-block" style="margin-bottom:10px">
-              <button class="code-copy" onclick="copyCode(this)">Copy</button>
-              <pre>nvidia-smi</pre>
-            </div>
-
-            <div style="margin-bottom:10px"><span style="color:var(--accent);font-weight:600">Find your raivaloper address</span></div>
-            <div class="code-block" style="margin-bottom:10px">
-              <button class="code-copy" onclick="copyCode(this)">Copy</button>
-              <pre>republicd keys show wallet --bech val -a</pre>
-            </div>
-
-            <div><span style="color:var(--accent);font-weight:600">Find your rai1 wallet address</span></div>
-            <div class="code-block">
-              <button class="code-copy" onclick="copyCode(this)">Copy</button>
-              <pre>republicd keys show wallet -a</pre>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-card">
-          <div style="font-size:14px;font-weight:700;margin-bottom:6px">🔗 Direct Google Form Link</div>
-          <div style="font-size:13px;color:var(--muted2);margin-bottom:14px">Open the official form directly for image uploads</div>
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSei0OhWQq0qfb8pjR9hUKeGmUlZKxII7c1Z3aNwYU8RhRIUTQ/viewform" target="_blank" class="btn btn-primary" style="display:block;text-align:center;text-decoration:none;padding:12px">
-            🌐 Open Google Form
-          </a>
-          <div style="margin-top:12px;padding:10px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;word-break:break-all">
-            docs.google.com/forms/d/e/1FAIpQLSei0OhWQq0qfb8pjR9hUKeGmUlZKxII7c1Z3aNwYU8RhRIUTQ/viewform
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:20px;padding:14px 20px;background:rgba(0,229,176,0.06);border:1px solid rgba(0,229,176,0.2);border-radius:10px;font-size:13px;color:var(--muted2)">
-      💡 <strong style="color:var(--text)">Tip:</strong> You can look up your stats on the <a href="#" onclick="showPage('home');return false;" style="color:var(--accent);text-decoration:none">Home page</a> using your <code style="background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:12px">rai1...</code> address to verify your job counts before submitting.
-    </div>
-  </div>
-</div>
-
 <!-- FOOTER -->
 <footer>
   <div class="footer-inner">
@@ -1225,7 +1077,7 @@ echo "Peer ID:" && republicd comet show-node-id --home /root/.republic</pre></di
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 const API = 'https://api.republicstats.xyz';
 const BUILDER = { github:'https://github.com/0xDarkSeidBull', twitter:'https://x.com/cryptobhartiyax', telegram:'https://t.me/DarkSeidBull' };
 
@@ -1238,7 +1090,7 @@ function showPage(name, btn) {
   if(name==='home') loadHome();
   if(name==='leaderboard') loadLeaderboard();
   if(name==='ecosystem') loadEcosystem();
-  // guides and points pages need no load
+  // guides page needs no load
 }
 function toggleMenu() {
   const m=document.getElementById('mobile-menu');
@@ -1445,32 +1297,16 @@ function buildTable(data, fullAddr) {
   const rows=data.map(m=>{
     const addr=fullAddr?m.address:short(m.address);
     const rc=m.rank===1?'r1':m.rank===2?'r2':m.rank===3?'r3':'';
-    const moniker=m.moniker||'—';
-    let uptimeHtml='<span class="uptime-none">—</span>';
-    if(m.uptime!=null){
-      const cls=m.uptime>=99?'uptime-high':m.uptime>=95?'uptime-mid':'uptime-low';
-      uptimeHtml=`<span class="${cls}">${m.uptime.toFixed(1)}%</span>`;
-    }
     return `<div class="lb-row" onclick="searchByAddr('${m.address}')">
       <div class="rank-num ${rc}">${m.rank}</div>
-      <div class="moniker-cell lb-col-hide" title="${moniker}">${moniker}</div>
       <div class="addr-cell" title="${m.address}">${addr}</div>
-      <div class="num-right lb-col-hide">${fmt(m.submit_job)}</div>
-      <div class="num-right lb-col-hide">${fmt(m.submit_job_result)}</div>
+      <div class="num-right">${fmt(m.submit_job)}</div>
+      <div class="num-right">${fmt(m.submit_job_result)}</div>
       <div class="total-right">${fmt(m.total)}</div>
-      <div class="uptime-cell lb-col-hide">${uptimeHtml}</div>
     </div>`;
   }).join('');
   return `<div class="lb-table">
-    <div class="lb-header">
-      <div>Rank</div>
-      <div class="lb-col-hide">Moniker</div>
-      <div>Address</div>
-      <div style="text-align:right" class="lb-col-hide">Submit</div>
-      <div style="text-align:right" class="lb-col-hide">Result</div>
-      <div style="text-align:right">Total</div>
-      <div style="text-align:right" class="lb-col-hide">Uptime</div>
-    </div>
+    <div class="lb-header"><div>Rank</div><div>Address</div><div style="text-align:right">Submit</div><div style="text-align:right">Result</div><div style="text-align:right">Total</div></div>
     ${rows}
   </div>`;
 }
@@ -1580,41 +1416,6 @@ function copyAddr(addr, btn) {
   });
 }
 
-// POINTS FORM
-const GFORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLSei0OhWQq0qfb8pjR9hUKeGmUlZKxII7c1Z3aNwYU8RhRIUTQ/viewform';
-function openGoogleForm() {
-  window.open(GFORM_BASE, '_blank');
-}
-function prefillAndOpen() {
-  // Google Form prefill uses usp=pp_url&entry.XXXX=value format
-  // Since we don't have exact entry IDs, open form with a note
-  const webapp = document.getElementById('pts-webapp').value.trim();
-  const discord = document.getElementById('pts-discord').value.trim();
-  const moniker = document.getElementById('pts-moniker').value.trim();
-  const valoper = document.getElementById('pts-valoper').value.trim();
-  const wallet = document.getElementById('pts-wallet').value.trim();
-  const jobid = document.getElementById('pts-jobid').value.trim();
-  const txhash = document.getElementById('pts-txhash').value.trim();
-  if(!webapp&&!discord&&!moniker&&!valoper&&!wallet&&!jobid&&!txhash) {
-    window.open(GFORM_BASE, '_blank');
-    return;
-  }
-  // Copy all values to clipboard as helper
-  const text = [
-    webapp && `Web App Username: ${webapp}`,
-    discord && `Discord: ${discord}`,
-    moniker && `Moniker: ${moniker}`,
-    valoper && `raivaloper: ${valoper}`,
-    wallet && `Wallet: ${wallet}`,
-    jobid && `Job ID: ${jobid}`,
-    txhash && `TX Hash: ${txhash}`
-  ].filter(Boolean).join('\n');
-  navigator.clipboard.writeText(text).then(()=>{
-    alert('✅ Your details copied to clipboard!\n\nThe Google Form will open now.\nPaste your details into each field.');
-  }).catch(()=>{});
-  window.open(GFORM_BASE, '_blank');
-}
-
 // HALTED TIMER
 let haltedStart = null;
 function startHaltedTimer(lastScanTime) {
@@ -1631,4 +1432,20 @@ function startHaltedTimer(lastScanTime) {
     const h = Math.floor(diff/3600);
     const m = Math.floor((diff%3600)/60);
     const s = diff%60;
-    const existing = document.ge
+    const existing = document.getElementById('halt-timer');
+    if(existing) existing.textContent = `Halted for ${h}h ${m}m ${s}s`;
+  }, 1000);
+}
+
+// AUTO REFRESH every 60 seconds
+setInterval(()=>{
+  const activePage = document.querySelector('.page.active');
+  if(activePage && activePage.id === 'page-home') loadHome();
+  if(activePage && activePage.id === 'page-leaderboard') loadLeaderboard();
+}, 60000);
+
+// INIT
+loadHome();
+</script>
+</body>
+</html>
