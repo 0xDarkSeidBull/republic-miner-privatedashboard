@@ -958,7 +958,7 @@ async function checkChain(){
     if(isLive){
       banner.className='';
       dot.className='chain-dot live';
-      const height=d.height||d.latest_block_height||d.block_height||'—';
+      d.latest_block||d.height||d.latest_block_height||d.block_height||'—'
       const scanTime=d.last_scan_time||d.scan_time||'';
       txt.textContent=`✓ Chain LIVE · Block: ${height}${scanTime?' · '+scanTime:''}`;
     }else{
