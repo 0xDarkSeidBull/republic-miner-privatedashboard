@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Republic Stats – GPU Miner Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307090f'/><text x='50%' y='58%' font-size='18' text-anchor='middle' dominant-baseline='middle'>⛏️</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -19,8 +20,6 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--font-main);min-height:100vh;overflow-x:hidden}
-
-/* SCROLLBAR */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:var(--bg2)}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
@@ -48,19 +47,22 @@ nav{
   padding:0 24px;height:58px;background:var(--bg2);
   border-bottom:1px solid var(--border);position:sticky;top:33px;z-index:99;
 }
-.nav-logo{font-family:var(--font-mono);font-weight:700;font-size:15px;color:var(--accent);letter-spacing:.05em}
+.nav-logo{font-family:var(--font-mono);font-weight:700;font-size:15px;color:var(--accent);letter-spacing:.05em;display:flex;align-items:center;gap:8px}
+.nav-logo-icon{font-size:18px}
 .nav-logo span{color:var(--muted)}
-.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .nav-link{
-  padding:6px 13px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;
+  padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;
   color:var(--muted);transition:all .2s;border:none;background:transparent;
+  display:flex;align-items:center;gap:5px;
 }
 .nav-link:hover{color:var(--text);background:var(--bg3)}
 .nav-link.active{color:var(--accent);background:rgba(0,229,176,.08)}
+.nav-icon{font-size:14px}
 .nav-btn{
-  padding:6px 13px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
   border:1px solid var(--border);background:var(--bg3);color:var(--text);
-  transition:all .2s;margin-left:4px;
+  transition:all .2s;margin-left:4px;display:flex;align-items:center;gap:5px;text-decoration:none;
 }
 .nav-btn:hover{border-color:var(--accent);color:var(--accent)}
 .nav-btn.points{border-color:rgba(245,158,11,.3);color:var(--gold)}
@@ -116,10 +118,7 @@ nav{
 }
 .search-input:focus{border-color:var(--accent)}
 .search-input::placeholder{color:var(--muted)}
-.btn{
-  padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;
-  border:none;transition:all .2s;font-family:var(--font-main);
-}
+.btn{padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font-main)}
 .btn-accent{background:var(--accent);color:#000}
 .btn-accent:hover{background:#00ffc4;transform:translateY(-1px)}
 .btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
@@ -127,82 +126,51 @@ nav{
 
 /* MINER CARD */
 #minerResult{margin-top:16px}
-.miner-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
-  padding:20px;animation:fadeIn .3s ease;
-}
+.miner-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;animation:fadeIn .3s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .miner-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
-.miner-rank-badge{
-  font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--accent);
-  background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);
-  border-radius:8px;padding:4px 14px;flex-shrink:0;
-}
+.miner-rank-badge{font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--accent);background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:4px 14px;flex-shrink:0}
 .miner-info{flex:1;min-width:0}
 .miner-name{font-size:17px;font-weight:700;color:var(--accent);margin-bottom:4px;font-family:var(--font-mono)}
 .miner-addr{font-size:11px;color:var(--muted);font-family:var(--font-mono);word-break:break-all;display:flex;align-items:center;gap:6px}
-.copy-btn{
-  background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;
-  padding:2px 5px;border-radius:4px;transition:all .2s;flex-shrink:0;
-}
+.copy-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:4px;transition:all .2s;flex-shrink:0}
 .copy-btn:hover{color:var(--accent);background:rgba(0,229,176,.08)}
 .miner-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.uptime-badge{
-  font-size:11px;font-family:var(--font-mono);font-weight:600;
-  padding:3px 9px;border-radius:20px;border:1px solid;
-}
+.uptime-badge{font-size:11px;font-family:var(--font-mono);font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid}
 .uptime-100{background:rgba(16,185,129,.1);color:var(--green);border-color:rgba(16,185,129,.3)}
 .uptime-high{background:rgba(245,158,11,.1);color:var(--yellow);border-color:rgba(245,158,11,.3)}
 .uptime-low{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)}
 .uptime-unknown{background:rgba(100,116,139,.1);color:var(--muted);border-color:rgba(100,116,139,.3)}
-
 .miner-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
 .miner-stat{background:var(--bg3);border-radius:8px;padding:12px;text-align:center}
 .miner-stat-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
 .miner-stat-value{font-size:20px;font-weight:700;font-family:var(--font-mono);color:var(--text)}
-
 .progress-bar-wrap{margin-bottom:14px}
 .progress-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:6px}
 .progress-bar-track{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
 .progress-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s ease}
-
-.share-btn{
-  width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:600;
-  border:1px solid rgba(59,130,246,.3);background:rgba(59,130,246,.08);color:var(--accent2);
-  cursor:pointer;transition:all .2s;
-}
+.share-btn{width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid rgba(59,130,246,.3);background:rgba(59,130,246,.08);color:var(--accent2);cursor:pointer;transition:all .2s}
 .share-btn:hover{background:rgba(59,130,246,.15);border-color:var(--accent2)}
 
 /* TOP MINERS TABLE ON HOME */
 .section{padding:0 24px 40px;max-width:1200px;margin:0 auto}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .section-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text);font-family:var(--font-mono)}
-.refresh-btn{
-  font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);
-  padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .2s;font-family:var(--font-mono);
-}
+.refresh-btn{font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .2s;font-family:var(--font-mono)}
 .refresh-btn:hover{color:var(--accent);border-color:var(--accent)}
 
 /* TABLE */
 .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead tr{background:var(--bg3)}
-th{
-  padding:11px 14px;text-align:left;font-size:10px;text-transform:uppercase;
-  letter-spacing:.08em;color:var(--muted);font-weight:600;font-family:var(--font-mono);
-  white-space:nowrap;border-bottom:1px solid var(--border);
-}
+th{padding:11px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;font-family:var(--font-mono);white-space:nowrap;border-bottom:1px solid var(--border)}
 td{padding:11px 14px;border-bottom:1px solid rgba(30,42,58,.6);vertical-align:middle;white-space:nowrap}
 tbody tr{background:var(--bg2);transition:background .15s}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover{background:var(--bg3)}
 .rank-cell{font-family:var(--font-mono);font-weight:700;color:var(--accent);width:50px}
-.rank-1{color:var(--gold)}
-.rank-2{color:var(--silver)}
-.rank-3{color:var(--bronze)}
+.rank-1{color:var(--gold)}.rank-2{color:var(--silver)}.rank-3{color:var(--bronze)}
 .addr-cell{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
-.addr-cell a{color:var(--accent2);text-decoration:none}
-.addr-cell a:hover{text-decoration:underline}
 .num-cell{font-family:var(--font-mono);font-weight:600;text-align:right}
 .moniker-cell{font-family:var(--font-mono);font-size:12px;color:var(--text);font-weight:500}
 .moniker-cell.empty{color:var(--muted);font-style:italic}
@@ -212,21 +180,14 @@ tbody tr:hover{background:var(--bg3)}
 .page.active{display:block}
 
 /* LEADERBOARD PAGE */
-.lb-hero{
-  padding:36px 24px 20px;text-align:center;
-  background:radial-gradient(ellipse 70% 40% at 50% -5%,rgba(0,229,176,.05) 0%,transparent 70%);
-}
+.lb-hero{padding:36px 24px 20px;text-align:center;background:radial-gradient(ellipse 70% 40% at 50% -5%,rgba(0,229,176,.05) 0%,transparent 70%)}
 .lb-hero h2{font-size:28px;font-weight:800;margin-bottom:6px}
 .lb-hero h2 span{color:var(--accent)}
 .lb-hero p{color:var(--muted);font-size:14px}
 
 /* PODIUM */
 .podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:12px;padding:20px 24px 32px;max-width:700px;margin:0 auto}
-.podium-item{
-  flex:1;max-width:200px;background:var(--bg2);border:1px solid var(--border);
-  border-radius:14px;padding:16px 12px;text-align:center;position:relative;
-  transition:all .25s;
-}
+.podium-item{flex:1;max-width:200px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;position:relative;transition:all .25s}
 .podium-item:hover{transform:translateY(-3px)}
 .podium-item.p1{border-color:rgba(245,158,11,.3);background:linear-gradient(180deg,rgba(245,158,11,.05),var(--bg2))}
 .podium-item.p2{border-color:rgba(148,163,184,.2)}
@@ -240,11 +201,7 @@ tbody tr:hover{background:var(--bg3)}
 
 /* LB SEARCH */
 .lb-search-wrap{padding:0 24px 16px;max-width:1200px;margin:0 auto}
-.lb-search-input{
-  width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
-  padding:11px 16px;color:var(--text);font-size:13px;font-family:var(--font-mono);
-  outline:none;transition:border-color .2s;
-}
+.lb-search-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 16px;color:var(--text);font-size:13px;font-family:var(--font-mono);outline:none;transition:border-color .2s}
 .lb-search-input:focus{border-color:var(--accent)}
 .lb-search-input::placeholder{color:var(--muted)}
 
@@ -253,17 +210,11 @@ tbody tr:hover{background:var(--bg3)}
 .eco-hero h2{font-size:26px;font-weight:800;margin-bottom:6px}
 .eco-hero p{color:var(--muted);font-size:14px;max-width:500px;margin:0 auto}
 .filter-bar{display:flex;gap:6px;padding:0 24px 20px;flex-wrap:wrap;max-width:1200px;margin:0 auto}
-.filter-btn{
-  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;
-  border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .2s;
-}
+.filter-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .2s}
 .filter-btn:hover{color:var(--text);border-color:var(--border)}
 .filter-btn.active{background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.3);color:var(--accent)}
 .eco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;padding:0 24px 40px;max-width:1200px;margin:0 auto}
-.eco-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
-  padding:18px;transition:all .25s;cursor:pointer;
-}
+.eco-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;transition:all .25s;cursor:pointer}
 .eco-card:hover{border-color:rgba(0,229,176,.2);transform:translateY(-2px)}
 .eco-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
 .eco-card-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg3)}
@@ -272,6 +223,7 @@ tbody tr:hover{background:var(--bg3)}
 .cat-AI{background:rgba(59,130,246,.1);color:var(--accent2);border:1px solid rgba(59,130,246,.2)}
 .cat-Tool{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.2)}
 .cat-Infrastructure{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+.cat-Explorer{background:rgba(236,72,153,.1);color:#f472b6;border:1px solid rgba(236,72,153,.2)}
 .cat-Other{background:rgba(100,116,139,.1);color:var(--muted);border:1px solid rgba(100,116,139,.2)}
 .eco-card-name{font-size:16px;font-weight:700;margin-bottom:5px}
 .eco-card-desc{font-size:12px;color:var(--muted);line-height:1.5}
@@ -283,78 +235,65 @@ tbody tr:hover{background:var(--bg3)}
 .submit-wrap p{color:var(--muted);font-size:14px;margin-bottom:28px}
 .form-group{margin-bottom:16px}
 .form-label{font-size:12px;font-weight:600;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
-.form-input,.form-select,.form-textarea{
-  width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
-  padding:11px 14px;color:var(--text);font-size:13px;font-family:var(--font-main);
-  outline:none;transition:border-color .2s;
-}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:13px;font-family:var(--font-main);outline:none;transition:border-color .2s}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
-.form-select{appearance:none;cursor:pointer}
+.form-select{appearance:none;cursor:pointer;background-color:var(--bg2)}
 .form-textarea{resize:vertical;min-height:90px}
 
 /* GUIDES */
-.guides-wrap{padding:36px 24px 40px;max-width:900px;margin:0 auto}
-.guides-wrap h2{font-size:24px;font-weight:800;margin-bottom:20px}
+.guides-wrap{padding:36px 24px 40px;max-width:960px;margin:0 auto}
+.guides-wrap h2{font-size:24px;font-weight:800;margin-bottom:8px}
+.guides-wrap>p{color:var(--muted);font-size:14px;margin-bottom:24px}
+.guide-section-label{font-size:10px;font-family:var(--font-mono);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-left:2px}
 .guide-tabs{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap}
-.guide-tab{
-  padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
-  border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .2s;
-}
+.guide-tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:6px}
 .guide-tab:hover{color:var(--text)}
 .guide-tab.active{background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.3);color:var(--accent)}
 .guide-content{display:none}
 .guide-content.active{display:block}
 .guide-step{margin-bottom:28px}
-.guide-step h3{font-size:15px;font-weight:700;margin-bottom:10px;color:var(--text)}
+.guide-step h3{font-size:15px;font-weight:700;margin-bottom:10px;color:var(--text);display:flex;align-items:center;gap:8px}
 .guide-step p{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:10px}
-.code-block{
-  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
-  padding:14px 16px;position:relative;margin-bottom:10px;
-}
-.code-block pre{font-family:var(--font-mono);font-size:12px;color:var(--text);white-space:pre-wrap;word-break:break-all}
-.code-copy{
-  position:absolute;top:8px;right:8px;font-size:10px;font-family:var(--font-mono);
-  background:var(--bg4);border:1px solid var(--border);color:var(--muted);
-  padding:3px 8px;border-radius:5px;cursor:pointer;transition:all .2s;
-}
+.guide-step a{color:var(--accent2);text-decoration:none}
+.guide-step a:hover{text-decoration:underline}
+.code-block{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;margin-bottom:10px}
+.code-block pre{font-family:var(--font-mono);font-size:12px;color:var(--text);white-space:pre-wrap;word-break:break-all;padding-right:48px}
+.code-copy{position:absolute;top:8px;right:8px;font-size:10px;font-family:var(--font-mono);background:var(--bg4);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:5px;cursor:pointer;transition:all .2s}
 .code-copy:hover{color:var(--accent);border-color:var(--accent)}
+.guide-note{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:#93c5fd;font-family:var(--font-mono);margin-bottom:14px;line-height:1.6}
+.guide-warn{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:#fcd34d;font-family:var(--font-mono);margin-bottom:14px;line-height:1.6}
+.guide-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.guide-link-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid;transition:all .2s;font-family:var(--font-mono)}
+.guide-link-btn.official{border-color:rgba(0,229,176,.3);color:var(--accent);background:rgba(0,229,176,.06)}
+.guide-link-btn.official:hover{background:rgba(0,229,176,.12)}
+.guide-link-btn.community{border-color:rgba(59,130,246,.3);color:var(--accent2);background:rgba(59,130,246,.06)}
+.guide-link-btn.community:hover{background:rgba(59,130,246,.12)}
+.guide-link-btn.discord{border-color:rgba(139,92,246,.3);color:#a78bfa;background:rgba(139,92,246,.06)}
+.guide-link-btn.discord:hover{background:rgba(139,92,246,.12)}
 
 /* FOOTER */
-footer{
-  border-top:1px solid var(--border);padding:28px 24px;
-  background:var(--bg2);text-align:center;
-}
-.footer-logo{font-family:var(--font-mono);font-weight:700;color:var(--accent);margin-bottom:6px}
+footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2);text-align:center}
+.footer-logo{font-family:var(--font-mono);font-weight:700;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:6px}
 .footer-logo span{color:var(--muted)}
 .footer-sub{font-size:12px;color:var(--muted);margin-bottom:16px}
 .footer-links{display:flex;justify-content:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
-.footer-link{
-  font-size:12px;color:var(--muted);text-decoration:none;
-  padding:5px 12px;border-radius:6px;border:1px solid var(--border);
-  transition:all .2s;
-}
+.footer-link{font-size:12px;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:6px;border:1px solid var(--border);transition:all .2s}
 .footer-link:hover{color:var(--accent);border-color:rgba(0,229,176,.3)}
 .footer-copy{font-size:11px;color:var(--muted);font-family:var(--font-mono)}
 
-/* LOADING / EMPTY STATES */
+/* LOADING / EMPTY */
 .loading{color:var(--muted);font-size:13px;font-family:var(--font-mono);padding:24px;text-align:center}
 .error-msg{color:var(--red);font-size:13px;font-family:var(--font-mono);padding:12px 16px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;margin-top:10px}
 .empty-state{padding:40px 24px;text-align:center;color:var(--muted);font-size:13px}
 
 /* TOAST */
-#toast{
-  position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;
-  font-size:13px;font-family:var(--font-mono);font-weight:600;
-  background:var(--bg3);border:1px solid var(--accent);color:var(--accent);
-  opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:999;
-}
+#toast{position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;font-size:13px;font-family:var(--font-mono);font-weight:600;background:var(--bg3);border:1px solid var(--accent);color:var(--accent);opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:999}
 #toast.show{opacity:1;transform:none}
 
-/* RESPONSIVE */
-@media(max-width:600px){
-  nav{padding:0 14px}
-  .nav-links{gap:2px}
-  .nav-link{padding:5px 8px;font-size:12px}
+@media(max-width:768px){
+  nav{padding:0 12px;height:52px;flex-wrap:nowrap;overflow-x:auto}
+  .nav-links{gap:2px;flex-shrink:0}
+  .nav-link{padding:5px 8px;font-size:11px}
   .nav-btn{padding:5px 8px;font-size:11px}
   .stats-grid{padding:0 14px 24px;grid-template-columns:repeat(2,1fr)}
   .search-section{padding:0 14px 24px}
@@ -375,12 +314,15 @@ footer{
 
 <!-- NAVBAR -->
 <nav>
-  <div class="nav-logo">REPUBLIC<span>/STATS</span></div>
+  <div class="nav-logo">
+    <span class="nav-logo-icon">⛏️</span>
+    REPUBLIC<span>/STATS</span>
+  </div>
   <div class="nav-links">
-    <button class="nav-link active" onclick="showPage('home',this)">Home</button>
-    <button class="nav-link" onclick="showPage('leaderboard',this)">Leaderboard</button>
-    <button class="nav-link" onclick="showPage('ecosystem',this)">Ecosystem</button>
-    <button class="nav-link" onclick="showPage('guides',this)">Guides</button>
+    <button class="nav-link active" onclick="showPage('home',this)"><span class="nav-icon">🏠</span>Home</button>
+    <button class="nav-link" onclick="showPage('leaderboard',this)"><span class="nav-icon">🏆</span>Leaderboard</button>
+    <button class="nav-link" onclick="showPage('ecosystem',this)"><span class="nav-icon">🌐</span>Ecosystem</button>
+    <button class="nav-link" onclick="showPage('guides',this)"><span class="nav-icon">📚</span>Guides</button>
     <a href="https://docs.google.com/forms/d/e/1FAIpQLScGvXXXXXXXX/viewform" target="_blank" class="nav-btn points">🎁 Points Form</a>
     <button class="nav-btn submit" onclick="showPage('submit',this)">+ Submit Project</button>
   </div>
@@ -397,19 +339,25 @@ footer{
     <p>Track miner activity, explore the leaderboard, and discover projects building on Republic AI.</p>
   </div>
 
-  <!-- STATS GRID -->
   <div class="stats-grid" id="statsGrid">
     <div class="stat-card"><div class="stat-label">Total Miners</div><div class="stat-value accent" id="statMiners">—</div></div>
     <div class="stat-card"><div class="stat-label">Total Jobs</div><div class="stat-value" id="statJobs">—</div></div>
     <div class="stat-card"><div class="stat-label">Submit Job</div><div class="stat-value" id="statSubmit">—</div></div>
     <div class="stat-card"><div class="stat-label">Submit Result</div><div class="stat-value" id="statResult">—</div></div>
-    <div class="stat-card"><div class="stat-label">Last Block</div><div class="stat-value" id="statBlock">—</div><div class="stat-sub" id="statScanTime"></div></div>
-    <div class="stat-card"><div class="stat-label">Top Miner</div><div class="stat-value accent" id="statTopMiner">—</div><div class="stat-sub" id="statTopScore"></div></div>
+    <div class="stat-card">
+      <div class="stat-label">Last Block</div>
+      <div class="stat-value" id="statBlock">—</div>
+      <div class="stat-sub" id="statScanTime"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Top Miner</div>
+      <div class="stat-value accent" id="statTopMiner">—</div>
+      <div class="stat-sub" id="statTopScore"></div>
+    </div>
   </div>
 
-  <!-- SEARCH -->
   <div class="search-section">
-    <div class="search-title">Search Miner by Address</div>
+    <div class="search-title">🔍 Search Miner by Address</div>
     <div class="search-box">
       <input id="minerSearchInput" class="search-input" placeholder="rai1..." type="text"/>
       <button class="btn btn-accent" onclick="searchMiner()">Search</button>
@@ -417,10 +365,9 @@ footer{
     <div id="minerResult"></div>
   </div>
 
-  <!-- TOP MINERS TABLE -->
   <div class="section">
     <div class="section-header">
-      <div class="section-title">Top Miners</div>
+      <div class="section-title">⚡ Top Miners</div>
       <button class="refresh-btn" onclick="loadTopMiners()">↻ Refresh</button>
     </div>
     <div class="table-wrap">
@@ -446,17 +393,14 @@ footer{
     <p>All miners ranked by total job score on Republic AI Testnet</p>
   </div>
 
-  <!-- PODIUM -->
   <div class="podium-wrap" id="podiumWrap">
     <div class="loading">Loading podium...</div>
   </div>
 
-  <!-- SEARCH -->
   <div class="lb-search-wrap">
-    <input id="lbSearch" class="lb-search-input" placeholder="Filter by address or moniker..." oninput="filterLeaderboard()"/>
+    <input id="lbSearch" class="lb-search-input" placeholder="🔍  Search by moniker or address..." oninput="filterLeaderboard()"/>
   </div>
 
-  <!-- FULL TABLE -->
   <div class="section">
     <div class="section-header">
       <div class="section-title" id="lbCount">Full Leaderboard</div>
@@ -473,7 +417,7 @@ footer{
           <th style="text-align:right">Uptime</th>
           <th style="text-align:right">Total</th>
         </tr></thead>
-        <tbody id="lbBody"><tr><td colspan="7" class="loading">Loading leaderboard...</td></tr></tbody>
+        <tbody id="lbBody"><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -483,27 +427,30 @@ footer{
 <div id="page-ecosystem" class="page">
   <div class="eco-hero">
     <h2>🌐 Ecosystem</h2>
-    <p>Projects and tools building on Republic AI Testnet</p>
+    <p>Projects, tools, and infrastructure building on Republic AI Testnet</p>
   </div>
-  <div class="filter-bar" id="ecoFilters">
+  <div class="filter-bar">
     <button class="filter-btn active" onclick="filterEco('All',this)">All</button>
-    <button class="filter-btn" onclick="filterEco('DeFi',this)">DeFi</button>
-    <button class="filter-btn" onclick="filterEco('AI',this)">AI</button>
-    <button class="filter-btn" onclick="filterEco('Tool',this)">Tool</button>
-    <button class="filter-btn" onclick="filterEco('Infrastructure',this)">Infrastructure</button>
-    <button class="filter-btn" onclick="filterEco('Other',this)">Other</button>
+    <button class="filter-btn" onclick="filterEco('AI',this)">🤖 AI</button>
+    <button class="filter-btn" onclick="filterEco('Tool',this)">🔧 Tool</button>
+    <button class="filter-btn" onclick="filterEco('Infrastructure',this)">🏛️ Infrastructure</button>
+    <button class="filter-btn" onclick="filterEco('Explorer',this)">🔍 Explorer</button>
+    <button class="filter-btn" onclick="filterEco('DeFi',this)">💎 DeFi</button>
+    <button class="filter-btn" onclick="filterEco('Other',this)">⚡ Other</button>
   </div>
-  <div class="eco-grid" id="ecoGrid"><div class="loading">Loading projects...</div></div>
+  <div class="eco-grid" id="ecoGrid">
+    <div class="loading">Loading projects...</div>
+  </div>
 </div>
 
-<!-- ═══════════════════════ SUBMIT PAGE ═══════════════════════ -->
+<!-- ═══════════════════════ SUBMIT PROJECT PAGE ═══════════════════════ -->
 <div id="page-submit" class="page">
   <div class="submit-wrap">
-    <h2>➕ Submit Project</h2>
-    <p>Add your project to the Republic AI ecosystem directory.</p>
+    <h2>+ Submit Project</h2>
+    <p>Add your project to the Republic AI ecosystem directory</p>
     <div class="form-group">
       <label class="form-label">Project Name *</label>
-      <input id="f-name" class="form-input" placeholder="My Awesome Project"/>
+      <input id="f-name" class="form-input" placeholder="My Republic Project"/>
     </div>
     <div class="form-group">
       <label class="form-label">Description *</label>
@@ -513,24 +460,28 @@ footer{
       <label class="form-label">Category *</label>
       <select id="f-cat" class="form-select">
         <option value="">Select category...</option>
-        <option>DeFi</option><option>AI</option><option>Tool</option>
-        <option>Infrastructure</option><option>Other</option>
+        <option>AI</option>
+        <option>Tool</option>
+        <option>Infrastructure</option>
+        <option>Explorer</option>
+        <option>DeFi</option>
+        <option>Other</option>
       </select>
     </div>
     <div class="form-group">
       <label class="form-label">Website URL</label>
-      <input id="f-url" class="form-input" placeholder="https://..."/>
+      <input id="f-url" class="form-input" placeholder="https://yourproject.xyz"/>
     </div>
     <div class="form-group">
-      <label class="form-label">GitHub URL</label>
+      <label class="form-label">GitHub</label>
       <input id="f-github" class="form-input" placeholder="https://github.com/..."/>
     </div>
     <div class="form-group">
       <label class="form-label">Icon Emoji</label>
       <input id="f-icon" class="form-input" placeholder="🚀" maxlength="4" style="max-width:100px"/>
     </div>
-    <button class="btn btn-accent" style="width:100%;padding:14px" onclick="submitProject()">Submit Project</button>
-    <div id="submitMsg" style="margin-top:12px"></div>
+    <button class="btn btn-accent" style="width:100%;padding:13px" onclick="submitProject()">Submit for Review</button>
+    <div id="submitMsg" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -538,92 +489,381 @@ footer{
 <div id="page-guides" class="page">
   <div class="guides-wrap">
     <h2>📚 Guides</h2>
-    <div class="guide-tabs">
-      <button class="guide-tab active" onclick="showGuide('gpu',this)">GPU Miner</button>
-      <button class="guide-tab" onclick="showGuide('cpu',this)">CPU Validator</button>
-      <button class="guide-tab" onclick="showGuide('snapshot',this)">Snapshot</button>
-      <button class="guide-tab" onclick="showGuide('cmds',this)">Useful Commands</button>
+    <p>Official and community guides for running Republic AI nodes and miners</p>
+
+    <!-- Quick links -->
+    <div style="margin-bottom:28px">
+      <div class="guide-section-label">🔗 Official Resources</div>
+      <div class="guide-links">
+        <a href="https://republic.ai" target="_blank" class="guide-link-btn official">🏛️ Republic AI Official</a>
+        <a href="https://docs.republic.ai" target="_blank" class="guide-link-btn official">📖 Official Docs</a>
+        <a href="https://discord.gg/republicai" target="_blank" class="guide-link-btn discord">💬 Discord</a>
+        <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="guide-link-btn community">🐙 Dashboard GitHub</a>
+      </div>
     </div>
 
-    <!-- GPU MINER -->
+    <div class="guide-tabs">
+      <button class="guide-tab active" onclick="showGuide('gpu',this)">⛏️ GPU Miner</button>
+      <button class="guide-tab" onclick="showGuide('cpu',this)">🖥️ CPU Validator</button>
+      <button class="guide-tab" onclick="showGuide('snapshot',this)">📸 Snapshot</button>
+      <button class="guide-tab" onclick="showGuide('cmds',this)">⚡ Useful Commands</button>
+    </div>
+
+    <!-- GPU MINER GUIDE -->
     <div id="guide-gpu" class="guide-content active">
+      <div class="guide-note">ℹ️ This guide covers GPU miner setup for Republic AI Testnet. Always check <a href="https://discord.gg/republicai" target="_blank">Discord</a> for the latest version updates.</div>
+
       <div class="guide-step">
         <h3>1. System Requirements</h3>
-        <p>Ubuntu 22.04 / 24.04 · NVIDIA GPU (8GB+ VRAM) · 16GB RAM · 100GB disk</p>
+        <p>Minimum specs to run the GPU miner:</p>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>OS: Ubuntu 22.04 / 24.04 LTS (recommended)
+GPU: NVIDIA with 8GB+ VRAM (RTX 3080 / 4090 / A100 etc.)
+RAM: 16GB minimum, 32GB recommended
+Disk: 100GB+ SSD
+CPU: 8 cores minimum</pre></div>
       </div>
+
       <div class="guide-step">
-        <h3>2. Install Dependencies</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo apt update && sudo apt install -y curl wget git build-essential
-# Install CUDA Toolkit
+        <h3>2. Install System Dependencies</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl wget git build-essential jq lz4 unzip</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>3. Install NVIDIA Drivers & CUDA</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Add NVIDIA repo
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
 sudo dpkg -i cuda-keyring_1.1-1_all.deb
-sudo apt-get update && sudo apt-get install -y cuda-toolkit-12-3</pre></div>
+sudo apt-get update
+
+# Install CUDA Toolkit 12.3
+sudo apt-get install -y cuda-toolkit-12-3
+
+# Verify GPU detected
+nvidia-smi</pre></div>
       </div>
+
       <div class="guide-step">
-        <h3>3. Download & Setup Miner</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>git clone https://github.com/RepublicAI/gpu-miner
-cd gpu-miner
-chmod +x install.sh && ./install.sh</pre></div>
+        <h3>4. Install Go (if required)</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>cd $HOME
+wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> $HOME/.bashrc
+source $HOME/.bashrc
+go version</pre></div>
       </div>
+
       <div class="guide-step">
-        <h3>4. Configure & Start</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>cp config.example.yaml config.yaml
-# Edit config.yaml with your wallet address
-nano config.yaml
-# Start miner
-./miner start --config config.yaml</pre></div>
+        <h3>5. Install Republic GPU Miner</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Check Discord for the latest official installation command
+# Official install script (check Discord/docs for latest):
+curl -sSL https://raw.githubusercontent.com/RepublicAI/gpu-miner/main/install.sh | bash</pre></div>
+        <div class="guide-warn">⚠️ Always verify install scripts from official sources. Check <a href="https://discord.gg/republicai" target="_blank" style="color:var(--yellow)">Discord</a> for the latest version.</div>
+      </div>
+
+      <div class="guide-step">
+        <h3>6. Configure Miner</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Set your wallet address and moniker
+export WALLET_ADDRESS="rai1your_address_here"
+export MONIKER="YourMinerName"
+
+# Edit config file
+nano $HOME/.republic-miner/config.yaml</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>7. Create Systemd Service & Start</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo tee /etc/systemd/system/republic-miner.service > /dev/null &lt;&lt;EOF
+[Unit]
+Description=Republic AI GPU Miner
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=$USER
+ExecStart=/usr/local/bin/republic-miner start
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable republic-miner
+sudo systemctl start republic-miner</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>8. Check Miner Status</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Check service status
+sudo systemctl status republic-miner
+
+# View live logs
+journalctl -u republic-miner -f -o cat
+
+# Check your stats on this dashboard
+# Search your wallet address above ↑</pre></div>
       </div>
     </div>
 
-    <!-- CPU VALIDATOR -->
+    <!-- CPU VALIDATOR GUIDE -->
     <div id="guide-cpu" class="guide-content">
+      <div class="guide-note">ℹ️ CPU Validator guide for Republic AI Testnet. Validator requires staking tokens. Check <a href="https://discord.gg/republicai" target="_blank">Discord</a> for genesis validators and current requirements.</div>
+
       <div class="guide-step">
-        <h3>1. Install Republic Node</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>curl -sSL https://raw.githubusercontent.com/RepublicAI/node/main/install.sh | bash</pre></div>
+        <h3>1. System Requirements</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>OS: Ubuntu 22.04 / 24.04 LTS
+CPU: 4 cores minimum (8 recommended)
+RAM: 16GB minimum
+Disk: 200GB+ SSD (NVMe preferred)
+Network: 100Mbps+ stable connection</pre></div>
       </div>
+
       <div class="guide-step">
-        <h3>2. Initialize Node</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd init YOUR_MONIKER --chain-id republic-testnet-1
-republicd config chain-id republic-testnet-1</pre></div>
+        <h3>2. Install Republic Node Binary</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Install dependencies
+sudo apt update && sudo apt install -y curl git jq build-essential lz4
+
+# Download and install republicd
+curl -sSL https://raw.githubusercontent.com/RepublicAI/node/main/install.sh | bash
+
+# Verify installation
+republicd version</pre></div>
       </div>
+
       <div class="guide-step">
-        <h3>3. Start Sync</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd start --p2p.seeds "SEED_NODE_ID@seed.republicai.network:26656"</pre></div>
+        <h3>3. Initialize Node</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Replace YOUR_MONIKER with your validator name
+republicd init YOUR_MONIKER --chain-id republic-testnet-1
+
+# Set config
+republicd config chain-id republic-testnet-1
+republicd config keyring-backend file</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>4. Download Genesis & Configure Peers</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Download genesis file (check Discord for latest)
+wget -O $HOME/.republic/config/genesis.json \
+  https://raw.githubusercontent.com/RepublicAI/networks/main/testnet/genesis.json
+
+# Set seeds/peers (get latest from Discord)
+SEEDS="seed1@seed.republic.ai:26656,seed2@seed2.republic.ai:26656"
+sed -i "s/^seeds = .*/seeds = \"$SEEDS\"/" $HOME/.republic/config/config.toml</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>5. Configure Gas & Pruning</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Set minimum gas price
+sed -i 's/minimum-gas-prices = ""/minimum-gas-prices = "0.025urap"/' \
+  $HOME/.republic/config/app.toml
+
+# Set pruning (saves disk space)
+sed -i 's/pruning = "default"/pruning = "custom"/' $HOME/.republic/config/app.toml
+sed -i 's/pruning-keep-recent = "0"/pruning-keep-recent = "100"/' $HOME/.republic/config/app.toml
+sed -i 's/pruning-interval = "0"/pruning-interval = "10"/' $HOME/.republic/config/app.toml</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>6. Create Systemd Service & Start</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre">sudo tee /etc/systemd/system/republicd.service > /dev/null &lt;&lt;EOF
+[Unit]
+Description=Republic AI Node
+After=network-online.target
+
+[Service]
+User=$USER
+ExecStart=$(which republicd) start
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable republicd
+sudo systemctl start republicd</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>7. Check Sync Status</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Check sync status (catching_up should become false)
+republicd status 2>&1 | jq .SyncInfo
+
+# View logs
+journalctl -u republicd -f -o cat</pre></div>
+        <div class="guide-note">⏳ Full sync can take hours. Use the Snapshot guide to speed this up.</div>
+      </div>
+
+      <div class="guide-step">
+        <h3>8. Create Validator (after full sync)</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre"># Create wallet key
+republicd keys add MY_WALLET --keyring-backend file
+
+# Get your validator pubkey
+republicd tendermint show-validator
+
+# Create validator tx (adjust amounts as needed)
+republicd tx staking create-validator \
+  --amount=1000000urap \
+  --pubkey=$(republicd tendermint show-validator) \
+  --moniker="YOUR_MONIKER" \
+  --chain-id=republic-testnet-1 \
+  --commission-rate="0.10" \
+  --commission-max-rate="0.20" \
+  --commission-max-change-rate="0.01" \
+  --min-self-delegation="1" \
+  --gas="auto" \
+  --gas-adjustment=1.4 \
+  --gas-prices="0.025urap" \
+  --from=MY_WALLET \
+  --keyring-backend=file \
+  -y</pre></div>
       </div>
     </div>
 
-    <!-- SNAPSHOT -->
+    <!-- SNAPSHOT GUIDE -->
     <div id="guide-snapshot" class="guide-content">
+      <div class="guide-note">ℹ️ Use snapshots to skip syncing from genesis block. Saves hours of sync time.</div>
+
       <div class="guide-step">
-        <h3>Download Latest Snapshot</h3>
-        <p>Use snapshot to skip syncing from genesis and get up to speed quickly.</p>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo systemctl stop republicd
-cd $HOME/.republic/data
-rm -rf data/ wasm/
-# Download snapshot (check Discord for latest URL)
-wget -O snapshot.tar.lz4 https://snapshot.republicstats.xyz/latest.tar.lz4
-lz4 -d snapshot.tar.lz4 | tar -xf -
-sudo systemctl start republicd</pre></div>
+        <h3>Stop Node & Backup Keys</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># IMPORTANT: Backup your priv_validator_key.json first!
+cp $HOME/.republic/config/priv_validator_key.json $HOME/priv_validator_key.json.bak
+
+# Stop the node
+sudo systemctl stop republicd</pre></div>
+        <div class="guide-warn">⚠️ Always backup your priv_validator_key.json before applying a snapshot!</div>
+      </div>
+
+      <div class="guide-step">
+        <h3>Install lz4 & Reset Data</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre">sudo apt install -y lz4
+
+# Reset node data (keeps config & keys)
+republicd tendermint unsafe-reset-all --home $HOME/.republic --keep-addr-book</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>Download & Apply Snapshot</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Download latest snapshot from Republic Stats
+wget -O $HOME/republic_snapshot.tar.lz4 \
+  https://snapshot.republicstats.xyz/latest.tar.lz4
+
+# Extract snapshot
+lz4 -d $HOME/republic_snapshot.tar.lz4 | tar -xf - -C $HOME/.republic/
+
+# Remove downloaded file
+rm -f $HOME/republic_snapshot.tar.lz4</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>Restart Node</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre">sudo systemctl start republicd
+
+# Check sync (catching_up → false means fully synced)
+watch -n 3 'republicd status 2>&1 | jq .SyncInfo.catching_up'</pre></div>
       </div>
     </div>
 
     <!-- USEFUL COMMANDS -->
     <div id="guide-cmds" class="guide-content">
       <div class="guide-step">
-        <h3>Check Node Status</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd status 2>&1 | jq .SyncInfo</pre></div>
+        <h3>🔍 Node Status & Health</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Full sync info
+republicd status 2>&1 | jq .SyncInfo
+
+# Is node caught up? (true = still syncing)
+republicd status 2>&1 | jq .SyncInfo.catching_up
+
+# Current block height
+republicd status 2>&1 | jq .SyncInfo.latest_block_height</pre></div>
       </div>
+
       <div class="guide-step">
-        <h3>Check Balance</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd query bank balances YOUR_ADDRESS</pre></div>
+        <h3>💰 Wallet & Balance</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Check balance
+republicd query bank balances YOUR_ADDRESS
+
+# List keys
+republicd keys list --keyring-backend file
+
+# Get address
+republicd keys show MY_WALLET -a --keyring-backend file</pre></div>
       </div>
+
       <div class="guide-step">
-        <h3>View Logs</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>journalctl -u republicd -f -o cat</pre></div>
+        <h3>🏛️ Validator Commands</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre"># Check validator status
+republicd query staking validator $(republicd keys show MY_WALLET --bech val -a --keyring-backend file)
+
+# Unjail validator
+republicd tx slashing unjail \
+  --from=MY_WALLET \
+  --chain-id=republic-testnet-1 \
+  --gas=auto --gas-adjustment=1.4 \
+  --gas-prices="0.025urap" \
+  --keyring-backend=file -y
+
+# Claim rewards
+republicd tx distribution withdraw-all-rewards \
+  --from=MY_WALLET \
+  --chain-id=republic-testnet-1 \
+  --gas=auto --gas-adjustment=1.4 \
+  --gas-prices="0.025urap" \
+  --keyring-backend=file -y</pre></div>
       </div>
+
       <div class="guide-step">
-        <h3>Restart Node</h3>
-        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo systemctl restart republicd && journalctl -u republicd -f</pre></div>
+        <h3>📋 Service Management</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre"># View live logs
+journalctl -u republicd -f -o cat
+
+# View GPU miner logs
+journalctl -u republic-miner -f -o cat
+
+# Restart node
+sudo systemctl restart republicd
+
+# Restart GPU miner
+sudo systemctl restart republic-miner
+
+# Check service status
+sudo systemctl status republicd</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>🔧 Peer Management</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre"># Check connected peers
+republicd net info | jq .result.peers | jq length
+
+# Get your node ID
+republicd tendermint show-node-id
+
+# Add persistent peer (replace with actual peer)
+PEER="node_id@ip:port"
+sed -i "s/^persistent_peers = .*/persistent_peers = \"$PEER\"/" \
+  $HOME/.republic/config/config.toml
+sudo systemctl restart republicd</pre></div>
+      </div>
+
+      <div class="guide-step">
+        <h3>📊 Useful API Queries</h3>
+        <div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre># Your miner stats (replace with your address)
+curl https://api.republicstats.xyz/api/miner/YOUR_ADDRESS | jq
+
+# Full leaderboard
+curl https://api.republicstats.xyz/api/leaderboard?limit=50 | jq
+
+# Network stats
+curl https://api.republicstats.xyz/api/stats | jq
+
+# Chain status
+curl https://api.republicstats.xyz/api/chain_status | jq</pre></div>
       </div>
     </div>
   </div>
@@ -631,18 +871,20 @@ sudo systemctl start republicd</pre></div>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">REPUBLIC<span>/STATS</span></div>
-  <div class="footer-sub">GPU Miner Tracker & Ecosystem Dashboard for Republic AI Testnet. Open source, community built.</div>
-  <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Built with ❤️ by <strong style="color:var(--text)">0xDarkSeidBull</strong> · Open Source</div>
+  <div class="footer-logo">
+    <span>⛏️</span>REPUBLIC<span>/STATS</span>
+  </div>
+  <div class="footer-sub">GPU Miner Tracker & Ecosystem Dashboard for Republic AI Testnet · Open source, community built.</div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Built with ❤️ by <strong style="color:var(--text)">0xDarkSeidBull</strong></div>
   <div class="footer-links">
-    <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="footer-link">GitHub</a>
-    <a href="https://t.me/republicgpuminerstatsbot" target="_blank" class="footer-link">Telegram Bot</a>
-    <a href="https://x.com/cryptobhartiyax" target="_blank" class="footer-link">Twitter</a>
+    <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="footer-link">🐙 GitHub</a>
+    <a href="https://t.me/republicgpuminerstatsbot" target="_blank" class="footer-link">🤖 Telegram Bot</a>
+    <a href="https://x.com/cryptobhartiyax" target="_blank" class="footer-link">🐦 Twitter</a>
+    <a href="https://t.me/DarkSeidBull" target="_blank" class="footer-link">💬 Telegram</a>
   </div>
   <div class="footer-copy">© 2026 Republic Stats · republicstats.xyz</div>
 </footer>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
@@ -653,13 +895,21 @@ let currentEcoFilter = 'All';
 let topScore = 0;
 
 // ─── UTILS ───────────────────────────────────────────────────
-function fmt(n){if(!n&&n!==0)return'—';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toLocaleString()}
+function fmt(n){
+  if(n===null||n===undefined||n==='')return'—';
+  n=Number(n);
+  if(isNaN(n))return'—';
+  if(n>=1e6)return(n/1e6).toFixed(1)+'M';
+  if(n>=1e3)return(n/1e3).toFixed(1)+'K';
+  return n.toLocaleString();
+}
 function shortAddr(a){if(!a)return'—';return a.slice(0,8)+'...'+a.slice(-6)}
 function rankClass(r){return r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':''}
 
 function uptimeBadgeHtml(uptime){
   if(uptime===null||uptime===undefined)return`<span class="uptime-badge uptime-unknown">—%</span>`;
   const u=parseFloat(uptime);
+  if(isNaN(u))return`<span class="uptime-badge uptime-unknown">—%</span>`;
   let cls=u>=100?'uptime-100':u>=95?'uptime-high':'uptime-low';
   const icon=u>=100?'✓':u>=95?'~':'!';
   return`<span class="uptime-badge ${cls}">${icon} ${u.toFixed(2)}%</span>`;
@@ -670,11 +920,7 @@ function showToast(msg){
   t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2000);
 }
-
-function copyText(text){
-  navigator.clipboard.writeText(text).then(()=>showToast('Copied!'));
-}
-
+function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast('✓ Copied!'))}
 function copyCode(btn){
   const code=btn.nextElementSibling.textContent;
   navigator.clipboard.writeText(code).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='copy',1500)});
@@ -685,45 +931,81 @@ function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  if(btn)btn.classList.add('active');
+  if(btn&&btn.classList.contains('nav-link'))btn.classList.add('active');
   if(id==='leaderboard'&&allLbData.length===0)loadLeaderboard();
   if(id==='ecosystem'&&ecoData.length===0)loadEcosystem();
+  window.scrollTo(0,0);
 }
 
 // ─── CHAIN STATUS ─────────────────────────────────────────────
 async function checkChain(){
   try{
-    const r=await fetch(API+'/api/chain_status',{signal:AbortSignal.timeout(6000)});
+    const r=await fetch(API+'/api/chain_status',{signal:AbortSignal.timeout(7000)});
     const d=await r.json();
     const banner=document.getElementById('chainBanner');
     const dot=document.getElementById('chainDot');
     const txt=document.getElementById('chainText');
-    if(d.status==='live'||d.halted===false){
-      banner.className='';dot.className='chain-dot live';
-      txt.textContent=`✓ Chain LIVE · Height: ${d.height||'—'} · ${d.message||'All systems operational'}`;
+
+    // Support multiple response formats:
+    // {status:'live'}, {halted:false}, {is_halted:false}, {live:true}
+    const isLive=
+      d.status==='live' ||
+      d.status==='active' ||
+      d.halted===false ||
+      d.is_halted===false ||
+      d.live===true;
+
+    if(isLive){
+      banner.className='';
+      dot.className='chain-dot live';
+      const height=d.height||d.latest_block_height||d.block_height||'—';
+      const scanTime=d.last_scan_time||d.scan_time||'';
+      txt.textContent=`✓ Chain LIVE · Block: ${height}${scanTime?' · '+scanTime:''}`;
     }else{
-      banner.className='halted';dot.className='chain-dot halted';
+      banner.className='halted';
+      dot.className='chain-dot halted';
       txt.textContent=`⚠ Chain HALTED · ${d.message||'Check Discord for updates'}`;
     }
-  }catch{
+  }catch(e){
+    // On error, don't show HALTED — just show checking
     const banner=document.getElementById('chainBanner');
     const dot=document.getElementById('chainDot');
-    banner.className='checking';dot.className='chain-dot checking';
-    document.getElementById('chainText').textContent='Chain status unavailable';
+    banner.className='checking';
+    dot.className='chain-dot checking';
+    document.getElementById('chainText').textContent='Chain status: connecting...';
   }
 }
 
 // ─── STATS ────────────────────────────────────────────────────
 async function loadStats(){
   try{
-    const r=await fetch(API+'/api/stats');
+    const r=await fetch(API+'/api/stats',{signal:AbortSignal.timeout(8000)});
     const d=await r.json();
-    document.getElementById('statMiners').textContent=fmt(d.total_miners||d.miners);
-    document.getElementById('statJobs').textContent=fmt(d.total_jobs||d.jobs);
-    document.getElementById('statSubmit').textContent=fmt(d.submit_job||d.total_submit);
-    document.getElementById('statResult').textContent=fmt(d.submit_job_result||d.total_result);
-    document.getElementById('statBlock').textContent=fmt(d.last_scanned_height||d.height);
-    if(d.last_scan_time)document.getElementById('statScanTime').textContent=d.last_scan_time;
+
+    // total_miners
+    const miners=d.total_miners||d.miners||d.miner_count;
+    if(miners!=null)document.getElementById('statMiners').textContent=fmt(miners);
+
+    // total_jobs — sum of submit_job + submit_job_result if not directly available
+    const totalJobs=d.total_jobs||d.jobs;
+    if(totalJobs!=null)document.getElementById('statJobs').textContent=fmt(totalJobs);
+
+    // submit_job — try multiple field names
+    const submitJob=d.submit_job||d.total_submit||d.submit_jobs||d.totalSubmitJob;
+    if(submitJob!=null)document.getElementById('statSubmit').textContent=fmt(submitJob);
+
+    // submit_job_result
+    const submitResult=d.submit_job_result||d.total_result||d.submit_results||d.totalSubmitResult;
+    if(submitResult!=null)document.getElementById('statResult').textContent=fmt(submitResult);
+
+    // last_scanned_height
+    const height=d.last_scanned_height||d.height||d.block_height||d.latest_height;
+    if(height!=null)document.getElementById('statBlock').textContent=fmt(height);
+
+    // last_scan_time
+    const scanTime=d.last_scan_time||d.scan_time||d.updated_at;
+    if(scanTime)document.getElementById('statScanTime').textContent=scanTime;
+
   }catch(e){console.warn('stats error',e)}
 }
 
@@ -732,15 +1014,32 @@ async function loadTopMiners(){
   const tbody=document.getElementById('topMinersBody');
   tbody.innerHTML='<tr><td colspan="6" class="loading">Loading...</td></tr>';
   try{
-    const r=await fetch(API+'/api/leaderboard?limit=10');
+    const r=await fetch(API+'/api/leaderboard?limit=10',{signal:AbortSignal.timeout(8000)});
     const d=await r.json();
     const miners=d.data||d;
-    if(!miners||!miners.length){tbody.innerHTML='<tr><td colspan="6" class="empty-state">No data</td></tr>';return}
+
+    if(!miners||!miners.length){
+      tbody.innerHTML='<tr><td colspan="6" class="empty-state">No data available</td></tr>';
+      return;
+    }
+
     topScore=miners[0].total||0;
-    // set top miner stat
     const top=miners[0];
     document.getElementById('statTopMiner').textContent=top.moniker||shortAddr(top.address);
     document.getElementById('statTopScore').textContent=fmt(top.total)+' pts';
+
+    // Also update Submit/Result stats from leaderboard totals if stats API didn't populate them
+    const submitEl=document.getElementById('statSubmit');
+    const resultEl=document.getElementById('statResult');
+    if(submitEl.textContent==='—'){
+      const totalSubmit=miners.reduce((s,m)=>s+(m.submit_job||0),0);
+      if(totalSubmit>0)submitEl.textContent=fmt(totalSubmit);
+    }
+    if(resultEl.textContent==='—'){
+      const totalResult=miners.reduce((s,m)=>s+(m.submit_job_result||0),0);
+      if(totalResult>0)resultEl.textContent=fmt(totalResult);
+    }
+
     tbody.innerHTML=miners.map(m=>`
       <tr>
         <td class="rank-cell ${rankClass(m.rank)}">#${m.rank}</td>
@@ -753,21 +1052,23 @@ async function loadTopMiners(){
         <td class="num-cell">${uptimeBadgeHtml(m.uptime)}</td>
         <td class="num-cell" style="color:var(--accent)">${fmt(m.total)}</td>
       </tr>`).join('');
-  }catch(e){tbody.innerHTML=`<tr><td colspan="6" class="error-msg">Failed to load</td></tr>`}
+  }catch(e){
+    tbody.innerHTML=`<tr><td colspan="6" class="error-msg">Failed to load. Retrying...</td></tr>`;
+  }
 }
 
 // ─── MINER SEARCH ─────────────────────────────────────────────
 async function searchMiner(){
   const addr=document.getElementById('minerSearchInput').value.trim();
   const res=document.getElementById('minerResult');
-  if(!addr){res.innerHTML='<div class="error-msg">Enter a miner address</div>';return}
+  if(!addr){res.innerHTML='<div class="error-msg">Enter a miner address (rai1...)</div>';return}
   res.innerHTML='<div class="loading">Searching...</div>';
   try{
-    const r=await fetch(API+'/api/miner/'+addr);
+    const r=await fetch(API+'/api/miner/'+encodeURIComponent(addr),{signal:AbortSignal.timeout(8000)});
     if(!r.ok)throw new Error('Not found');
     const m=await r.json();
-    const pct=topScore>0?Math.round((m.total/topScore)*100):0;
-    const shareText=encodeURIComponent(`🏆 My Republic AI Testnet Stats:\n📊 Rank: #${m.rank}\n⛏️ Total: ${fmt(m.total)} pts\n🔗 republicstats.xyz`);
+    const pct=topScore>0?Math.min(100,Math.round((m.total/topScore)*100)):0;
+    const shareText=encodeURIComponent(`🏆 My Republic AI Testnet Stats:\n📊 Rank: #${m.rank}\n⛏️ ${m.moniker?'Moniker: '+m.moniker+'\n':''} Total: ${fmt(m.total)} pts\n🔗 republicstats.xyz`);
     res.innerHTML=`
     <div class="miner-card">
       <div class="miner-card-header">
@@ -780,7 +1081,7 @@ async function searchMiner(){
           </div>
           <div class="miner-badges">
             ${uptimeBadgeHtml(m.uptime)}
-            ${m.moniker?`<span class="uptime-badge uptime-unknown">${m.moniker}</span>`:''}
+            ${m.moniker?`<span class="uptime-badge uptime-unknown" style="color:var(--accent2);border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.08)">${m.moniker}</span>`:''}
           </div>
         </div>
       </div>
@@ -795,9 +1096,10 @@ async function searchMiner(){
       </div>
       <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${shareText}','_blank')">🐦 Share on X</button>
     </div>`;
-  }catch{res.innerHTML='<div class="error-msg">Miner not found. Check address and try again.</div>'}
+  }catch{
+    res.innerHTML='<div class="error-msg">Miner not found. Check address and try again.</div>';
+  }
 }
-
 document.getElementById('minerSearchInput').addEventListener('keypress',e=>{if(e.key==='Enter')searchMiner()});
 
 // ─── LEADERBOARD ──────────────────────────────────────────────
@@ -805,12 +1107,12 @@ async function loadLeaderboard(){
   document.getElementById('podiumWrap').innerHTML='<div class="loading">Loading podium...</div>';
   document.getElementById('lbBody').innerHTML='<tr><td colspan="7" class="loading">Loading...</td></tr>';
   try{
-    const r=await fetch(API+'/api/leaderboard?limit=100');
+    const r=await fetch(API+'/api/leaderboard?limit=100',{signal:AbortSignal.timeout(10000)});
     const d=await r.json();
     allLbData=d.data||d;
     renderPodium(allLbData.slice(0,3));
     renderLbTable(allLbData);
-    document.getElementById('lbCount').textContent=`Full Leaderboard · ${allLbData.length} miners`;
+    document.getElementById('lbCount').textContent=`🏆 Full Leaderboard · ${allLbData.length} miners`;
   }catch{
     document.getElementById('lbBody').innerHTML='<tr><td colspan="7" class="error-msg">Failed to load leaderboard</td></tr>';
   }
@@ -818,7 +1120,7 @@ async function loadLeaderboard(){
 
 function renderPodium(top){
   const medals=['🥇','🥈','🥉'];
-  const order=[1,0,2]; // silver, gold, bronze visual order
+  const order=[1,0,2];
   const wrap=document.getElementById('podiumWrap');
   if(!top||!top.length){wrap.innerHTML='<div class="empty-state">No data</div>';return}
   const items=order.map(i=>{
@@ -864,15 +1166,15 @@ function filterLeaderboard(){
 async function loadEcosystem(){
   document.getElementById('ecoGrid').innerHTML='<div class="loading">Loading projects...</div>';
   try{
-    const r=await fetch(API+'/api/ecosystem');
+    const r=await fetch(API+'/api/ecosystem',{signal:AbortSignal.timeout(8000)});
     const d=await r.json();
     ecoData=d.data||d||[];
     renderEco(ecoData);
   }catch{
-    // fallback static data
+    // Fallback static data
     ecoData=[
-      {name:'Republic Stats',description:'GPU Miner Tracker & Ecosystem Dashboard',category:'Tool',icon:'📊',url:'https://republicstats.xyz'},
-      {name:'Republic AI',description:'Official Republic AI testnet portal and documentation',category:'Infrastructure',icon:'🏛️',url:'https://republic.ai'},
+      {name:'Republic Stats',description:'GPU Miner Tracker, Leaderboard & Ecosystem Dashboard',category:'Tool',icon:'📊',url:'https://republicstats.xyz'},
+      {name:'Republic AI',description:'Official Republic AI testnet portal, documentation, and resources',category:'Infrastructure',icon:'🏛️',url:'https://republic.ai'},
     ];
     renderEco(ecoData);
   }
@@ -886,7 +1188,7 @@ function renderEco(data){
     <div class="eco-card" onclick="${p.url?`window.open('${p.url}','_blank')`:''}">
       <div class="eco-card-header">
         <div class="eco-card-icon">${p.icon||'🔷'}</div>
-        <span class="cat-badge cat-${p.category||'Other'}">${p.category||'Other'}</span>
+        <span class="cat-badge cat-${(p.category||'Other').replace(/\s+/g,'')}">${p.category||'Other'}</span>
       </div>
       <div class="eco-card-name">${p.name}</div>
       <div class="eco-card-desc">${p.description||''}</div>
@@ -910,7 +1212,7 @@ async function submitProject(){
   const github=document.getElementById('f-github').value.trim();
   const icon=document.getElementById('f-icon').value.trim();
   const msg=document.getElementById('submitMsg');
-  if(!name||!desc||!cat){msg.innerHTML='<div class="error-msg">Please fill required fields (*)</div>';return}
+  if(!name||!desc||!cat){msg.innerHTML='<div class="error-msg">Please fill all required fields (*)</div>';return}
   msg.innerHTML='<div class="loading">Submitting...</div>';
   try{
     const r=await fetch(API+'/api/ecosystem/submit',{
@@ -921,7 +1223,9 @@ async function submitProject(){
       msg.innerHTML='<div style="color:var(--green);font-size:13px;padding:12px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:8px">✓ Project submitted! It will appear after review.</div>';
       ['f-name','f-desc','f-cat','f-url','f-github','f-icon'].forEach(id=>document.getElementById(id).value='');
     }else throw new Error();
-  }catch{msg.innerHTML='<div class="error-msg">Submission failed. Try again or DM on Telegram.</div>'}
+  }catch{
+    msg.innerHTML='<div class="error-msg">Submission failed. Try again or DM on Telegram.</div>';
+  }
 }
 
 // ─── GUIDES ───────────────────────────────────────────────────
@@ -933,11 +1237,22 @@ function showGuide(id,btn){
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
-checkChain();
-setInterval(checkChain,30000);
-loadStats();
-setInterval(loadStats,60000);
-loadTopMiners();
+async function init(){
+  // Load all data in parallel
+  await Promise.allSettled([
+    checkChain(),
+    loadStats(),
+    loadTopMiners(),
+  ]);
+  // Refresh chain status every 30 seconds
+  setInterval(checkChain, 30000);
+  // Refresh stats every 60 seconds
+  setInterval(loadStats, 60000);
+  setInterval(loadTopMiners, 60000);
+}
+
+// Start on DOM ready
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
