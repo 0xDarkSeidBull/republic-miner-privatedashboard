@@ -313,6 +313,35 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
 .mobile-nav-link.points{color:var(--gold);border-color:rgba(245,158,11,.2)}
 .mobile-nav-link.submit{color:var(--accent2);border-color:rgba(59,130,246,.2)}
 
+/* POINTS FORM */
+.points-wrap{padding:36px 24px 60px;max-width:680px;margin:0 auto}
+.points-hero{text-align:center;margin-bottom:36px}
+.points-hero h2{font-size:28px;font-weight:800;margin-bottom:8px}
+.points-hero h2 span{color:var(--accent)}
+.points-hero p{color:var(--muted);font-size:14px;max-width:480px;margin:0 auto}
+.points-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px}
+.points-card-title{font-size:13px;font-weight:700;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.points-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.points-row.single{grid-template-columns:1fr}
+@media(max-width:600px){.points-row{grid-template-columns:1fr}}
+.job-entry{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;position:relative;animation:fadeIn .2s ease}
+.job-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.job-entry-num{font-family:var(--font-mono);font-size:11px;color:var(--accent);font-weight:700;background:rgba(0,229,176,.08);padding:2px 8px;border-radius:4px;border:1px solid rgba(0,229,176,.2)}
+.job-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:all .2s;line-height:1}
+.job-remove:hover{color:var(--red);background:rgba(239,68,68,.1)}
+.job-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.job-grid{grid-template-columns:1fr}}
+.add-job-btn{width:100%;padding:12px;border-radius:10px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font-main);margin-top:4px}
+.add-job-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,176,.04)}
+.submit-big-btn{width:100%;padding:16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,var(--accent),#00b894);color:#000;transition:all .2s;font-family:var(--font-main);margin-top:8px}
+.submit-big-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,176,.25)}
+.submit-big-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.points-success{text-align:center;padding:40px 20px;animation:fadeIn .4s ease}
+.points-success-icon{font-size:56px;margin-bottom:16px}
+.points-success h3{font-size:22px;font-weight:800;margin-bottom:8px;color:var(--accent)}
+.points-success p{color:var(--muted);font-size:14px;margin-bottom:20px}
+.points-note{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:12px 16px;font-size:12px;color:#93c5fd;font-family:var(--font-mono);line-height:1.6;margin-bottom:20px}
+
 .loading{color:var(--muted);font-size:13px;font-family:var(--font-mono);padding:24px;text-align:center}
 .error-msg{color:var(--red);font-size:13px;font-family:var(--font-mono);padding:12px 16px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;margin-top:10px}
 .empty-state{padding:40px 24px;text-align:center;color:var(--muted);font-size:13px}
@@ -354,7 +383,7 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
     <button class="nav-link" onclick="showPage('leaderboard',this)"><span class="nav-icon">🏆</span>Leaderboard</button>
     <button class="nav-link" onclick="showPage('ecosystem',this)"><span class="nav-icon">🌐</span>Ecosystem</button>
     <button class="nav-link" onclick="showPage('guides',this)"><span class="nav-icon">📚</span>Guides</button>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSei0OhWQq0qfb8pjR9hUKeGmUlZKxII7c1Z3aNwYU8RhRIUTQ/viewform" target="_blank" class="nav-btn points">🎁 Points Form</a>
+    <button class="nav-link" onclick="showPage('points',this)"><span class="nav-icon">🎁</span>Points Form</button>
     <button class="nav-btn submit" onclick="showPage('submit',this)">+ Submit Project</button>
   </div>
   <button class="hamburger" id="hamburgerBtn" onclick="toggleMenu()" aria-label="Menu">
@@ -373,7 +402,7 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
     <button class="mobile-nav-link" onclick="showPage('leaderboard',this);toggleMenu()">🏆 Leaderboard</button>
     <button class="mobile-nav-link" onclick="showPage('ecosystem',this);toggleMenu()">🌐 Ecosystem</button>
     <button class="mobile-nav-link" onclick="showPage('guides',this);toggleMenu()">📚 Guides</button>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSei0OhWQq0qfb8pjR9hUKeGmUlZKxII7c1Z3aNwYU8RhRIUTQ/viewform" target="_blank" class="mobile-nav-link points">🎁 Points Form</a>
+    <button class="mobile-nav-link" onclick="showPage('points',this);toggleMenu()">🎁 Points Form</button>
     <button class="mobile-nav-link submit" onclick="showPage('submit',this);toggleMenu()">+ Submit Project</button>
   </div>
 </div>
@@ -429,8 +458,9 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
           <th style="text-align:right">Result</th>
           <th style="text-align:right">Uptime</th>
           <th style="text-align:right">Total</th>
+          <th style="text-align:center">Points</th>
         </tr></thead>
-        <tbody id="topMinersBody"><tr><td colspan="6" class="loading">Loading stats...</td></tr></tbody>
+        <tbody id="topMinersBody"><tr><td colspan="7" class="loading">Loading stats...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -532,6 +562,87 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
     </div>
     <button class="btn btn-accent" style="width:100%;padding:13px" onclick="submitProject()">Submit for Review</button>
     <div id="submitMsg" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ POINTS FORM PAGE ═══════════════════════ -->
+<div id="page-points" class="page">
+  <div class="points-wrap">
+    <div class="points-hero">
+      <h2>🎁 Points <span>Submission</span></h2>
+      <p>Submit your completed GPU mining jobs to claim Republic AI testnet points. Add multiple jobs at once!</p>
+    </div>
+
+    <div id="pointsFormWrap">
+      <div class="points-note">
+        ℹ️ Fill your details once, then add as many Job ID + TX Hash pairs as you completed. All submissions go directly to the Republic AI team.
+      </div>
+
+      <!-- IDENTITY CARD -->
+      <div class="points-card">
+        <div class="points-card-title">👤 Your Details</div>
+        <div class="points-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Web App Username *</label>
+            <input id="pf-username" class="form-input" placeholder="your username"/>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Discord Username *</label>
+            <input id="pf-discord" class="form-input" placeholder="username#0000"/>
+          </div>
+        </div>
+        <div class="points-row" style="margin-top:12px">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Validator Moniker *</label>
+            <input id="pf-moniker" class="form-input" placeholder="MyValidator"/>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Operator Wallet Address *</label>
+            <input id="pf-wallet" class="form-input" placeholder="rai1..."/>
+          </div>
+        </div>
+        <div class="points-row single" style="margin-top:12px">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Raivaloper Address *</label>
+            <input id="pf-raivaloper" class="form-input" placeholder="raivaloper1..."/>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOBS CARD -->
+      <div class="points-card">
+        <div class="points-card-title">⛏️ Completed Jobs <span id="jobCountBadge" style="color:var(--muted);font-weight:400;font-size:11px">(1 job)</span></div>
+        <div id="jobEntriesWrap"></div>
+        <button class="add-job-btn" onclick="addJobEntry()">+ Add Another Job</button>
+      </div>
+
+      <!-- HARDWARE PROOF -->
+      <div class="points-card">
+        <div class="points-card-title">🖥️ Hardware Proof</div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">nvidia-smi Screenshot *</label>
+          <label class="proof-upload" id="hwUploadLabel">
+            <input type="file" id="pf-hw" accept="image/*" onchange="handleHwUpload(this)"/>
+            <div class="proof-upload-icon">📸</div>
+            <div class="proof-upload-text">Click to upload · <span>Max 10MB</span> · JPG/PNG</div>
+          </label>
+          <div id="hwPreview" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <div id="pfMsg"></div>
+      <button class="submit-big-btn" id="pointsSubmitBtn" onclick="submitPointsForm()">🚀 Submit All Jobs</button>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div id="pointsSuccess" style="display:none">
+      <div class="points-success">
+        <div class="points-success-icon">✅</div>
+        <h3>Submission Complete!</h3>
+        <p id="pointsSuccessMsg">Your jobs have been submitted successfully.</p>
+        <button class="btn btn-accent" onclick="resetPointsForm()" style="margin-top:8px">Submit More Jobs</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -797,6 +908,7 @@ function showPage(id,btn){
   if(btn&&btn.classList.contains('nav-link'))btn.classList.add('active');
   if(id==='leaderboard'&&allLbData.length===0)loadLeaderboard();
   if(id==='ecosystem'&&ecoData.length===0)loadEcosystem();
+  if(id==='points')initPointsForm();
   window.scrollTo(0,0);
 }
 
@@ -825,9 +937,7 @@ async function checkChain(){
     if(isLive){
       banner.className='';
       dot.className='chain-dot live';
-      const latestBlock = d.latest_block ? Number(d.latest_block).toLocaleString() : '—';
-const scannedBlock = d.last_scanned ? Number(d.last_scanned).toLocaleString() : '—';
-txt.textContent=`✓ Chain LIVE · Latest: ${latestBlock} · Scanned: ${scannedBlock}`;
+      txt.textContent=`✓ Chain LIVE · Block: ${typeof height==='number'?height.toLocaleString():height}${scanTime?' · '+scanTime:''}`;
     }else{
       banner.className='halted';
       dot.className='chain-dot halted';
@@ -946,6 +1056,7 @@ async function searchMiner(){
         <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
       </div>
       <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${shareText}','_blank')">𝕏 Share on X</button>
+      <button class="share-btn" style="margin-top:8px;border-color:rgba(0,229,176,.3);color:var(--accent);background:rgba(0,229,176,.08)" onclick="downloadJobsCsv('${m.address}','${m.moniker||m.address}')">⬇️ Download All My Jobs (CSV)</button>
     </div>`;
   }catch{
     res.innerHTML='<div class="error-msg">Miner not found. Check address and try again.</div>';
@@ -1084,6 +1195,188 @@ function showGuide(id,btn){
   document.querySelectorAll('.guide-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('guide-'+id).classList.add('active');
   btn.classList.add('active');
+}
+
+// ─── DOWNLOAD JOBS CSV ───────────────────────────────────────
+async function downloadJobsCsv(address, moniker){
+  showToast('⏳ Fetching your jobs... please wait');
+  try{
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '⏳ Fetching jobs...';
+
+    const r = await fetch(`${API}/api/miner/${encodeURIComponent(address)}/jobs.csv`);
+    if(!r.ok) throw new Error('Failed');
+
+    const blob = await r.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `jobs_${address.slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    btn.disabled = false;
+    btn.textContent = '⬇️ Download All My Jobs (CSV)';
+    showToast('✅ CSV downloaded!');
+  }catch(e){
+    showToast('❌ Download failed. Try again.');
+    event.target.disabled = false;
+    event.target.textContent = '⬇️ Download All My Jobs (CSV)';
+  }
+}
+
+// ─── POINTS FORM ─────────────────────────────────────────────
+let jobEntries = [];
+let hwFile = null;
+
+function addJobEntry(){
+  const id = Date.now();
+  jobEntries.push(id);
+  updateJobEntries();
+}
+
+function removeJobEntry(id){
+  if(jobEntries.length <= 1){ showToast('Minimum 1 job required'); return; }
+  jobEntries = jobEntries.filter(j => j !== id);
+  updateJobEntries();
+}
+
+function updateJobEntries(){
+  const wrap = document.getElementById('jobEntriesWrap');
+  const badge = document.getElementById('jobCountBadge');
+  badge.textContent = `(${jobEntries.length} job${jobEntries.length>1?'s':''})`;
+  wrap.innerHTML = jobEntries.map((id, i) => `
+    <div class="job-entry" id="job-${id}">
+      <div class="job-entry-header">
+        <span class="job-entry-num">JOB #${i+1}</span>
+        ${jobEntries.length > 1 ? `<button class="job-remove" onclick="removeJobEntry(${id})" title="Remove">✕</button>` : ''}
+      </div>
+      <div class="job-grid">
+        <div>
+          <label class="form-label">Job ID *</label>
+          <input class="form-input" id="job-id-${id}" placeholder="job_12345..." style="font-family:var(--font-mono);font-size:12px"/>
+        </div>
+        <div>
+          <label class="form-label">TX Hash *</label>
+          <input class="form-input" id="job-tx-${id}" placeholder="0xABCD..." style="font-family:var(--font-mono);font-size:12px"/>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function handleHwUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 10*1024*1024){ showToast('File too large! Max 10MB'); return; }
+  hwFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('hwPreview').innerHTML = `
+      <div style="position:relative;display:inline-block">
+        <img src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border)"/>
+        <button onclick="removeHwFile()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:12px">✕</button>
+      </div>`;
+    document.getElementById('hwUploadLabel').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeHwFile(){
+  hwFile = null;
+  document.getElementById('pf-hw').value = '';
+  document.getElementById('hwPreview').innerHTML = '';
+  document.getElementById('hwUploadLabel').style.display = 'block';
+}
+
+async function submitPointsForm(){
+  const username  = document.getElementById('pf-username').value.trim();
+  const discord   = document.getElementById('pf-discord').value.trim();
+  const moniker   = document.getElementById('pf-moniker').value.trim();
+  const wallet    = document.getElementById('pf-wallet').value.trim();
+  const raivaloper= document.getElementById('pf-raivaloper').value.trim();
+  const pfMsg     = document.getElementById('pfMsg');
+
+  // Validate identity fields
+  if(!username||!discord||!moniker||!wallet||!raivaloper){
+    pfMsg.innerHTML='<div class="error-msg">⚠ Please fill all required fields in Your Details.</div>';
+    return;
+  }
+
+  // Collect job entries
+  const jobs = [];
+  for(const id of jobEntries){
+    const jobId = document.getElementById(`job-id-${id}`)?.value.trim();
+    const txHash = document.getElementById(`job-tx-${id}`)?.value.trim();
+    if(!jobId || !txHash){
+      pfMsg.innerHTML='<div class="error-msg">⚠ Please fill Job ID and TX Hash for all jobs.</div>';
+      return;
+    }
+    jobs.push({ jobId, txHash });
+  }
+
+  if(!hwFile){
+    pfMsg.innerHTML='<div class="error-msg">⚠ Please upload nvidia-smi hardware proof screenshot.</div>';
+    return;
+  }
+
+  const btn = document.getElementById('pointsSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Submitting...';
+  pfMsg.innerHTML = '';
+
+  try {
+    // Build FormData for API
+    const formData = new FormData();
+    formData.append('username',   username);
+    formData.append('discord',    discord);
+    formData.append('moniker',    moniker);
+    formData.append('wallet',     wallet);
+    formData.append('raivaloper', raivaloper);
+    formData.append('jobs',       JSON.stringify(jobs));
+    formData.append('hw_proof',   hwFile, hwFile.name);
+
+    const r = await fetch(API + '/api/points/submit', {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(30000)
+    });
+
+    if(r.ok){
+      document.getElementById('pointsFormWrap').style.display = 'none';
+      document.getElementById('pointsSuccess').style.display = 'block';
+      document.getElementById('pointsSuccessMsg').textContent =
+        `Successfully submitted ${jobs.length} job${jobs.length>1?'s':''} for ${username}. The Republic AI team will review and award points!`;
+    } else {
+      const err = await r.json().catch(()=>({}));
+      throw new Error(err.detail || 'Submission failed');
+    }
+  } catch(e){
+    pfMsg.innerHTML = `<div class="error-msg">❌ ${e.message || 'Submission failed. Try again.'}</div>`;
+    btn.disabled = false;
+    btn.textContent = '🚀 Submit All Jobs';
+  }
+}
+
+function resetPointsForm(){
+  document.getElementById('pointsFormWrap').style.display = 'block';
+  document.getElementById('pointsSuccess').style.display = 'none';
+  document.getElementById('pf-username').value = '';
+  document.getElementById('pf-discord').value = '';
+  document.getElementById('pf-moniker').value = '';
+  document.getElementById('pf-wallet').value = '';
+  document.getElementById('pf-raivaloper').value = '';
+  document.getElementById('pfMsg').innerHTML = '';
+  removeHwFile();
+  jobEntries = [];
+  addJobEntry();
+  document.getElementById('pointsSubmitBtn').disabled = false;
+  document.getElementById('pointsSubmitBtn').textContent = '🚀 Submit All Jobs';
+}
+
+function initPointsForm(){
+  jobEntries = [];
+  addJobEntry();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
