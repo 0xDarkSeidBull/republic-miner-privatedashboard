@@ -1090,32 +1090,11 @@ function renderDetailPanel(panel,miner,txns,balance,addr,page){
     <div class="detail-chart-wrap"><canvas id="detailChartCanvas"></canvas></div>
 
     <div class="detail-jobs-title">Transaction History (on-chain)</div>
-    ${txns.length?`
-    <div class="detail-jobs-table-wrap">
-      <table class="detail-jobs-table">
-        <thead><tr><th>TX Hash</th><th>Type</th><th>Height</th><th>Gas</th><th>Status</th><th>Time</th></tr></thead>
-        <tbody>
-          ${txns.map(tx=>{
-            const hash=tx.txhash||'';
-            const status=tx.code===0?'<span style="color:var(--green);font-weight:700">✓ OK</span>':'<span style="color:var(--red);font-weight:700">✗ Fail</span>';
-            const ts=tx.timestamp?new Date(tx.timestamp).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}):'—';
-            const typeColor=tx.msg_type==='JobValidation'?'var(--accent)':tx.msg_type==='Delegate'||tx.msg_type==='Undelegate'?'var(--accent3)':tx.msg_type==='Unjail'?'var(--red)':'var(--accent2)';
-            return '<tr>'
-              +'<td><a class="tx-link" href="https://explorer.republic.ai/tx/'+hash+'" target="_blank">'+hash.slice(0,10)+'...</a> <button class="copy-btn" onclick="copyText(''+hash+'')">⎘</button></td>'
-              +'<td style="color:'+typeColor+';font-weight:600">'+(tx.msg_type||'—')+'</td>'
-              +'<td style="color:var(--muted)">'+(tx.height||'—')+'</td>'
-              +'<td style="color:var(--muted)">'+(tx.gas_used?Number(tx.gas_used).toLocaleString():'—')+'</td>'
-              +'<td>'+status+'</td>'
-              +'<td style="color:var(--muted)">'+ts+'</td>'
-              +'</tr>';
-          }).join('')}
-        </tbody>
-      </table>
-    </div>`:`
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:12px;color:var(--muted);font-family:var(--font-mono);text-align:center">
-      No transactions found
-    </div>`}
+    <div id="txnsTableWrap"></div>
   </div>`;
+
+  // Render txns table separately (avoids quote conflicts in template literal)
+  renderTxnsTable(txns);
 
   // Render chart
   setTimeout(()=>{
@@ -1145,6 +1124,38 @@ function renderDetailPanel(panel,miner,txns,balance,addr,page){
       }
     });
   },50);
+}
+
+function renderTxnsTable(txns){
+  const wrap=document.getElementById('txnsTableWrap');
+  if(!wrap)return;
+  if(!txns||!txns.length){
+    wrap.innerHTML='<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:12px;color:#64748b;font-family:monospace;text-align:center">No transactions found</div>';
+    return;
+  }
+  const typeColor=t=>t==='JobValidation'?'#00e5b0':t==='Delegate'||t==='Undelegate'?'#f59e0b':t==='Unjail'?'#ef4444':'#3b82f6';
+  let rows='';
+  txns.forEach(tx=>{
+    const h=tx.txhash||'';
+    const status=tx.code===0?'<span style="color:#10b981;font-weight:700">OK</span>':'<span style="color:#ef4444;font-weight:700">Fail</span>';
+    const d=tx.timestamp?new Date(tx.timestamp):null;
+    const ts=d?(d.getDate()+'/'+(d.getMonth()+1)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')):'—';
+    const tc=typeColor(tx.msg_type||'');
+    const gas=tx.gas_used?Number(tx.gas_used).toLocaleString():'—';
+    rows+='<tr>'
+      +'<td><a style="color:#3b82f6;text-decoration:none" href="https://explorer.republic.ai/tx/'+h+'" target="_blank">'+h.slice(0,10)+'...</a></td>'
+      +'<td style="color:'+tc+';font-weight:600">'+(tx.msg_type||'—')+'</td>'
+      +'<td style="color:#64748b">'+(tx.height||'—')+'</td>'
+      +'<td style="color:#64748b">'+gas+'</td>'
+      +'<td>'+status+'</td>'
+      +'<td style="color:#64748b">'+ts+'</td>'
+      +'</tr>';
+  });
+  wrap.innerHTML='<div class="detail-jobs-table-wrap">'
+    +'<table class="detail-jobs-table">'
+    +'<thead><tr><th>TX Hash</th><th>Type</th><th>Height</th><th>Gas</th><th>Status</th><th>Time</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'</table></div>';
 }
 
 function closeMinerDetail(page){
