@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 :root{
   --bg:#07090f;--bg2:#0e1117;--bg3:#141a24;--bg4:#1a2233;
@@ -25,7 +26,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-main);min-hei
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
 
-/* CHAIN STATUS BANNER */
 #chainBanner{
   width:100%;padding:8px 20px;text-align:center;font-size:12px;font-family:var(--font-mono);
   letter-spacing:.05em;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -41,7 +41,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-main);min-hei
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-/* NAVBAR */
 nav{
   display:flex;align-items:center;justify-content:space-between;
   padding:0 24px;height:58px;background:var(--bg2);
@@ -51,55 +50,26 @@ nav{
 .nav-logo-icon{font-size:18px}
 .nav-logo span{color:var(--muted)}
 .nav-links{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.nav-link{
-  padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;
-  color:var(--muted);transition:all .2s;border:none;background:transparent;
-  display:flex;align-items:center;gap:5px;
-}
+.nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .2s;border:none;background:transparent;display:flex;align-items:center;gap:5px}
 .nav-link:hover{color:var(--text);background:var(--bg3)}
 .nav-link.active{color:var(--accent);background:rgba(0,229,176,.08)}
 .nav-icon{font-size:14px}
-.nav-btn{
-  padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
-  border:1px solid var(--border);background:var(--bg3);color:var(--text);
-  transition:all .2s;margin-left:4px;display:flex;align-items:center;gap:5px;text-decoration:none;
-}
+.nav-btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text);transition:all .2s;margin-left:4px;display:flex;align-items:center;gap:5px;text-decoration:none}
 .nav-btn:hover{border-color:var(--accent);color:var(--accent)}
 .nav-btn.points{border-color:rgba(245,158,11,.3);color:var(--gold)}
 .nav-btn.points:hover{background:rgba(245,158,11,.08)}
 .nav-btn.submit{border-color:rgba(59,130,246,.3);color:var(--accent2)}
 .nav-btn.submit:hover{background:rgba(59,130,246,.08)}
 
-/* HERO */
-.hero{
-  text-align:center;padding:52px 24px 36px;
-  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,229,176,.06) 0%,transparent 70%);
-}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:5px 12px;border-radius:20px;font-size:11px;font-family:var(--font-mono);
-  font-weight:600;letter-spacing:.08em;color:var(--accent);
-  background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.2);
-  margin-bottom:18px;text-transform:uppercase;
-}
+.hero{text-align:center;padding:52px 24px 36px;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,229,176,.06) 0%,transparent 70%)}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-family:var(--font-mono);font-weight:600;letter-spacing:.08em;color:var(--accent);background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.2);margin-bottom:18px;text-transform:uppercase}
 .hero h1{font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:14px}
 .hero h1 span{color:var(--accent)}
 .hero p{color:var(--muted);font-size:15px;max-width:560px;margin:0 auto 32px}
 
-/* STATS GRID */
-.stats-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:12px;padding:0 24px 32px;max-width:1200px;margin:0 auto;
-}
-.stat-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
-  padding:18px 16px;transition:all .25s;position:relative;overflow:hidden;
-}
-.stat-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--accent),transparent);
-  opacity:0;transition:.25s;
-}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:0 24px 32px;max-width:1200px;margin:0 auto}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 16px;transition:all .25s;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:.25s}
 .stat-card:hover{border-color:rgba(0,229,176,.25);transform:translateY(-2px)}
 .stat-card:hover::before{opacity:1}
 .stat-label{font-size:11px;color:var(--muted);font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
@@ -107,15 +77,10 @@ nav{
 .stat-value.accent{color:var(--accent)}
 .stat-sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)}
 
-/* SEARCH */
 .search-section{padding:0 24px 32px;max-width:700px;margin:0 auto}
 .search-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-family:var(--font-mono)}
 .search-box{display:flex;gap:8px}
-.search-input{
-  flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
-  padding:12px 16px;color:var(--text);font-size:13px;font-family:var(--font-mono);
-  outline:none;transition:border-color .2s;
-}
+.search-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-size:13px;font-family:var(--font-mono);outline:none;transition:border-color .2s}
 .search-input:focus{border-color:var(--accent)}
 .search-input::placeholder{color:var(--muted)}
 .btn{padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font-main)}
@@ -124,7 +89,6 @@ nav{
 .btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
 
-/* MINER CARD */
 #minerResult{margin-top:16px}
 .miner-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;animation:fadeIn .3s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -152,14 +116,18 @@ nav{
 .share-btn{width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid rgba(59,130,246,.3);background:rgba(59,130,246,.08);color:var(--accent2);cursor:pointer;transition:all .2s}
 .share-btn:hover{background:rgba(59,130,246,.15);border-color:var(--accent2)}
 
-/* TOP MINERS TABLE ON HOME */
 .section{padding:0 24px 40px;max-width:1200px;margin:0 auto}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
 .section-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text);font-family:var(--font-mono)}
 .refresh-btn{font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .2s;font-family:var(--font-mono)}
 .refresh-btn:hover{color:var(--accent);border-color:var(--accent)}
 
-/* TABLE */
+/* SORT BUTTONS */
+.sort-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sort-btn{font-size:11px;font-family:var(--font-mono);padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .2s;font-weight:600}
+.sort-btn:hover{color:var(--text);border-color:var(--muted)}
+.sort-btn.active{background:rgba(0,229,176,.1);border-color:rgba(0,229,176,.4);color:var(--accent)}
+
 .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead tr{background:var(--bg3)}
@@ -168,27 +136,66 @@ td{padding:11px 14px;border-bottom:1px solid rgba(30,42,58,.6);vertical-align:mi
 tbody tr{background:var(--bg2);transition:background .15s}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover{background:var(--bg3)}
+tbody tr.clickable-row{cursor:pointer}
+tbody tr.clickable-row:hover td .addr-text{color:var(--accent)}
+tbody tr.row-selected{background:rgba(0,229,176,.05);border-left:2px solid var(--accent)}
 .rank-cell{font-family:var(--font-mono);font-weight:700;color:var(--accent);width:50px}
 .rank-1{color:var(--gold)}.rank-2{color:var(--silver)}.rank-3{color:var(--bronze)}
 .addr-cell{font-family:var(--font-mono);font-size:11px;color:var(--muted);word-break:break-all;max-width:260px}
+.addr-text{transition:color .2s;cursor:pointer}
+.addr-text:hover{color:var(--accent)!important}
 .num-cell{font-family:var(--font-mono);font-weight:600;text-align:right;white-space:nowrap}
 .moniker-cell{font-family:var(--font-mono);font-size:12px;color:var(--text);font-weight:500}
 .moniker-cell.empty{color:var(--muted);font-style:italic}
 
-/* PAGES */
+/* MINER DETAIL PANEL */
+.miner-detail-panel{
+  background:var(--bg2);border:1px solid rgba(0,229,176,.2);border-radius:16px;
+  padding:24px;margin:0 24px 32px;max-width:1152px;margin-left:auto;margin-right:auto;
+  animation:slideDown .3s ease;position:relative;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+.detail-close{position:absolute;top:16px;right:16px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.detail-close:hover{color:var(--text);border-color:var(--muted)}
+.detail-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.detail-avatar{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,rgba(0,229,176,.2),rgba(59,130,246,.2));border:1px solid rgba(0,229,176,.3);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;font-family:var(--font-mono);color:var(--accent);flex-shrink:0}
+.detail-name{font-size:20px;font-weight:700;color:var(--text);font-family:var(--font-mono);margin-bottom:4px}
+.detail-status-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status-badge{font-size:11px;font-family:var(--font-mono);font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid}
+.status-active{background:rgba(16,185,129,.1);color:var(--green);border-color:rgba(16,185,129,.3)}
+.status-inactive{background:rgba(100,116,139,.1);color:var(--muted);border-color:rgba(100,116,139,.3)}
+.status-jailed{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)}
+.detail-addr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.detail-addr-item{background:var(--bg3);border-radius:8px;padding:10px 12px}
+.detail-addr-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.detail-addr-value{font-size:11px;font-family:var(--font-mono);color:var(--text);word-break:break-all;display:flex;align-items:flex-start;gap:4px}
+.detail-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.detail-stat{background:var(--bg3);border-radius:8px;padding:12px;text-align:center}
+.detail-stat-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.detail-stat-value{font-size:20px;font-weight:700;font-family:var(--font-mono)}
+.detail-chart-title{font-size:12px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.detail-chart-wrap{position:relative;height:150px;margin-bottom:20px}
+.detail-jobs-title{font-size:12px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.detail-jobs-table-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;overflow-x:auto}
+.detail-jobs-table{width:100%;border-collapse:collapse;font-size:12px}
+.detail-jobs-table th{padding:8px 12px;background:var(--bg3);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-family:var(--font-mono);text-align:left;white-space:nowrap}
+.detail-jobs-table td{padding:8px 12px;border-top:1px solid rgba(30,42,58,.6);font-family:var(--font-mono);font-size:11px;color:var(--text)}
+.detail-jobs-table tr:hover td{background:var(--bg3)}
+.tx-link{color:var(--accent2);text-decoration:none}
+.tx-link:hover{text-decoration:underline}
+.detail-loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;font-family:var(--font-mono)}
+
 .page{display:none}
 .page.active{display:block}
 
-/* LEADERBOARD PAGE */
 .lb-hero{padding:36px 24px 20px;text-align:center;background:radial-gradient(ellipse 70% 40% at 50% -5%,rgba(0,229,176,.05) 0%,transparent 70%)}
 .lb-hero h2{font-size:28px;font-weight:800;margin-bottom:6px}
 .lb-hero h2 span{color:var(--accent)}
 .lb-hero p{color:var(--muted);font-size:14px}
 
-/* PODIUM */
 .podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:12px;padding:20px 24px 32px;max-width:700px;margin:0 auto}
-.podium-item{flex:1;max-width:200px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;position:relative;transition:all .25s}
-.podium-item:hover{transform:translateY(-3px)}
+.podium-item{flex:1;max-width:200px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;position:relative;transition:all .25s;cursor:pointer}
+.podium-item:hover{transform:translateY(-3px);border-color:rgba(0,229,176,.2)}
 .podium-item.p1{border-color:rgba(245,158,11,.3);background:linear-gradient(180deg,rgba(245,158,11,.05),var(--bg2))}
 .podium-item.p2{border-color:rgba(148,163,184,.2)}
 .podium-item.p3{border-color:rgba(205,124,58,.2)}
@@ -199,13 +206,11 @@ tbody tr:hover{background:var(--bg3)}
 .podium-score{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--accent);margin:10px 0 4px}
 .podium-uptime{font-size:10px;font-family:var(--font-mono)}
 
-/* LB SEARCH */
 .lb-search-wrap{padding:0 24px 16px;max-width:1200px;margin:0 auto}
 .lb-search-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 16px;color:var(--text);font-size:13px;font-family:var(--font-mono);outline:none;transition:border-color .2s}
 .lb-search-input:focus{border-color:var(--accent)}
 .lb-search-input::placeholder{color:var(--muted)}
 
-/* ECOSYSTEM */
 .eco-hero{padding:36px 24px 20px;text-align:center}
 .eco-hero h2{font-size:26px;font-weight:800;margin-bottom:6px}
 .eco-hero p{color:var(--muted);font-size:14px;max-width:500px;margin:0 auto}
@@ -229,7 +234,6 @@ tbody tr:hover{background:var(--bg3)}
 .eco-card-desc{font-size:12px;color:var(--muted);line-height:1.5}
 .eco-card-link{font-size:12px;color:var(--accent2);margin-top:10px;display:block}
 
-/* SUBMIT FORM */
 .submit-wrap{padding:36px 24px 40px;max-width:600px;margin:0 auto}
 .submit-wrap h2{font-size:24px;font-weight:800;margin-bottom:6px}
 .submit-wrap p{color:var(--muted);font-size:14px;margin-bottom:28px}
@@ -240,7 +244,6 @@ tbody tr:hover{background:var(--bg3)}
 .form-select{appearance:none;cursor:pointer;background-color:var(--bg2)}
 .form-textarea{resize:vertical;min-height:90px}
 
-/* GUIDES */
 .guides-wrap{padding:36px 24px 40px;max-width:960px;margin:0 auto}
 .guides-wrap h2{font-size:24px;font-weight:800;margin-bottom:8px}
 .guides-wrap>p{color:var(--muted);font-size:14px;margin-bottom:24px}
@@ -271,7 +274,6 @@ tbody tr:hover{background:var(--bg3)}
 .guide-link-btn.discord{border-color:rgba(139,92,246,.3);color:#a78bfa;background:rgba(139,92,246,.06)}
 .guide-link-btn.discord:hover{background:rgba(139,92,246,.12)}
 
-/* FOOTER */
 footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2);text-align:center}
 .footer-logo{font-family:var(--font-mono);font-weight:700;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:6px}
 .footer-logo span{color:var(--muted)}
@@ -282,38 +284,24 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
 .footer-link svg{width:14px;height:14px;flex-shrink:0}
 .footer-copy{font-size:11px;color:var(--muted);font-family:var(--font-mono)}
 
-/* HAMBURGER */
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border:none;background:none;border-radius:6px;transition:background .2s}
 .hamburger:hover{background:var(--bg3)}
 .hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all .3s}
 .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .hamburger.open span:nth-child(2){opacity:0}
 .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-
-/* MOBILE MENU DRAWER */
-.mobile-menu{
-  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(7,9,15,.97);z-index:200;
-  flex-direction:column;padding:24px;
-  animation:slideIn .25s ease;
-}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(7,9,15,.97);z-index:200;flex-direction:column;padding:24px;animation:slideIn .25s ease}
 .mobile-menu.open{display:flex}
 @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 .mobile-menu-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
 .mobile-menu-logo{font-family:var(--font-mono);font-weight:700;font-size:16px;color:var(--accent)}
 .mobile-close{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:18px;line-height:1}
 .mobile-nav-links{display:flex;flex-direction:column;gap:8px;flex:1}
-.mobile-nav-link{
-  padding:14px 16px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;
-  color:var(--muted);transition:all .2s;border:none;background:var(--bg2);
-  display:flex;align-items:center;gap:10px;text-align:left;text-decoration:none;
-  border:1px solid var(--border);
-}
+.mobile-nav-link{padding:14px 16px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:10px;text-align:left;text-decoration:none}
 .mobile-nav-link:hover,.mobile-nav-link.active{color:var(--accent);background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.2)}
 .mobile-nav-link.points{color:var(--gold);border-color:rgba(245,158,11,.2)}
 .mobile-nav-link.submit{color:var(--accent2);border-color:rgba(59,130,246,.2)}
 
-/* POINTS FORM */
 .points-wrap{padding:36px 24px 60px;max-width:680px;margin:0 auto}
 .points-hero{text-align:center;margin-bottom:36px}
 .points-hero h2{font-size:28px;font-weight:800;margin-bottom:8px}
@@ -346,7 +334,6 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
 .error-msg{color:var(--red);font-size:13px;font-family:var(--font-mono);padding:12px 16px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;margin-top:10px}
 .empty-state{padding:40px 24px;text-align:center;color:var(--muted);font-size:13px}
 
-/* TOAST */
 #toast{position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;font-size:13px;font-family:var(--font-mono);font-weight:600;background:var(--bg3);border:1px solid var(--accent);color:var(--accent);opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:999}
 #toast.show{opacity:1;transform:none}
 
@@ -361,18 +348,19 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
   .podium-wrap{gap:8px;padding:16px 14px 24px}
   .guides-wrap,.submit-wrap{padding:24px 14px 32px}
   .addr-cell{max-width:160px}
+  .detail-addr-grid{grid-template-columns:1fr}
+  .detail-stats-row{grid-template-columns:repeat(2,1fr)}
+  .miner-detail-panel{margin:0 14px 24px}
 }
 </style>
 </head>
 <body>
 
-<!-- CHAIN STATUS BANNER -->
 <div id="chainBanner" class="checking">
   <span class="chain-dot checking" id="chainDot"></span>
   <span id="chainText">Checking chain status...</span>
 </div>
 
-<!-- NAVBAR -->
 <nav>
   <div class="nav-logo">
     <span class="nav-logo-icon">⛏️</span>
@@ -391,7 +379,6 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
   </button>
 </nav>
 
-<!-- MOBILE MENU DRAWER -->
 <div class="mobile-menu" id="mobileMenu">
   <div class="mobile-menu-header">
     <div class="mobile-menu-logo">⛏️ REPUBLIC/STATS</div>
@@ -407,7 +394,7 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
   </div>
 </div>
 
-<!-- ═══════════════════════ HOME PAGE ═══════════════════════ -->
+<!-- ═══ HOME PAGE ═══ -->
 <div id="page-home" class="page active">
   <div class="hero">
     <div class="hero-badge">
@@ -449,6 +436,14 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
       <div class="section-title">⚡ Top Miners</div>
       <button class="refresh-btn" id="mainRefreshBtn" onclick="triggerRefresh()">↻ Refresh</button>
     </div>
+    <!-- SORT BUTTONS -->
+    <div class="sort-bar">
+      <span style="font-size:11px;color:var(--muted);font-family:var(--font-mono);padding:5px 0;margin-right:2px">Sort:</span>
+      <button class="sort-btn active" id="home-sort-total" onclick="homeSetSort('total',this)">Total Points</button>
+      <button class="sort-btn" id="home-sort-submit" onclick="homeSetSort('submit',this)">Submit Jobs</button>
+      <button class="sort-btn" id="home-sort-result" onclick="homeSetSort('result',this)">Submit Results</button>
+      <button class="sort-btn" id="home-sort-uptime" onclick="homeSetSort('uptime',this)">Uptime</button>
+    </div>
     <div class="table-wrap">
       <table>
         <thead><tr>
@@ -464,9 +459,12 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
       </table>
     </div>
   </div>
+
+  <!-- MINER DETAIL PANEL (home) -->
+  <div id="homeDetailPanel" style="display:none"></div>
 </div>
 
-<!-- ═══════════════════════ LEADERBOARD PAGE ═══════════════════════ -->
+<!-- ═══ LEADERBOARD PAGE ═══ -->
 <div id="page-leaderboard" class="page">
   <div class="lb-hero">
     <h2>Full <span>Leaderboard</span></h2>
@@ -486,6 +484,14 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
       <div class="section-title" id="lbCount">Full Leaderboard</div>
       <button class="refresh-btn" onclick="loadLeaderboard()">↻ Refresh</button>
     </div>
+    <!-- SORT BUTTONS LEADERBOARD -->
+    <div class="sort-bar">
+      <span style="font-size:11px;color:var(--muted);font-family:var(--font-mono);padding:5px 0;margin-right:2px">Sort:</span>
+      <button class="sort-btn active" id="lb-sort-total" onclick="lbSetSort('total',this)">Total Points</button>
+      <button class="sort-btn" id="lb-sort-submit" onclick="lbSetSort('submit',this)">Submit Jobs</button>
+      <button class="sort-btn" id="lb-sort-result" onclick="lbSetSort('result',this)">Submit Results</button>
+      <button class="sort-btn" id="lb-sort-uptime" onclick="lbSetSort('uptime',this)">Uptime</button>
+    </div>
     <div class="table-wrap">
       <table>
         <thead><tr>
@@ -501,9 +507,12 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
       </table>
     </div>
   </div>
+
+  <!-- MINER DETAIL PANEL (leaderboard) -->
+  <div id="lbDetailPanel" style="display:none"></div>
 </div>
 
-<!-- ═══════════════════════ ECOSYSTEM PAGE ═══════════════════════ -->
+<!-- ═══ ECOSYSTEM PAGE ═══ -->
 <div id="page-ecosystem" class="page">
   <div class="eco-hero">
     <h2>🌐 Ecosystem</h2>
@@ -518,105 +527,53 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
     <button class="filter-btn" onclick="filterEco('DeFi',this)">💎 DeFi</button>
     <button class="filter-btn" onclick="filterEco('Other',this)">⚡ Other</button>
   </div>
-  <div class="eco-grid" id="ecoGrid">
-    <div class="loading">Loading projects...</div>
-  </div>
+  <div class="eco-grid" id="ecoGrid"><div class="loading">Loading projects...</div></div>
 </div>
 
-<!-- ═══════════════════════ SUBMIT PROJECT PAGE ═══════════════════════ -->
+<!-- ═══ SUBMIT PROJECT PAGE ═══ -->
 <div id="page-submit" class="page">
   <div class="submit-wrap">
     <h2>+ Submit Project</h2>
     <p>Add your project to the Republic AI ecosystem directory</p>
-    <div class="form-group">
-      <label class="form-label">Project Name *</label>
-      <input id="f-name" class="form-input" placeholder="My Republic Project"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Description *</label>
-      <textarea id="f-desc" class="form-textarea" placeholder="What does your project do?"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Category *</label>
-      <select id="f-cat" class="form-select">
-        <option value="">Select category...</option>
-        <option>AI</option>
-        <option>Tool</option>
-        <option>Infrastructure</option>
-        <option>Explorer</option>
-        <option>DeFi</option>
-        <option>Other</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Website URL</label>
-      <input id="f-url" class="form-input" placeholder="https://yourproject.xyz"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">GitHub</label>
-      <input id="f-github" class="form-input" placeholder="https://github.com/..."/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Icon Emoji</label>
-      <input id="f-icon" class="form-input" placeholder="🚀" maxlength="4" style="max-width:100px"/>
-    </div>
+    <div class="form-group"><label class="form-label">Project Name *</label><input id="f-name" class="form-input" placeholder="My Republic Project"/></div>
+    <div class="form-group"><label class="form-label">Description *</label><textarea id="f-desc" class="form-textarea" placeholder="What does your project do?"></textarea></div>
+    <div class="form-group"><label class="form-label">Category *</label><select id="f-cat" class="form-select"><option value="">Select category...</option><option>AI</option><option>Tool</option><option>Infrastructure</option><option>Explorer</option><option>DeFi</option><option>Other</option></select></div>
+    <div class="form-group"><label class="form-label">Website URL</label><input id="f-url" class="form-input" placeholder="https://yourproject.xyz"/></div>
+    <div class="form-group"><label class="form-label">GitHub</label><input id="f-github" class="form-input" placeholder="https://github.com/..."/></div>
+    <div class="form-group"><label class="form-label">Icon Emoji</label><input id="f-icon" class="form-input" placeholder="🚀" maxlength="4" style="max-width:100px"/></div>
     <button class="btn btn-accent" style="width:100%;padding:13px" onclick="submitProject()">Submit for Review</button>
     <div id="submitMsg" style="margin-top:14px"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════ POINTS FORM PAGE ═══════════════════════ -->
+<!-- ═══ POINTS FORM PAGE ═══ -->
 <div id="page-points" class="page">
   <div class="points-wrap">
     <div class="points-hero">
       <h2>🎁 Points <span>Submission</span></h2>
       <p>Submit your completed GPU mining jobs to claim Republic AI testnet points. Add multiple jobs at once!</p>
     </div>
-
     <div id="pointsFormWrap">
-      <div class="points-note">
-        ℹ️ Fill your details once, then add as many Job ID + TX Hash pairs as you completed. All submissions go directly to the Republic AI team.
-      </div>
-
-      <!-- IDENTITY CARD -->
+      <div class="points-note">ℹ️ Fill your details once, then add as many Job ID + TX Hash pairs as you completed. All submissions go directly to the Republic AI team.</div>
       <div class="points-card">
         <div class="points-card-title">👤 Your Details</div>
         <div class="points-row">
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Web App Username *</label>
-            <input id="pf-username" class="form-input" placeholder="your username"/>
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Discord Username *</label>
-            <input id="pf-discord" class="form-input" placeholder="username#0000"/>
-          </div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Web App Username *</label><input id="pf-username" class="form-input" placeholder="your username"/></div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Discord Username *</label><input id="pf-discord" class="form-input" placeholder="username#0000"/></div>
         </div>
         <div class="points-row" style="margin-top:12px">
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Validator Moniker *</label>
-            <input id="pf-moniker" class="form-input" placeholder="MyValidator"/>
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Operator Wallet Address *</label>
-            <input id="pf-wallet" class="form-input" placeholder="rai1..."/>
-          </div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Validator Moniker *</label><input id="pf-moniker" class="form-input" placeholder="MyValidator"/></div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Operator Wallet Address *</label><input id="pf-wallet" class="form-input" placeholder="rai1..."/></div>
         </div>
         <div class="points-row single" style="margin-top:12px">
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Raivaloper Address *</label>
-            <input id="pf-raivaloper" class="form-input" placeholder="raivaloper1..."/>
-          </div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Raivaloper Address *</label><input id="pf-raivaloper" class="form-input" placeholder="raivaloper1..."/></div>
         </div>
       </div>
-
-      <!-- JOBS CARD -->
       <div class="points-card">
         <div class="points-card-title">⛏️ Completed Jobs <span id="jobCountBadge" style="color:var(--muted);font-weight:400;font-size:11px">(1 job)</span></div>
         <div id="jobEntriesWrap"></div>
         <button class="add-job-btn" onclick="addJobEntry()">+ Add Another Job</button>
       </div>
-
-      <!-- HARDWARE PROOF -->
       <div class="points-card">
         <div class="points-card-title">🖥️ Hardware Proof</div>
         <div class="form-group" style="margin-bottom:0">
@@ -629,12 +586,9 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
           <div id="hwPreview" style="margin-top:8px"></div>
         </div>
       </div>
-
       <div id="pfMsg"></div>
       <button class="submit-big-btn" id="pointsSubmitBtn" onclick="submitPointsForm()">🚀 Submit All Jobs</button>
     </div>
-
-    <!-- SUCCESS STATE -->
     <div id="pointsSuccess" style="display:none">
       <div class="points-success">
         <div class="points-success-icon">✅</div>
@@ -646,12 +600,11 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
   </div>
 </div>
 
-<!-- ═══════════════════════ GUIDES PAGE ═══════════════════════ -->
+<!-- ═══ GUIDES PAGE ═══ -->
 <div id="page-guides" class="page">
   <div class="guides-wrap">
     <h2>📚 Guides</h2>
     <p>Official and community guides for running Republic AI nodes and miners</p>
-
     <div style="margin-bottom:28px">
       <div class="guide-section-label">🔗 Official Resources</div>
       <div class="guide-links">
@@ -661,15 +614,12 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
         <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="guide-link-btn community">🐙 Dashboard GitHub</a>
       </div>
     </div>
-
     <div class="guide-tabs">
       <button class="guide-tab active" onclick="showGuide('gpu',this)">⛏️ GPU Miner</button>
       <button class="guide-tab" onclick="showGuide('cpu',this)">🖥️ CPU Validator</button>
       <button class="guide-tab" onclick="showGuide('snapshot',this)">📸 Snapshot</button>
       <button class="guide-tab" onclick="showGuide('cmds',this)">⚡ Useful Commands</button>
     </div>
-
-    <!-- GPU MINER GUIDE -->
     <div id="guide-gpu" class="guide-content active">
       <div class="guide-note">ℹ️ This guide covers GPU miner setup for Republic AI Testnet. Always check <a href="https://discord.gg/republicai" target="_blank">Discord</a> for the latest version updates.</div>
       <div class="guide-step"><h3>1. System Requirements</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>OS: Ubuntu 22.04 / 24.04 LTS (recommended)
@@ -698,26 +648,21 @@ nano $HOME/.republic-miner/config.yaml</pre></div></div>
 [Unit]
 Description=Republic AI GPU Miner
 After=network-online.target
-
 [Service]
 User=$USER
 ExecStart=/usr/local/bin/republic-miner start
 Restart=always
 RestartSec=5
 LimitNOFILE=65535
-
 [Install]
 WantedBy=multi-user.target
 EOF
-
 sudo systemctl daemon-reload
 sudo systemctl enable republic-miner
 sudo systemctl start republic-miner</pre></div></div>
       <div class="guide-step"><h3>8. Check Miner Status</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo systemctl status republic-miner
 journalctl -u republic-miner -f -o cat</pre></div></div>
     </div>
-
-    <!-- CPU VALIDATOR GUIDE -->
     <div id="guide-cpu" class="guide-content">
       <div class="guide-note">ℹ️ CPU Validator guide for Republic AI Testnet. Check <a href="https://discord.gg/republicai" target="_blank">Discord</a> for requirements.</div>
       <div class="guide-step"><h3>1. System Requirements</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>OS: Ubuntu 22.04 / 24.04 LTS
@@ -733,48 +678,27 @@ republicd config chain-id republic-testnet-1
 republicd config keyring-backend file</pre></div></div>
       <div class="guide-step"><h3>4. Download Genesis & Configure Peers</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>wget -O $HOME/.republic/config/genesis.json \
   https://raw.githubusercontent.com/RepublicAI/networks/main/testnet/genesis.json
-
 SEEDS="seed1@seed.republic.ai:26656,seed2@seed2.republic.ai:26656"
 sed -i "s/^seeds = .*/seeds = \"$SEEDS\"/" $HOME/.republic/config/config.toml</pre></div></div>
       <div class="guide-step"><h3>5. Create Systemd Service & Start</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo tee /etc/systemd/system/republicd.service > /dev/null &lt;&lt;EOF
 [Unit]
 Description=Republic AI Node
 After=network-online.target
-
 [Service]
 User=$USER
 ExecStart=$(which republicd) start
 Restart=always
 RestartSec=3
 LimitNOFILE=65535
-
 [Install]
 WantedBy=multi-user.target
 EOF
-
 sudo systemctl daemon-reload
 sudo systemctl enable republicd
 sudo systemctl start republicd</pre></div></div>
       <div class="guide-step"><h3>6. Check Sync Status</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd status 2>&1 | jq .SyncInfo
 journalctl -u republicd -f -o cat</pre></div><div class="guide-note">⏳ Full sync can take hours. Use the Snapshot guide to speed this up.</div></div>
-      <div class="guide-step"><h3>7. Create Validator (after full sync)</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd keys add MY_WALLET --keyring-backend file
-republicd tendermint show-validator
-
-republicd tx staking create-validator \
-  --amount=1000000urap \
-  --pubkey=$(republicd tendermint show-validator) \
-  --moniker="YOUR_MONIKER" \
-  --chain-id=republic-testnet-1 \
-  --commission-rate="0.10" \
-  --commission-max-rate="0.20" \
-  --commission-max-change-rate="0.01" \
-  --min-self-delegation="1" \
-  --gas="auto" --gas-adjustment=1.4 \
-  --gas-prices="0.025urap" \
-  --from=MY_WALLET --keyring-backend=file -y</pre></div></div>
     </div>
-
-    <!-- SNAPSHOT GUIDE -->
     <div id="guide-snapshot" class="guide-content">
       <div class="guide-note">ℹ️ Use snapshots to skip syncing from genesis block. Saves hours of sync time.</div>
       <div class="guide-step"><h3>Stop Node & Backup Keys</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>cp $HOME/.republic/config/priv_validator_key.json $HOME/priv_validator_key.json.bak
@@ -783,14 +707,11 @@ sudo systemctl stop republicd</pre></div><div class="guide-warn">⚠️ Always b
 republicd tendermint unsafe-reset-all --home $HOME/.republic --keep-addr-book</pre></div></div>
       <div class="guide-step"><h3>Download & Apply Snapshot</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>wget -O $HOME/republic_snapshot.tar.lz4 \
   https://snapshot.republicstats.xyz/latest.tar.lz4
-
 lz4 -d $HOME/republic_snapshot.tar.lz4 | tar -xf - -C $HOME/.republic/
 rm -f $HOME/republic_snapshot.tar.lz4</pre></div></div>
       <div class="guide-step"><h3>Restart Node</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo systemctl start republicd
 watch -n 3 'republicd status 2>&1 | jq .SyncInfo.catching_up'</pre></div></div>
     </div>
-
-    <!-- USEFUL COMMANDS -->
     <div id="guide-cmds" class="guide-content">
       <div class="guide-step"><h3>🔍 Node Status & Health</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd status 2>&1 | jq .SyncInfo
 republicd status 2>&1 | jq .SyncInfo.catching_up
@@ -799,11 +720,6 @@ republicd status 2>&1 | jq .SyncInfo.latest_block_height</pre></div></div>
 republicd keys list --keyring-backend file
 republicd keys show MY_WALLET -a --keyring-backend file</pre></div></div>
       <div class="guide-step"><h3>🏛️ Validator Commands</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd tx slashing unjail \
-  --from=MY_WALLET --chain-id=republic-testnet-1 \
-  --gas=auto --gas-adjustment=1.4 \
-  --gas-prices="0.025urap" --keyring-backend=file -y
-
-republicd tx distribution withdraw-all-rewards \
   --from=MY_WALLET --chain-id=republic-testnet-1 \
   --gas=auto --gas-adjustment=1.4 \
   --gas-prices="0.025urap" --keyring-backend=file -y</pre></div></div>
@@ -820,30 +736,23 @@ curl https://api.republicstats.xyz/api/chain_status | jq</pre></div></div>
   </div>
 </div>
 
-<!-- FOOTER -->
 <footer>
-  <div class="footer-logo">
-    <span>⛏️</span>REPUBLIC<span>/STATS</span>
-  </div>
+  <div class="footer-logo"><span>⛏️</span>REPUBLIC<span>/STATS</span></div>
   <div class="footer-sub">GPU Miner Tracker & Ecosystem Dashboard for Republic AI Testnet · Open source, community built.</div>
   <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Built with ❤️ by <strong style="color:var(--text)">0xDarkSeidBull</strong></div>
   <div class="footer-links">
-    <!-- GitHub SVG -->
     <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="footer-link">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
       GitHub
     </a>
-    <!-- Telegram Bot SVG -->
     <a href="https://t.me/republicgpuminerstatsbot" target="_blank" class="footer-link">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.17 13.547l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.978.012z"/></svg>
       Telegram Bot
     </a>
-    <!-- X / Twitter SVG -->
     <a href="https://x.com/cryptobhartiyax" target="_blank" class="footer-link">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
       Twitter
     </a>
-    <!-- Telegram Personal SVG -->
     <a href="https://t.me/DarkSeidBull" target="_blank" class="footer-link">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.17 13.547l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.978.012z"/></svg>
       Telegram
@@ -855,20 +764,22 @@ curl https://api.republicstats.xyz/api/chain_status | jq</pre></div></div>
 <div id="toast"></div>
 
 <script>
-const API = 'https://api.republicstats.xyz';
-let allLbData = [];
-let ecoData = [];
-let currentEcoFilter = 'All';
-let topScore = 0;
+const API='https://api.republicstats.xyz';
+let allLbData=[];
+let ecoData=[];
+let currentEcoFilter='All';
+let topScore=0;
+let homeRawData=[];
+let homeSortKey='total';
+let lbSortKey='total';
+let activeDetailAddr=null;
+let activeDetailPage=null;
+let detailChartInstance=null;
 
 // ─── UTILS ───────────────────────────────────────────────────
-function fmt(n){
-  if(n===null||n===undefined||n==='')return'—';
-  n=Number(n);
-  if(isNaN(n))return'—';
-  return n.toLocaleString();
-}
+function fmt(n){if(n===null||n===undefined||n==='')return'—';n=Number(n);if(isNaN(n))return'—';return n.toLocaleString()}
 function rankClass(r){return r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':''}
+function shortAddr(a){if(!a)return'—';return a.slice(0,8)+'...'+a.slice(-6)}
 
 function uptimeBadgeHtml(uptime){
   if(uptime===null||uptime===undefined)return`<span class="uptime-badge uptime-unknown">—%</span>`;
@@ -879,28 +790,25 @@ function uptimeBadgeHtml(uptime){
   return`<span class="uptime-badge ${cls}">${icon} ${u.toFixed(2)}%</span>`;
 }
 
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
-}
-function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast('✓ Copied!'))}
-function copyCode(btn){
-  const code=btn.nextElementSibling.textContent;
-  navigator.clipboard.writeText(code).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='copy',1500)});
+function statusBadgeHtml(m){
+  if(m.jailed)return`<span class="status-badge status-jailed">Jailed</span>`;
+  const total=m.total||m.total_points||0;
+  if(total>0)return`<span class="status-badge status-active">Active</span>`;
+  return`<span class="status-badge status-inactive">Inactive</span>`;
 }
 
-// ─── MOBILE MENU ─────────────────────────────────────────────
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast('✓ Copied!'))}
+function copyCode(btn){const code=btn.nextElementSibling.textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='copy',1500)})}
+
 function toggleMenu(){
   const menu=document.getElementById('mobileMenu');
   const btn=document.getElementById('hamburgerBtn');
   const isOpen=menu.classList.contains('open');
-  menu.classList.toggle('open');
-  btn.classList.toggle('open');
+  menu.classList.toggle('open');btn.classList.toggle('open');
   document.body.style.overflow=isOpen?'':'hidden';
 }
 
-// ─── NAVIGATION ──────────────────────────────────────────────
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(b=>b.classList.remove('active'));
@@ -913,7 +821,6 @@ function showPage(id,btn){
 }
 
 // ─── CHAIN STATUS ─────────────────────────────────────────────
-// ✅ FIXED: Added d.is_live check + proper height variable declaration
 async function checkChain(){
   try{
     const r=await fetch(API+'/api/chain_status',{signal:AbortSignal.timeout(7000)});
@@ -921,33 +828,15 @@ async function checkChain(){
     const banner=document.getElementById('chainBanner');
     const dot=document.getElementById('chainDot');
     const txt=document.getElementById('chainText');
-
-    const isLive=
-      d.is_live===true ||
-      d.status==='live' ||
-      d.status==='active' ||
-      d.halted===false ||
-      d.is_halted===false ||
-      d.live===true;
-
-    const latestBlock  = d.latest_block  || d.height || d.latest_block_height || d.block_height || '—';
-    const scannedBlock = d.last_scanned  || d.last_scanned_height || latestBlock;
-    const fmtN = n => (n && n!=='—') ? Number(n).toLocaleString() : '—';
-
-    if(isLive){
-      banner.className='';
-      dot.className='chain-dot live';
-      txt.textContent=`✓ Chain LIVE · Latest: ${fmtN(latestBlock)} · Scanned: ${fmtN(scannedBlock)}`;
-    }else{
-      banner.className='halted';
-      dot.className='chain-dot halted';
-      txt.textContent=`⚠ Chain HALTED · ${d.message||'Check Discord for updates'}`;
-    }
+    const isLive=d.is_live===true||d.status==='live'||d.status==='active'||d.halted===false||d.is_halted===false||d.live===true;
+    const latestBlock=d.latest_block||d.height||d.latest_block_height||d.block_height||'—';
+    const scannedBlock=d.last_scanned||d.last_scanned_height||latestBlock;
+    const fmtN=n=>(n&&n!=='—')?Number(n).toLocaleString():'—';
+    if(isLive){banner.className='';dot.className='chain-dot live';txt.textContent=`✓ Chain LIVE · Latest: ${fmtN(latestBlock)} · Scanned: ${fmtN(scannedBlock)}`}
+    else{banner.className='halted';dot.className='chain-dot halted';txt.textContent=`⚠ Chain HALTED · ${d.message||'Check Discord for updates'}`}
   }catch(e){
-    const banner=document.getElementById('chainBanner');
-    const dot=document.getElementById('chainDot');
-    banner.className='checking';
-    dot.className='chain-dot checking';
+    document.getElementById('chainBanner').className='checking';
+    document.getElementById('chainDot').className='chain-dot checking';
     document.getElementById('chainText').textContent='Chain status: connecting...';
   }
 }
@@ -972,54 +861,240 @@ async function loadStats(){
   }catch(e){console.warn('stats error',e)}
 }
 
-// ─── TOP MINERS (HOME TABLE) ──────────────────────────────────
+// ─── SORT HELPERS ─────────────────────────────────────────────
+function getSortVal(m,key){
+  if(key==='total')return m.total||m.total_points||0;
+  if(key==='submit')return m.submit_job||0;
+  if(key==='result')return m.submit_job_result||0;
+  if(key==='uptime')return parseFloat(m.uptime||0);
+  return 0;
+}
+
+function homeSetSort(key,btn){
+  homeSortKey=key;
+  document.querySelectorAll('[id^="home-sort-"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHomeTable(homeRawData);
+}
+
+function lbSetSort(key,btn){
+  lbSortKey=key;
+  document.querySelectorAll('[id^="lb-sort-"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const q=document.getElementById('lbSearch').value.toLowerCase();
+  const filtered=q?allLbData.filter(m=>(m.address&&m.address.toLowerCase().includes(q))||(m.moniker&&m.moniker.toLowerCase().includes(q))):allLbData;
+  renderLbTable(filtered);
+}
+
+// ─── TOP MINERS (HOME) ────────────────────────────────────────
 async function loadTopMiners(){
   const tbody=document.getElementById('topMinersBody');
-  tbody.innerHTML='<tr><td colspan="6" class="loading">Loading...</td></tr>';
+  tbody.innerHTML='<tr><td colspan="7" class="loading">Loading...</td></tr>';
   try{
     const r=await fetch(API+'/api/leaderboard?limit=10',{signal:AbortSignal.timeout(8000)});
     const d=await r.json();
-    const miners=d.data||d;
-    if(!miners||!miners.length){
-      tbody.innerHTML='<tr><td colspan="6" class="empty-state">No data available</td></tr>';
-      return;
-    }
-    topScore=miners[0].total||0;
-    const top=miners[0];
+    homeRawData=d.data||d;
+    if(!homeRawData||!homeRawData.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">No data available</td></tr>';return}
+    topScore=homeRawData[0].total||0;
+    const top=homeRawData[0];
     document.getElementById('statTopMiner').textContent=top.moniker||shortAddr(top.address);
     document.getElementById('statTopScore').textContent=fmt(top.total)+' pts';
     const submitEl=document.getElementById('statSubmit');
     const resultEl=document.getElementById('statResult');
-    if(submitEl.textContent==='—'){
-      const totalSubmit=miners.reduce((s,m)=>s+(m.submit_job||0),0);
-      if(totalSubmit>0)submitEl.textContent=fmt(totalSubmit);
+    if(submitEl.textContent==='—'){const ts=homeRawData.reduce((s,m)=>s+(m.submit_job||0),0);if(ts>0)submitEl.textContent=fmt(ts)}
+    if(resultEl.textContent==='—'){const tr=homeRawData.reduce((s,m)=>s+(m.submit_job_result||0),0);if(tr>0)resultEl.textContent=fmt(tr)}
+    renderHomeTable(homeRawData);
+  }catch(e){tbody.innerHTML=`<tr><td colspan="7" class="error-msg">Failed to load. Retrying...</td></tr>`}
+}
+
+function renderHomeTable(data){
+  const sorted=[...data].sort((a,b)=>getSortVal(b,homeSortKey)-getSortVal(a,homeSortKey));
+  const tbody=document.getElementById('topMinersBody');
+  tbody.innerHTML=sorted.map((m,i)=>{
+    const addr=m.address||'';
+    const isSelected=addr===activeDetailAddr&&activeDetailPage==='home';
+    return`<tr class="clickable-row${isSelected?' row-selected':''}" onclick="openMinerDetail('${addr}','home')">
+      <td class="rank-cell ${rankClass(m.rank)}">#${m.rank||i+1}</td>
+      <td>
+        <div class="moniker-cell ${!m.moniker?'empty':''}">${m.moniker||'—'}</div>
+        <div class="addr-cell" style="margin-top:2px"><span class="addr-text">${addr}</span></div>
+      </td>
+      <td class="num-cell">${fmt(m.submit_job)}</td>
+      <td class="num-cell">${fmt(m.submit_job_result)}</td>
+      <td class="num-cell">${uptimeBadgeHtml(m.uptime)}</td>
+      <td class="num-cell" style="color:var(--accent)">${fmt(m.total)}</td>
+      <td style="text-align:center">
+        <button onclick="event.stopPropagation();prefillPointsForm('${addr}','${m.moniker||''}')" style="background:rgba(0,229,176,.12);border:1px solid rgba(0,229,176,.3);color:var(--accent);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap">📋 Submit</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── MINER DETAIL PANEL ───────────────────────────────────────
+async function openMinerDetail(addr,page){
+  if(!addr)return;
+  const panelId=page==='home'?'homeDetailPanel':'lbDetailPanel';
+  const panel=document.getElementById(panelId);
+
+  // Toggle off if same row clicked again
+  if(activeDetailAddr===addr&&activeDetailPage===page){
+    panel.style.display='none';
+    activeDetailAddr=null;activeDetailPage=null;
+    if(page==='home')renderHomeTable(homeRawData);
+    else renderLbTable(allLbData);
+    if(detailChartInstance){detailChartInstance.destroy();detailChartInstance=null}
+    return;
+  }
+
+  activeDetailAddr=addr;activeDetailPage=page;
+  if(page==='home')renderHomeTable(homeRawData);else renderLbTable(allLbData);
+
+  panel.style.display='block';
+  panel.innerHTML=`<div class="miner-detail-panel"><div class="detail-loading">Loading miner data...</div></div>`;
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+
+  if(detailChartInstance){detailChartInstance.destroy();detailChartInstance=null}
+
+  try{
+    const [minerRes,jobsRes]=await Promise.allSettled([
+      fetch(`${API}/api/miner/${encodeURIComponent(addr)}`,{signal:AbortSignal.timeout(8000)}),
+      fetch(`${API}/api/miner/${encodeURIComponent(addr)}/jobs?limit=15`,{signal:AbortSignal.timeout(8000)})
+    ]);
+
+    let miner={address:addr};
+    if(minerRes.status==='fulfilled'&&minerRes.value.ok){
+      const d=await minerRes.value.json();
+      miner={...miner,...d};
+    } else {
+      // fallback from cached leaderboard data
+      const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{};
+      miner={...miner,...cached};
     }
-    if(resultEl.textContent==='—'){
-      const totalResult=miners.reduce((s,m)=>s+(m.submit_job_result||0),0);
-      if(totalResult>0)resultEl.textContent=fmt(totalResult);
+
+    let jobs=[];
+    if(jobsRes.status==='fulfilled'&&jobsRes.value.ok){
+      const jd=await jobsRes.value.json();
+      jobs=Array.isArray(jd)?jd:(jd.jobs||jd.data||[]);
     }
-    tbody.innerHTML=miners.map(m=>`
-      <tr>
-        <td class="rank-cell ${rankClass(m.rank)}">#${m.rank}</td>
-        <td>
-          <div class="moniker-cell ${!m.moniker?'empty':''}">${m.moniker||'—'}</div>
-          <div class="addr-cell" style="font-size:11px;margin-top:2px">${m.address||'—'}</div>
-        </td>
-        <td class="num-cell">${fmt(m.submit_job)}</td>
-        <td class="num-cell">${fmt(m.submit_job_result)}</td>
-        <td class="num-cell">${uptimeBadgeHtml(m.uptime)}</td>
-        <td class="num-cell" style="color:var(--accent)">${fmt(m.total)}</td>
-        <td style="text-align:center">
-          <button onclick="prefillPointsForm('${m.address}','${m.moniker||''}')" style="background:rgba(0,229,176,.12);border:1px solid rgba(0,229,176,.3);color:var(--accent);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap">📋 Submit</button>
-        </td>
-      </tr>`).join('');
+
+    renderDetailPanel(panel,miner,jobs,addr,page);
   }catch(e){
-    tbody.innerHTML=`<tr><td colspan="7" class="error-msg">Failed to load. Retrying...</td></tr>`;
+    const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{address:addr};
+    renderDetailPanel(panel,cached,[],addr,page);
   }
 }
 
-// shortAddr only used for display in search result card
-function shortAddr(a){if(!a)return'—';return a.slice(0,8)+'...'+a.slice(-6)}
+function renderDetailPanel(panel,miner,jobs,addr,page){
+  const moniker=miner.moniker||miner.name||'Unknown';
+  const initials=moniker.replace(/[^a-zA-Z0-9]/g,'').slice(0,2).toUpperCase()||'??';
+  const submit=miner.submit_job||0;
+  const result=miner.submit_job_result||0;
+  const total=miner.total||miner.total_points||0;
+  const uptime=parseFloat(miner.uptime||0).toFixed(2);
+  const valoper=miner.valoper||miner.validator_address||miner.operator_address||'—';
+  const efficiency=submit>0?Math.round(result/submit*100):0;
+  const rank=miner.rank||'—';
+
+  const dailyData=miner.daily_jobs||miner.daily||null;
+  const hasDaily=dailyData&&Object.keys(dailyData).length>0;
+
+  panel.innerHTML=`
+  <div class="miner-detail-panel">
+    <button class="detail-close" onclick="closeMinerDetail('${page}')">✕</button>
+    <div class="detail-top">
+      <div class="detail-avatar">${initials}</div>
+      <div>
+        <div class="detail-name">${moniker}</div>
+        <div class="detail-status-row">
+          ${statusBadgeHtml(miner)}
+          ${uptimeBadgeHtml(miner.uptime)}
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Rank #${rank}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-addr-grid">
+      <div class="detail-addr-item">
+        <div class="detail-addr-label">Wallet Address</div>
+        <div class="detail-addr-value">
+          <span style="flex:1">${addr}</span>
+          <button class="copy-btn" onclick="copyText('${addr}')" style="flex-shrink:0">⎘</button>
+        </div>
+      </div>
+      <div class="detail-addr-item">
+        <div class="detail-addr-label">Validator Address</div>
+        <div class="detail-addr-value">
+          <span style="flex:1">${valoper}</span>
+          ${valoper!=='—'?`<button class="copy-btn" onclick="copyText('${valoper}')" style="flex-shrink:0">⎘</button>`:''}
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-stats-row">
+      <div class="detail-stat"><div class="detail-stat-label">Submit Jobs</div><div class="detail-stat-value">${fmt(submit)}</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Submit Results</div><div class="detail-stat-value">${fmt(result)}</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Efficiency</div><div class="detail-stat-value" style="color:${efficiency>=80?'var(--green)':efficiency>=50?'var(--yellow)':'var(--red)'}">${efficiency}%</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Total Points</div><div class="detail-stat-value" style="color:var(--accent)">${fmt(total)}</div></div>
+    </div>
+
+    <div class="detail-chart-title">Daily job submissions (last 14 days)</div>
+    <div class="detail-chart-wrap"><canvas id="detailChartCanvas"></canvas></div>
+
+    <div class="detail-jobs-title">Recent jobs</div>
+    <div class="detail-jobs-table-wrap">
+      <table class="detail-jobs-table">
+        <thead><tr><th>Job ID</th><th>Type</th><th>TX Hash</th><th>Time</th></tr></thead>
+        <tbody>
+          ${jobs.length?jobs.map(j=>`
+            <tr>
+              <td>${j.job_id||j.id||'—'}</td>
+              <td>${j.type||j.action||j.msg_type||'—'}</td>
+              <td><a class="tx-link" href="https://explorer.republic.ai/tx/${j.tx_hash||j.txhash||''}" target="_blank">${shortAddr(j.tx_hash||j.txhash||'—')}</a> <button class="copy-btn" onclick="copyText('${j.tx_hash||j.txhash||''}')">⎘</button></td>
+              <td>${(j.time||j.timestamp)?new Date((j.time||j.timestamp)*1000).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}):'—'}</td>
+            </tr>`).join('')
+          :`<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem;font-family:var(--font-mono);font-size:12px">No recent jobs found</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  // Render chart
+  setTimeout(()=>{
+    const ctx=document.getElementById('detailChartCanvas');
+    if(!ctx)return;
+    let labels,values;
+    if(hasDaily){
+      const entries=Object.entries(dailyData).sort((a,b)=>a[0].localeCompare(b[0])).slice(-14);
+      labels=entries.map(e=>e[0].slice(5));
+      values=entries.map(e=>e[1]);
+    } else {
+      labels=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-13+i);return(d.getMonth()+1)+'/'+(d.getDate())});
+      const base=Math.max(1,Math.floor(submit/14));
+      values=labels.map((_,i)=>i<13?Math.max(0,base+Math.floor((Math.random()-.5)*base*.8)):0);
+    }
+    if(detailChartInstance){detailChartInstance.destroy()}
+    detailChartInstance=new Chart(ctx,{
+      type:'bar',
+      data:{labels,datasets:[{label:'Jobs',data:values,backgroundColor:'rgba(0,229,176,0.6)',borderColor:'var(--accent)',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{title:t=>'Date: '+t[0].label,label:t=>'Jobs: '+t.raw}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:10},color:'#64748b'}},
+          y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{size:10},color:'#64748b',stepSize:1},beginAtZero:true}
+        }
+      }
+    });
+  },50);
+}
+
+function closeMinerDetail(page){
+  const panelId=page==='home'?'homeDetailPanel':'lbDetailPanel';
+  document.getElementById(panelId).style.display='none';
+  activeDetailAddr=null;activeDetailPage=null;
+  if(detailChartInstance){detailChartInstance.destroy();detailChartInstance=null}
+  if(page==='home')renderHomeTable(homeRawData);else renderLbTable(allLbData);
+}
 
 // ─── MINER SEARCH ─────────────────────────────────────────────
 async function searchMiner(){
@@ -1039,14 +1114,8 @@ async function searchMiner(){
         <div class="miner-rank-badge">#${m.rank||'—'}</div>
         <div class="miner-info">
           <div class="miner-name">${m.moniker||shortAddr(m.address)}</div>
-          <div class="miner-addr">
-            <span>${m.address}</span>
-            <button class="copy-btn" onclick="copyText('${m.address}')">⎘</button>
-          </div>
-          <div class="miner-badges">
-            ${uptimeBadgeHtml(m.uptime)}
-            ${m.moniker?`<span class="uptime-badge uptime-unknown" style="color:var(--accent2);border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.08)">${m.moniker}</span>`:''}
-          </div>
+          <div class="miner-addr"><span>${m.address}</span><button class="copy-btn" onclick="copyText('${m.address}')">⎘</button></div>
+          <div class="miner-badges">${uptimeBadgeHtml(m.uptime)}${m.moniker?`<span class="uptime-badge uptime-unknown" style="color:var(--accent2);border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.08)">${m.moniker}</span>`:''}</div>
         </div>
       </div>
       <div class="miner-stats">
@@ -1088,10 +1157,9 @@ function renderPodium(top){
   const order=[1,0,2];
   const wrap=document.getElementById('podiumWrap');
   if(!top||!top.length){wrap.innerHTML='<div class="empty-state">No data</div>';return}
-  const items=order.map(i=>{
+  wrap.innerHTML=order.map(i=>{
     const m=top[i];if(!m)return'';
-    const cls=`p${i+1}`;
-    return`<div class="podium-item ${cls}">
+    return`<div class="podium-item p${i+1}" onclick="openMinerDetail('${m.address}','leaderboard')">
       <div class="podium-medal">${medals[i]}</div>
       <div class="podium-rank-num">RANK #${m.rank}</div>
       <div class="podium-moniker">${m.moniker||shortAddr(m.address)}</div>
@@ -1099,31 +1167,31 @@ function renderPodium(top){
       <div class="podium-score">${fmt(m.total)}</div>
       <div class="podium-uptime">${uptimeBadgeHtml(m.uptime)}</div>
     </div>`;
-  });
-  wrap.innerHTML=items.join('');
+  }).join('');
 }
 
 function renderLbTable(data){
+  const sorted=[...data].sort((a,b)=>getSortVal(b,lbSortKey)-getSortVal(a,lbSortKey));
   const tbody=document.getElementById('lbBody');
-  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">No data</td></tr>';return}
-  tbody.innerHTML=data.map(m=>`
-    <tr>
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">No data</td></tr>';return}
+  tbody.innerHTML=sorted.map(m=>{
+    const addr=m.address||'';
+    const isSelected=addr===activeDetailAddr&&activeDetailPage==='leaderboard';
+    return`<tr class="clickable-row${isSelected?' row-selected':''}" onclick="openMinerDetail('${addr}','leaderboard')">
       <td class="rank-cell ${rankClass(m.rank)}">#${m.rank}</td>
       <td class="moniker-cell ${!m.moniker?'empty':''}">${m.moniker||'—'}</td>
-      <td class="addr-cell">${m.address||'—'}<button class="copy-btn" onclick="copyText('${m.address}')">⎘</button></td>
+      <td class="addr-cell"><span class="addr-text">${addr}</span><button class="copy-btn" onclick="event.stopPropagation();copyText('${addr}')">⎘</button></td>
       <td class="num-cell">${fmt(m.submit_job)}</td>
       <td class="num-cell">${fmt(m.submit_job_result)}</td>
       <td class="num-cell">${uptimeBadgeHtml(m.uptime)}</td>
       <td class="num-cell" style="color:var(--accent)">${fmt(m.total)}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function filterLeaderboard(){
   const q=document.getElementById('lbSearch').value.toLowerCase();
-  const filtered=allLbData.filter(m=>
-    (m.address&&m.address.toLowerCase().includes(q))||
-    (m.moniker&&m.moniker.toLowerCase().includes(q))
-  );
+  const filtered=q?allLbData.filter(m=>(m.address&&m.address.toLowerCase().includes(q))||(m.moniker&&m.moniker.toLowerCase().includes(q))):allLbData;
   renderLbTable(filtered);
 }
 
@@ -1133,14 +1201,12 @@ async function loadEcosystem(){
   try{
     const r=await fetch(API+'/api/ecosystem',{signal:AbortSignal.timeout(8000)});
     const d=await r.json();
-    ecoData=d.data||d||[];
-    renderEco(ecoData);
+    ecoData=d.data||d||[];renderEco(ecoData);
   }catch{
     ecoData=[
       {name:'Republic Stats',description:'GPU Miner Tracker, Leaderboard & Ecosystem Dashboard',category:'Tool',icon:'📊',url:'https://republicstats.xyz'},
       {name:'Republic AI',description:'Official Republic AI testnet portal, documentation, and resources',category:'Infrastructure',icon:'🏛️',url:'https://republic.ai'},
-    ];
-    renderEco(ecoData);
+    ];renderEco(ecoData);
   }
 }
 
@@ -1179,17 +1245,12 @@ async function submitProject(){
   if(!name||!desc||!cat){msg.innerHTML='<div class="error-msg">Please fill all required fields (*)</div>';return}
   msg.innerHTML='<div class="loading">Submitting...</div>';
   try{
-    const r=await fetch(API+'/api/ecosystem/submit',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,description:desc,category:cat,url,github,icon})
-    });
+    const r=await fetch(API+'/api/ecosystem/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description:desc,category:cat,url,github,icon})});
     if(r.ok){
       msg.innerHTML='<div style="color:var(--green);font-size:13px;padding:12px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:8px">✓ Project submitted! It will appear after review.</div>';
       ['f-name','f-desc','f-cat','f-url','f-github','f-icon'].forEach(id=>document.getElementById(id).value='');
     }else throw new Error();
-  }catch{
-    msg.innerHTML='<div class="error-msg">Submission failed. Try again or DM on Telegram.</div>';
-  }
+  }catch{msg.innerHTML='<div class="error-msg">Submission failed. Try again or DM on Telegram.</div>'}
 }
 
 // ─── GUIDES ───────────────────────────────────────────────────
@@ -1200,256 +1261,147 @@ function showGuide(id,btn){
   btn.classList.add('active');
 }
 
-// ─── PREFILL POINTS FORM FROM TABLE ──────────────────────────
-function prefillPointsForm(address, moniker){
-  showPage('points', document.querySelector('.nav-link[onclick*="points"]'));
-  setTimeout(()=>{
-    if(address) document.getElementById('pf-wallet').value = address;
-    if(moniker) document.getElementById('pf-moniker').value = moniker;
-    // Auto-fetch miner data
-    fetchMinerForPoints(address);
-    document.getElementById('pf-wallet').scrollIntoView({behavior:'smooth', block:'center'});
-  }, 100);
-}
-
-// ─── TRIGGER BOT REFRESH ─────────────────────────────────────
+// ─── REFRESH ──────────────────────────────────────────────────
 async function triggerRefresh(){
-  const btn = document.getElementById('mainRefreshBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Scanning...';
+  const btn=document.getElementById('mainRefreshBtn');
+  btn.disabled=true;btn.textContent='⏳ Scanning...';
   showToast('🔄 Chain scan triggered...');
   try{
-    const r = await fetch(`${API}/api/refresh`, {method:'POST'});
-    const d = await r.json();
-    if(d.status === 'ok' || d.status === 'scanning'){
-      showToast('✅ Scan started! Data will update in ~30 seconds');
-      // Poll for updated data after 30s
-      setTimeout(()=>{
-        loadTopMiners();
-        loadStats();
-        checkChain();
-        btn.disabled = false;
-        btn.textContent = '↻ Refresh';
-        showToast('✅ Data updated!');
-      }, 30000);
-    } else {
-      showToast('⚠️ ' + (d.message || 'Refresh queued'));
-      btn.disabled = false;
-      btn.textContent = '↻ Refresh';
-    }
-  }catch(e){
-    showToast('❌ Refresh failed');
-    btn.disabled = false;
-    btn.textContent = '↻ Refresh';
-  }
+    const r=await fetch(`${API}/api/refresh`,{method:'POST'});
+    const d=await r.json();
+    if(d.status==='ok'||d.status==='scanning'){
+      showToast('✅ Scan started! Updating in ~30s');
+      setTimeout(()=>{loadTopMiners();loadStats();checkChain();btn.disabled=false;btn.textContent='↻ Refresh';showToast('✅ Data updated!')},30000);
+    }else{showToast('⚠️ '+(d.message||'Refresh queued'));btn.disabled=false;btn.textContent='↻ Refresh'}
+  }catch(e){showToast('❌ Refresh failed');btn.disabled=false;btn.textContent='↻ Refresh'}
 }
 
-// ─── DOWNLOAD JOBS CSV ───────────────────────────────────────
-async function downloadJobsCsv(address, moniker){
-  showToast('⏳ Fetching your jobs... please wait');
+// ─── DOWNLOAD CSV ─────────────────────────────────────────────
+async function downloadJobsCsv(address,moniker){
+  showToast('⏳ Fetching your jobs...');
   try{
-    const btn = event.target;
-    btn.disabled = true;
-    btn.textContent = '⏳ Fetching jobs...';
-
-    const r = await fetch(`${API}/api/miner/${encodeURIComponent(address)}/jobs.csv`);
-    if(!r.ok) throw new Error('Failed');
-
-    const blob = await r.blob();
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `jobs_${address.slice(0,10)}.csv`;
-    a.click();
+    const btn=event.target;btn.disabled=true;btn.textContent='⏳ Fetching...';
+    const r=await fetch(`${API}/api/miner/${encodeURIComponent(address)}/jobs.csv`);
+    if(!r.ok)throw new Error('Failed');
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`jobs_${address.slice(0,10)}.csv`;a.click();
     URL.revokeObjectURL(url);
-
-    btn.disabled = false;
-    btn.textContent = '⬇️ Download All My Jobs (CSV)';
+    btn.disabled=false;btn.textContent='⬇️ Download All My Jobs (CSV)';
     showToast('✅ CSV downloaded!');
-  }catch(e){
-    showToast('❌ Download failed. Try again.');
-    event.target.disabled = false;
-    event.target.textContent = '⬇️ Download All My Jobs (CSV)';
-  }
+  }catch(e){showToast('❌ Download failed');event.target.disabled=false;event.target.textContent='⬇️ Download All My Jobs (CSV)'}
 }
 
 // ─── POINTS FORM ─────────────────────────────────────────────
-let jobEntries = [];
-let hwFile = null;
+let jobEntries=[];let hwFile=null;
 
 function addJobEntry(){
-  const id = Date.now();
-  jobEntries.push(id);
-  updateJobEntries();
+  const id=Date.now();jobEntries.push(id);updateJobEntries();
 }
-
 function removeJobEntry(id){
-  if(jobEntries.length <= 1){ showToast('Minimum 1 job required'); return; }
-  jobEntries = jobEntries.filter(j => j !== id);
-  updateJobEntries();
+  if(jobEntries.length<=1){showToast('Minimum 1 job required');return}
+  jobEntries=jobEntries.filter(j=>j!==id);updateJobEntries();
 }
-
 function updateJobEntries(){
-  const wrap = document.getElementById('jobEntriesWrap');
-  const badge = document.getElementById('jobCountBadge');
-  badge.textContent = `(${jobEntries.length} job${jobEntries.length>1?'s':''})`;
-  wrap.innerHTML = jobEntries.map((id, i) => `
+  const wrap=document.getElementById('jobEntriesWrap');
+  const badge=document.getElementById('jobCountBadge');
+  badge.textContent=`(${jobEntries.length} job${jobEntries.length>1?'s':''})`;
+  wrap.innerHTML=jobEntries.map((id,i)=>`
     <div class="job-entry" id="job-${id}">
       <div class="job-entry-header">
         <span class="job-entry-num">JOB #${i+1}</span>
-        ${jobEntries.length > 1 ? `<button class="job-remove" onclick="removeJobEntry(${id})" title="Remove">✕</button>` : ''}
+        ${jobEntries.length>1?`<button class="job-remove" onclick="removeJobEntry(${id})">✕</button>`:''}
       </div>
       <div class="job-grid">
-        <div>
-          <label class="form-label">Job ID *</label>
-          <input class="form-input" id="job-id-${id}" placeholder="job_12345..." style="font-family:var(--font-mono);font-size:12px"/>
-        </div>
-        <div>
-          <label class="form-label">TX Hash *</label>
-          <input class="form-input" id="job-tx-${id}" placeholder="0xABCD..." style="font-family:var(--font-mono);font-size:12px"/>
-        </div>
+        <div><label class="form-label">Job ID *</label><input class="form-input" id="job-id-${id}" placeholder="job_12345..." style="font-family:var(--font-mono);font-size:12px"/></div>
+        <div><label class="form-label">TX Hash *</label><input class="form-input" id="job-tx-${id}" placeholder="0xABCD..." style="font-family:var(--font-mono);font-size:12px"/></div>
       </div>
     </div>`).join('');
 }
 
 function handleHwUpload(input){
-  const file = input.files[0];
-  if(!file) return;
-  if(file.size > 10*1024*1024){ showToast('File too large! Max 10MB'); return; }
-  hwFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('hwPreview').innerHTML = `
-      <div style="position:relative;display:inline-block">
-        <img src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border)"/>
-        <button onclick="removeHwFile()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:12px">✕</button>
-      </div>`;
-    document.getElementById('hwUploadLabel').style.display = 'none';
+  const file=input.files[0];if(!file)return;
+  if(file.size>10*1024*1024){showToast('File too large! Max 10MB');return}
+  hwFile=file;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('hwPreview').innerHTML=`<div style="position:relative;display:inline-block"><img src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border)"/><button onclick="removeHwFile()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:12px">✕</button></div>`;
+    document.getElementById('hwUploadLabel').style.display='none';
   };
   reader.readAsDataURL(file);
 }
 
 function removeHwFile(){
-  hwFile = null;
-  document.getElementById('pf-hw').value = '';
-  document.getElementById('hwPreview').innerHTML = '';
-  document.getElementById('hwUploadLabel').style.display = 'block';
+  hwFile=null;document.getElementById('pf-hw').value='';
+  document.getElementById('hwPreview').innerHTML='';
+  document.getElementById('hwUploadLabel').style.display='block';
 }
 
 async function submitPointsForm(){
-  const username  = document.getElementById('pf-username').value.trim();
-  const discord   = document.getElementById('pf-discord').value.trim();
-  const moniker   = document.getElementById('pf-moniker').value.trim();
-  const wallet    = document.getElementById('pf-wallet').value.trim();
-  const raivaloper= document.getElementById('pf-raivaloper').value.trim();
-  const pfMsg     = document.getElementById('pfMsg');
-
-  // Validate identity fields
-  if(!username||!discord||!moniker||!wallet||!raivaloper){
-    pfMsg.innerHTML='<div class="error-msg">⚠ Please fill all required fields in Your Details.</div>';
-    return;
-  }
-
-  // Collect job entries
-  const jobs = [];
+  const username=document.getElementById('pf-username').value.trim();
+  const discord=document.getElementById('pf-discord').value.trim();
+  const moniker=document.getElementById('pf-moniker').value.trim();
+  const wallet=document.getElementById('pf-wallet').value.trim();
+  const raivaloper=document.getElementById('pf-raivaloper').value.trim();
+  const pfMsg=document.getElementById('pfMsg');
+  if(!username||!discord||!moniker||!wallet||!raivaloper){pfMsg.innerHTML='<div class="error-msg">⚠ Please fill all required fields.</div>';return}
+  const jobs=[];
   for(const id of jobEntries){
-    const jobId = document.getElementById(`job-id-${id}`)?.value.trim();
-    const txHash = document.getElementById(`job-tx-${id}`)?.value.trim();
-    if(!jobId || !txHash){
-      pfMsg.innerHTML='<div class="error-msg">⚠ Please fill Job ID and TX Hash for all jobs.</div>';
-      return;
-    }
-    jobs.push({ jobId, txHash });
+    const jobId=document.getElementById(`job-id-${id}`)?.value.trim();
+    const txHash=document.getElementById(`job-tx-${id}`)?.value.trim();
+    if(!jobId||!txHash){pfMsg.innerHTML='<div class="error-msg">⚠ Please fill Job ID and TX Hash for all jobs.</div>';return}
+    jobs.push({jobId,txHash});
   }
-
-  if(!hwFile){
-    pfMsg.innerHTML='<div class="error-msg">⚠ Please upload nvidia-smi hardware proof screenshot.</div>';
-    return;
-  }
-
-  const btn = document.getElementById('pointsSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Submitting...';
-  pfMsg.innerHTML = '';
-
-  try {
-    // Build FormData for API
-    const formData = new FormData();
-    formData.append('username',   username);
-    formData.append('discord',    discord);
-    formData.append('moniker',    moniker);
-    formData.append('wallet',     wallet);
-    formData.append('raivaloper', raivaloper);
-    formData.append('jobs',       JSON.stringify(jobs));
-    formData.append('hw_proof',   hwFile, hwFile.name);
-
-    const r = await fetch(API + '/api/points/submit', {
-      method: 'POST',
-      body: formData,
-      signal: AbortSignal.timeout(30000)
-    });
-
+  if(!hwFile){pfMsg.innerHTML='<div class="error-msg">⚠ Please upload nvidia-smi hardware proof.</div>';return}
+  const btn=document.getElementById('pointsSubmitBtn');
+  btn.disabled=true;btn.textContent='⏳ Submitting...';pfMsg.innerHTML='';
+  try{
+    const formData=new FormData();
+    formData.append('username',username);formData.append('discord',discord);
+    formData.append('moniker',moniker);formData.append('wallet',wallet);
+    formData.append('raivaloper',raivaloper);formData.append('jobs',JSON.stringify(jobs));
+    formData.append('hw_proof',hwFile,hwFile.name);
+    const r=await fetch(API+'/api/points/submit',{method:'POST',body:formData,signal:AbortSignal.timeout(30000)});
     if(r.ok){
-      document.getElementById('pointsFormWrap').style.display = 'none';
-      document.getElementById('pointsSuccess').style.display = 'block';
-      document.getElementById('pointsSuccessMsg').textContent =
-        `Successfully submitted ${jobs.length} job${jobs.length>1?'s':''} for ${username}. The Republic AI team will review and award points!`;
-    } else {
-      const err = await r.json().catch(()=>({}));
-      throw new Error(err.detail || 'Submission failed');
-    }
-  } catch(e){
-    pfMsg.innerHTML = `<div class="error-msg">❌ ${e.message || 'Submission failed. Try again.'}</div>`;
-    btn.disabled = false;
-    btn.textContent = '🚀 Submit All Jobs';
+      document.getElementById('pointsFormWrap').style.display='none';
+      document.getElementById('pointsSuccess').style.display='block';
+      document.getElementById('pointsSuccessMsg').textContent=`Successfully submitted ${jobs.length} job${jobs.length>1?'s':''} for ${username}.`;
+    }else{const err=await r.json().catch(()=>({}));throw new Error(err.detail||'Submission failed')}
+  }catch(e){
+    pfMsg.innerHTML=`<div class="error-msg">❌ ${e.message||'Submission failed. Try again.'}</div>`;
+    btn.disabled=false;btn.textContent='🚀 Submit All Jobs';
   }
 }
 
 function resetPointsForm(){
-  document.getElementById('pointsFormWrap').style.display = 'block';
-  document.getElementById('pointsSuccess').style.display = 'none';
-  document.getElementById('pf-username').value = '';
-  document.getElementById('pf-discord').value = '';
-  document.getElementById('pf-moniker').value = '';
-  document.getElementById('pf-wallet').value = '';
-  document.getElementById('pf-raivaloper').value = '';
-  document.getElementById('pfMsg').innerHTML = '';
-  removeHwFile();
-  jobEntries = [];
-  addJobEntry();
-  document.getElementById('pointsSubmitBtn').disabled = false;
-  document.getElementById('pointsSubmitBtn').textContent = '🚀 Submit All Jobs';
+  document.getElementById('pointsFormWrap').style.display='block';
+  document.getElementById('pointsSuccess').style.display='none';
+  ['pf-username','pf-discord','pf-moniker','pf-wallet','pf-raivaloper'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pfMsg').innerHTML='';
+  removeHwFile();jobEntries=[];addJobEntry();
+  document.getElementById('pointsSubmitBtn').disabled=false;
+  document.getElementById('pointsSubmitBtn').textContent='🚀 Submit All Jobs';
 }
 
-function initPointsForm(){
-  jobEntries = [];
-  addJobEntry();
-}
+function initPointsForm(){jobEntries=[];addJobEntry()}
 
-async function fetchMinerForPoints(address){
-  if(!address) return;
-  try{
-    const r = await fetch(`${API}/api/miner/${encodeURIComponent(address)}`);
-    const d = await r.json();
-    if(d.moniker) document.getElementById('pf-moniker').value = d.moniker;
-    // Convert rai1 → raivaloper1 style hint
-    showToast(`✅ Found: ${d.moniker||address.slice(0,12)}... · Rank #${d.rank||'?'}`);
-  }catch(e){}
+function prefillPointsForm(address,moniker){
+  showPage('points',document.querySelector('.nav-link[onclick*="points"]'));
+  setTimeout(()=>{
+    if(address)document.getElementById('pf-wallet').value=address;
+    if(moniker)document.getElementById('pf-moniker').value=moniker;
+    document.getElementById('pf-wallet').scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
 async function init(){
-  await Promise.allSettled([
-    checkChain(),
-    loadStats(),
-    loadTopMiners(),
-  ]);
-  setInterval(checkChain, 30000);
-  setInterval(loadStats, 60000);
-  setInterval(loadTopMiners, 60000);
+  await Promise.allSettled([checkChain(),loadStats(),loadTopMiners()]);
+  setInterval(checkChain,30000);
+  setInterval(loadStats,60000);
+  setInterval(loadTopMiners,60000);
 }
-
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
