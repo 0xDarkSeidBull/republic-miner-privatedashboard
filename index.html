@@ -966,34 +966,25 @@ async function openMinerDetail(addr,page){
   if(detailChartInstance){detailChartInstance.destroy();detailChartInstance=null}
 
   try{
-    const [minerRes,txRes]=await Promise.allSettled([
-      fetch(`${API}/api/miner/${encodeURIComponent(addr)}`,{signal:AbortSignal.timeout(8000)}),
-      fetch(`${API}/api/miner/${encodeURIComponent(addr)}/txns?limit=20`,{signal:AbortSignal.timeout(15000)})
-    ]);
-
+    const minerRes=await fetch(`${API}/api/miner/${encodeURIComponent(addr)}`,{signal:AbortSignal.timeout(8000)});
     let miner={address:addr};
-    if(minerRes.status==='fulfilled'&&minerRes.value.ok){
-      const d=await minerRes.value.json();
+    if(minerRes.ok){
+      const d=await minerRes.json();
       miner={...miner,...d};
     } else {
       const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{};
       miner={...miner,...cached};
     }
-
-    let txns=[];
-    if(txRes.status==='fulfilled'&&txRes.value.ok){
-      const td=await txRes.value.json();
-      txns=td.txns||[];
-    }
-
-    renderDetailPanel(panel,miner,txns,'—',addr,page);
+    renderDetailPanel(panel,miner,'—',addr,page);
+    loadTxnsPage(addr,1);
   }catch(e){
     const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{address:addr};
-    renderDetailPanel(panel,cached,[],'—',addr,page);
+    renderDetailPanel(panel,cached,'—',addr,page);
+    loadTxnsPage(addr,1);
   }
 }
 
-function renderDetailPanel(panel,miner,txns,balance,addr,page){
+function renderDetailPanel(panel,miner,balance,addr,page){
   const moniker=miner.moniker||miner.name||'Unknown';
   const initials=moniker.replace(/[^a-zA-Z0-9]/g,'').slice(0,2).toUpperCase()||'??';
   const submit=miner.submit_job||0;
@@ -1006,8 +997,9 @@ function renderDetailPanel(panel,miner,txns,balance,addr,page){
 
   const dailyData=miner.daily_jobs||miner.daily||null;
   const hasDaily=dailyData&&Object.keys(dailyData).length>0;
+  const txns=[];
 
-  const isConnectedAddr=walletAddress&&walletAddress.toLowerCase()===addr.toLowerCase();
+  const isConnectedAddr=!!walletAddress;
 
   panel.innerHTML=`
   <div class="miner-detail-panel">
@@ -1094,7 +1086,7 @@ function renderDetailPanel(panel,miner,txns,balance,addr,page){
   </div>`;
 
   // Render txns table separately (avoids quote conflicts in template literal)
-  renderTxnsTable(txns);
+  // txns loaded separately via loadTxnsPage
 
   // Render chart
   setTimeout(()=>{
@@ -1126,11 +1118,35 @@ function renderDetailPanel(panel,miner,txns,balance,addr,page){
   },50);
 }
 
-function renderTxnsTable(txns){
+let currentTxnAddr=null;
+let currentTxnTotal=0;
+let currentTxnPages=0;
+
+async function loadTxnsPage(addr,page){
+  currentTxnAddr=addr;
+  const wrap=document.getElementById('txnsTableWrap');
+  if(!wrap)return;
+  wrap.innerHTML='<div style="text-align:center;padding:20px;color:#64748b;font-family:monospace;font-size:12px">Loading transactions...</div>';
+  try{
+    const r=await fetch(API+'/api/miner/'+encodeURIComponent(addr)+'/txns?limit=50&page='+page,{signal:AbortSignal.timeout(15000)});
+    const d=await r.json();
+    if(d.indexing){
+      wrap.innerHTML='<div style="background:var(--bg3);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:14px;font-size:12px;color:#f59e0b;font-family:monospace;text-align:center">⏳ Indexing transactions... please wait a moment and refresh</div>';
+      return;
+    }
+    currentTxnTotal=d.total||0;
+    currentTxnPages=d.pages||1;
+    renderTxnsTable(d.txns||[],page,d.total||0,d.pages||1,addr);
+  }catch(e){
+    wrap.innerHTML='<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;color:#64748b;font-family:monospace;text-align:center">Failed to load transactions</div>';
+  }
+}
+
+function renderTxnsTable(txns,page,total,totalPages,addr){
   const wrap=document.getElementById('txnsTableWrap');
   if(!wrap)return;
   if(!txns||!txns.length){
-    wrap.innerHTML='<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:12px;color:#64748b;font-family:monospace;text-align:center">No transactions found</div>';
+    wrap.innerHTML='<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;color:#64748b;font-family:monospace;text-align:center">No transactions found</div>';
     return;
   }
   const typeColor=t=>t==='JobValidation'?'#00e5b0':t==='Delegate'||t==='Undelegate'?'#f59e0b':t==='Unjail'?'#ef4444':'#3b82f6';
@@ -1138,8 +1154,8 @@ function renderTxnsTable(txns){
   txns.forEach(tx=>{
     const h=tx.txhash||'';
     const status=tx.code===0?'<span style="color:#10b981;font-weight:700">OK</span>':'<span style="color:#ef4444;font-weight:700">Fail</span>';
-    const d=tx.timestamp?new Date(tx.timestamp):null;
-    const ts=d?(d.getDate()+'/'+(d.getMonth()+1)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')):'—';
+    const dt=tx.timestamp?new Date(tx.timestamp):null;
+    const ts=dt?(dt.getDate()+'/'+(dt.getMonth()+1)+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0')):'—';
     const tc=typeColor(tx.msg_type||'');
     const gas=tx.gas_used?Number(tx.gas_used).toLocaleString():'—';
     rows+='<tr>'
@@ -1151,11 +1167,35 @@ function renderTxnsTable(txns){
       +'<td style="color:#64748b">'+ts+'</td>'
       +'</tr>';
   });
+
+  // Pagination controls
+  const from=(page-1)*50+1;
+  const to=Math.min(page*50,total);
+  let pgBtns='';
+  // First
+  pgBtns+='<button onclick="loadTxnsPage(''+addr+'',1)" '+(page===1?'disabled':'')+' style="padding:4px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);color:'+(page===1?'#64748b':'#f0f4f8')+';cursor:'+(page===1?'default':'pointer')+';font-family:monospace;font-size:11px">«</button>';
+  // Prev
+  pgBtns+='<button onclick="loadTxnsPage(''+addr+'','+(page-1)+')" '+(page<=1?'disabled':'')+' style="padding:4px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);color:'+(page<=1?'#64748b':'#f0f4f8')+';cursor:'+(page<=1?'default':'pointer')+';font-family:monospace;font-size:11px">‹</button>';
+  // Page numbers around current
+  const startP=Math.max(1,page-2);
+  const endP=Math.min(totalPages,page+2);
+  for(let p=startP;p<=endP;p++){
+    pgBtns+='<button onclick="loadTxnsPage(''+addr+'','+p+')" style="padding:4px 8px;border-radius:4px;border:1px solid '+(p===page?'rgba(0,229,176,.4)':'var(--border)')+';background:'+(p===page?'rgba(0,229,176,.1)':'var(--bg3)')+';color:'+(p===page?'#00e5b0':'#f0f4f8')+';cursor:pointer;font-family:monospace;font-size:11px">'+p+'</button>';
+  }
+  // Next
+  pgBtns+='<button onclick="loadTxnsPage(''+addr+'','+(page+1)+')" '+(page>=totalPages?'disabled':'')+' style="padding:4px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);color:'+(page>=totalPages?'#64748b':'#f0f4f8')+';cursor:'+(page>=totalPages?'default':'pointer')+';font-family:monospace;font-size:11px">›</button>';
+  // Last
+  pgBtns+='<button onclick="loadTxnsPage(''+addr+'','+totalPages+')" '+(page===totalPages?'disabled':'')+' style="padding:4px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);color:'+(page===totalPages?'#64748b':'#f0f4f8')+';cursor:'+(page===totalPages?'default':'pointer')+';font-family:monospace;font-size:11px">»</button>';
+
   wrap.innerHTML='<div class="detail-jobs-table-wrap">'
     +'<table class="detail-jobs-table">'
     +'<thead><tr><th>TX Hash</th><th>Type</th><th>Height</th><th>Gas</th><th>Status</th><th>Time</th></tr></thead>'
     +'<tbody>'+rows+'</tbody>'
-    +'</table></div>';
+    +'</table></div>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px">'
+    +'<span style="font-family:monospace;font-size:11px;color:#64748b">Showing '+from+'-'+to+' of '+total.toLocaleString()+' transactions</span>'
+    +'<div style="display:flex;gap:4px;flex-wrap:wrap">'+pgBtns+'</div>'
+    +'</div>';
 }
 
 function closeMinerDetail(page){
