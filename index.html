@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>RepublicAI GPU Mining STATS</title>
+<title>Republic Stats – GPU Miner Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2307090f'/><text x='50%' y='58%' font-size='18' text-anchor='middle' dominant-baseline='middle'>⛏️</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
 <style>
 :root{
   --bg:#07090f;--bg2:#0e1117;--bg3:#141a24;--bg4:#1a2233;
@@ -14,1047 +17,799 @@
   --text:#f0f4f8;--muted:#64748b;--border:#1e2a3a;
   --green:#10b981;--red:#ef4444;--yellow:#f59e0b;
   --gold:#f59e0b;--silver:#94a3b8;--bronze:#cd7c3a;
-  --pixel:'Press Start 2P',monospace;--vt:'VT323',monospace;--silk:'Silkscreen',sans-serif;
-  --sky1:#1a1a2e;--sky2:#16213e;--ground:#0a1628;
+  --font-main:'Outfit',sans-serif;--font-mono:'JetBrains Mono',monospace;
 }
-*{margin:0;padding:0;box-sizing:border-box;image-rendering:pixelated}
+*{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--silk);min-height:100vh;overflow-x:hidden;cursor:crosshair}
-::-webkit-scrollbar{width:8px}
+body{background:var(--bg);color:var(--text);font-family:var(--font-main);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:var(--bg2)}
-::-webkit-scrollbar-thumb{background:var(--accent);border-radius:0}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
 
-/* ═══ SPLASH SCREEN ═══ */
-#splash{
-  position:fixed;inset:0;z-index:9999;overflow:hidden;
-  background:linear-gradient(180deg,#0d1b2a 0%,#1a3a5c 25%,#2d6a4f 60%,#1b4332 80%,#0a1628 100%);
-  cursor:pointer;
-}
-
-/* Pixel stars */
-.px-stars{position:absolute;top:0;left:0;right:0;height:35%;overflow:hidden}
-.px-star{position:absolute;width:3px;height:3px;background:#fff;animation:twinkle 2s infinite}
-@keyframes twinkle{0%,100%{opacity:1}50%{opacity:.2}}
-
-/* Pixel mountains - back */
-.px-mountains-back{
-  position:absolute;bottom:38%;left:0;right:0;height:200px;
-  background:
-    linear-gradient(to bottom right,transparent 50%,#1a3a5c 50%) 0px 0px / 200px 120px no-repeat,
-    linear-gradient(to bottom left,transparent 50%,#1a3a5c 50%) 200px 0px / 200px 120px no-repeat,
-    linear-gradient(to bottom right,transparent 50%,#234e6e 50%) 350px 20px / 160px 100px no-repeat,
-    linear-gradient(to bottom left,transparent 50%,#234e6e 50%) 510px 20px / 160px 100px no-repeat,
-    linear-gradient(to bottom right,transparent 50%,#1a3a5c 50%) 900px 10px / 180px 110px no-repeat,
-    linear-gradient(to bottom left,transparent 50%,#1a3a5c 50%) 1080px 10px / 180px 110px no-repeat,
-    linear-gradient(to bottom right,transparent 50%,#1e4060 50%) 1200px 25px / 150px 90px no-repeat,
-    linear-gradient(to bottom left,transparent 50%,#1e4060 50%) 1350px 25px / 150px 90px no-repeat;
-}
-
-/* Pixel mountains - front */
-.px-mountains-front{
-  position:absolute;bottom:35%;left:0;right:0;height:160px;
-  background:
-    linear-gradient(to bottom right,transparent 50%,#0f2d40 50%) 100px 0px / 240px 140px no-repeat,
-    linear-gradient(to bottom left,transparent 50%,#0f2d40 50%) 340px 0px / 240px 140px no-repeat,
-    linear-gradient(to bottom right,transparent 50%,#0d2535 50%) 600px 15px / 200px 120px no-repeat,
-    linear-gradient(to bottom left,transparent 50%,#0d2535 50%) 800px 15px / 200px 120px no-repeat,
-    linear-gradient(to bottom right,transparent 50%,#0f2d40 50%) 1050px 5px / 220px 130px no-repeat,
-    linear-gradient(to bottom left,transparent 50%,#0f2d40 50%) 1270px 5px / 220px 130px no-repeat;
-}
-
-/* Ground layers */
-.px-ground{
-  position:absolute;bottom:0;left:0;right:0;
-}
-.px-ground-far{position:absolute;bottom:33%;left:0;right:0;height:12%;background:#1a4a2e}
-.px-ground-mid{position:absolute;bottom:18%;left:0;right:0;height:18%;background:#1e5c35}
-.px-ground-near{position:absolute;bottom:0;left:0;right:0;height:22%;background:#145a2e}
-
-/* Pixel trees */
-.px-trees{position:absolute;bottom:30%;left:0;right:0;height:120px;pointer-events:none}
-.px-tree{position:absolute;bottom:0}
-.px-tree-trunk{width:12px;height:20px;background:#5c3d1e;margin:0 auto}
-.px-tree-top{width:0;height:0;border-left:22px solid transparent;border-right:22px solid transparent;border-bottom:40px solid #1e6b3a;margin:0 auto}
-.px-tree-top2{width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:32px solid #228b45;margin:0 auto;margin-top:-20px}
-.px-tree-top3{width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:28px solid #27a355;margin:0 auto;margin-top:-18px}
-
-/* Pixel flowers */
-.px-flowers{position:absolute;bottom:15%;left:0;right:0;pointer-events:none}
-.px-flower{position:absolute;bottom:0;animation:sway 3s ease-in-out infinite}
-@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
-.px-flower-stem{width:3px;height:20px;background:#2d8a3e;margin:0 auto}
-.px-flower-head{width:12px;height:12px;border-radius:0;background:#e879f9;position:relative;margin:-2px auto 0}
-.px-flower-head::before{content:'';position:absolute;inset:3px;background:#fbbf24}
-.px-flower2 .px-flower-head{background:#f472b6}
-.px-flower3 .px-flower-head{background:#a78bfa}
-
-/* GPU Computer pixel art */
-.px-computer{
-  position:absolute;left:12%;bottom:22%;
-  animation:float 3s ease-in-out infinite;
-}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.px-monitor{width:96px;height:76px;background:#9ca3af;border:4px solid #374151;position:relative;display:flex;align-items:center;justify-content:center;box-shadow:4px 4px 0 #1f2937}
-.px-screen{width:72px;height:52px;background:#0d1117;border:3px solid #6b7280;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column}
-.px-screen-text{font-family:var(--pixel);font-size:3px;color:var(--accent);text-align:center;line-height:1.8;animation:blink-txt 1s infinite}
-@keyframes blink-txt{0%,100%{opacity:1}50%{opacity:0.5}}
-.px-monitor-neck{width:16px;height:12px;background:#9ca3af;margin:0 auto;border-left:4px solid #374151;border-right:4px solid #374151}
-.px-monitor-base{width:52px;height:8px;background:#6b7280;margin:0 auto;border:4px solid #374151}
-.px-monitor-stand{width:36px;height:16px;background:#374151;margin:0 auto}
-.px-eyes{display:flex;gap:16px;justify-content:center;position:absolute;bottom:14px;left:0;right:0}
-.px-eye{width:8px;height:8px;background:#00e5b0;animation:eyeblink 4s infinite}
-@keyframes eyeblink{0%,90%,100%{height:8px}95%{height:2px}}
-
-/* Pixel GPU chip decorations */
-.px-gpu-chips{position:absolute;right:10%;bottom:20%;display:flex;gap:8px;flex-direction:column}
-.px-chip{width:40px;height:40px;background:#1e3a5f;border:3px solid var(--accent);position:relative;animation:chipglow 2s infinite alternate}
-@keyframes chipglow{from{box-shadow:0 0 0 0 rgba(0,229,176,.3)}to{box-shadow:0 0 12px 4px rgba(0,229,176,.5)}}
-.px-chip::before{content:'GPU';font-family:var(--pixel);font-size:5px;color:var(--accent);position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-.px-chip-sm{width:24px;height:24px;background:#1a2d47;border:2px solid #3b82f6;animation:chipglow2 2.5s infinite alternate}
-@keyframes chipglow2{from{box-shadow:0 0 0 0 rgba(59,130,246,.3)}to{box-shadow:0 0 8px 3px rgba(59,130,246,.5)}}
-
-/* Center content on splash */
-.splash-center{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);
-  text-align:center;z-index:10;width:90%;max-width:700px;
-}
-.splash-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  font-family:var(--pixel);font-size:8px;color:var(--accent);
-  letter-spacing:.1em;margin-bottom:20px;
-  text-shadow:0 0 8px var(--accent);
-  animation:pulse-badge 2s infinite;
-}
-@keyframes pulse-badge{0%,100%{opacity:1}50%{opacity:.6}}
-.splash-title{
-  font-family:var(--pixel);font-size:clamp(14px,3vw,28px);
-  line-height:1.6;margin-bottom:8px;
-  color:#fff;text-shadow:4px 4px 0 #000,0 0 20px rgba(0,229,176,.4);
-  letter-spacing:.05em;
-}
-.splash-title .t-green{color:var(--accent);text-shadow:4px 4px 0 #004d3a,0 0 20px var(--accent)}
-.splash-title .t-blue{color:#60a5fa;text-shadow:4px 4px 0 #1e3a8a,0 0 20px #60a5fa}
-.splash-subtitle{
-  font-family:var(--vt);font-size:clamp(18px,3vw,28px);
-  color:rgba(240,244,248,.7);margin-bottom:32px;letter-spacing:.05em;
-}
-/* Animated code lines */
-.code-rain{
-  font-family:var(--pixel);font-size:7px;color:rgba(0,229,176,.5);
-  margin-bottom:24px;line-height:2.2;letter-spacing:.05em;
-  text-align:left;display:inline-block;
-}
-.code-line{overflow:hidden;white-space:nowrap;animation:type-in .6s steps(30,end) forwards;opacity:0}
-.code-line:nth-child(1){animation-delay:.2s}
-.code-line:nth-child(2){animation-delay:.8s}
-.code-line:nth-child(3){animation-delay:1.4s}
-.code-line:nth-child(4){animation-delay:2.0s}
-@keyframes type-in{from{width:0;opacity:1}to{width:100%;opacity:1}}
-
-.click-anywhere{
-  font-family:var(--pixel);font-size:10px;
-  color:var(--accent);letter-spacing:.08em;
-  animation:blink-cta 1s step-end infinite;
-  text-shadow:0 0 12px var(--accent);
-  margin-top:8px;display:inline-block;
-}
-@keyframes blink-cta{0%,100%{opacity:1}50%{opacity:0}}
-
-/* Pixel border frame on splash */
-.splash-frame{
-  border:4px solid var(--accent);
-  padding:20px 28px;
-  position:relative;
-  background:rgba(7,9,15,.75);
-  box-shadow:0 0 0 2px #000,0 0 30px rgba(0,229,176,.15);
-}
-.splash-frame::before,.splash-frame::after{content:'⛏';font-size:16px;position:absolute;top:-12px;color:var(--accent)}
-.splash-frame::before{left:12px}
-.splash-frame::after{right:12px}
-
-/* Corner decorations */
-.corner{position:absolute;width:16px;height:16px;border-color:var(--accent);border-style:solid}
-.corner-tl{top:0;left:0;border-width:4px 0 0 4px}
-.corner-tr{top:0;right:0;border-width:4px 4px 0 0}
-.corner-bl{bottom:0;left:0;border-width:0 0 4px 4px}
-.corner-br{bottom:0;right:0;border-width:0 4px 4px 0}
-
-/* Pixel scanlines overlay */
-.scanlines{
-  position:fixed;inset:0;pointer-events:none;z-index:10000;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
-}
-
-/* ═══ MAIN APP ═══ */
-#app{display:none}
-
-/* Chain banner */
 #chainBanner{
-  width:100%;padding:8px 16px;text-align:center;
-  font-family:var(--pixel);font-size:8px;
-  letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:8px;
-  background:rgba(0,229,176,.07);border-bottom:3px solid rgba(0,229,176,.3);
-  position:sticky;top:0;z-index:100;
-  text-shadow:0 0 6px rgba(0,229,176,.5);
+  width:100%;padding:8px 20px;text-align:center;font-size:12px;font-family:var(--font-mono);
+  letter-spacing:.05em;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:rgba(0,229,176,.07);border-bottom:1px solid rgba(0,229,176,.15);
+  transition:all .4s;position:sticky;top:0;z-index:100;
 }
-#chainBanner.halted{background:rgba(239,68,68,.07);border-bottom-color:rgba(239,68,68,.3)}
-#chainBanner.checking{background:rgba(100,116,139,.05);border-bottom-color:rgba(100,116,139,.2)}
-.chain-dot{width:8px;height:8px;display:inline-block;flex-shrink:0}
-.chain-dot.live{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse-dot 2s infinite}
-.chain-dot.halted{background:var(--red)}
-.chain-dot.checking{background:var(--muted);animation:blink-dot 1s infinite}
-@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes blink-dot{0%,100%{opacity:1}50%{opacity:.2}}
+#chainBanner.halted{background:rgba(239,68,68,.07);border-bottom-color:rgba(239,68,68,.2)}
+#chainBanner.checking{background:rgba(100,116,139,.05);border-bottom-color:rgba(100,116,139,.1)}
+.chain-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.chain-dot.live{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+.chain-dot.halted{background:var(--red);box-shadow:0 0 8px var(--red)}
+.chain-dot.checking{background:var(--muted);animation:blink 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-/* Nav */
 nav{
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;height:56px;background:var(--bg2);
-  border-bottom:3px solid var(--border);
-  position:sticky;top:25px;z-index:99;
-  box-shadow:0 4px 0 rgba(0,0,0,.5);
+  padding:0 24px;height:58px;background:var(--bg2);
+  border-bottom:1px solid var(--border);position:sticky;top:33px;z-index:99;
 }
-.nav-logo{
-  font-family:var(--pixel);font-weight:400;font-size:11px;color:var(--accent);
-  letter-spacing:.06em;display:flex;align-items:center;gap:8px;
-  text-shadow:0 0 8px rgba(0,229,176,.5);
-}
+.nav-logo{font-family:var(--font-mono);font-weight:700;font-size:15px;color:var(--accent);letter-spacing:.05em;display:flex;align-items:center;gap:8px}
+.nav-logo-icon{font-size:18px}
 .nav-logo span{color:var(--muted)}
-.nav-links{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
-.nav-link{
-  padding:6px 10px;font-family:var(--pixel);font-size:7px;cursor:pointer;
-  color:var(--muted);transition:all .15s;border:2px solid transparent;
-  background:transparent;letter-spacing:.04em;
-}
-.nav-link:hover{color:var(--text);border-color:var(--border);background:var(--bg3)}
-.nav-link.active{color:var(--accent);border-color:var(--accent);background:rgba(0,229,176,.08)}
-.nav-btn{
-  padding:5px 10px;font-family:var(--pixel);font-size:7px;cursor:pointer;
-  border:2px solid rgba(59,130,246,.5);background:rgba(59,130,246,.08);
-  color:var(--accent2);transition:all .15s;margin-left:4px;letter-spacing:.03em;
-}
-.nav-btn:hover{background:rgba(59,130,246,.2)}
+.nav-links{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .2s;border:none;background:transparent;display:flex;align-items:center;gap:5px}
+.nav-link:hover{color:var(--text);background:var(--bg3)}
+.nav-link.active{color:var(--accent);background:rgba(0,229,176,.08)}
+.nav-icon{font-size:14px}
+.nav-btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text);transition:all .2s;margin-left:4px;display:flex;align-items:center;gap:5px;text-decoration:none}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+.nav-btn.points{border-color:rgba(245,158,11,.3);color:var(--gold)}
+.nav-btn.points:hover{background:rgba(245,158,11,.08)}
+.nav-btn.submit{border-color:rgba(59,130,246,.3);color:var(--accent2)}
+.nav-btn.submit:hover{background:rgba(59,130,246,.08)}
 
-/* Hero */
-.hero{
-  text-align:center;padding:48px 20px 32px;
-  background:
-    repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(0,229,176,.02) 31px,rgba(0,229,176,.02) 32px),
-    repeating-linear-gradient(90deg,transparent,transparent 31px,rgba(0,229,176,.02) 31px,rgba(0,229,176,.02) 32px),
-    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,229,176,.06) 0%,transparent 70%);
-}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
-  font-family:var(--pixel);font-size:7px;color:var(--accent);
-  background:rgba(0,229,176,.07);border:2px solid rgba(0,229,176,.4);
-  margin-bottom:20px;letter-spacing:.08em;
-  box-shadow:0 0 12px rgba(0,229,176,.15),inset 0 0 12px rgba(0,229,176,.05);
-}
-.hero h1{
-  font-family:var(--pixel);font-size:clamp(14px,2.5vw,24px);
-  line-height:1.8;margin-bottom:12px;
-  text-shadow:3px 3px 0 #000,0 0 20px rgba(0,229,176,.3);
-}
-.hero h1 span{color:var(--accent);text-shadow:3px 3px 0 #004d3a,0 0 16px var(--accent)}
-.hero p{font-family:var(--vt);color:var(--muted);font-size:20px;max-width:560px;margin:0 auto 28px}
+.hero{text-align:center;padding:52px 24px 36px;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,229,176,.06) 0%,transparent 70%)}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-family:var(--font-mono);font-weight:600;letter-spacing:.08em;color:var(--accent);background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.2);margin-bottom:18px;text-transform:uppercase}
+.hero h1{font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:14px}
+.hero h1 span{color:var(--accent)}
+.hero p{color:var(--muted);font-size:15px;max-width:560px;margin:0 auto 32px}
 
-/* Stats grid */
-.stats-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:3px;padding:0 20px 28px;max-width:1200px;margin:0 auto;
-}
-.stat-card{
-  background:var(--bg2);border:2px solid var(--border);
-  padding:16px 14px;transition:all .2s;position:relative;overflow:hidden;
-  cursor:default;
-}
-.stat-card::after{
-  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
-  background:var(--accent);transform:scaleX(0);transition:transform .3s;transform-origin:left;
-}
-.stat-card:hover{border-color:var(--accent);transform:translateY(-3px)}
-.stat-card:hover::after{transform:scaleX(1)}
-.stat-label{font-family:var(--pixel);font-size:7px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
-.stat-value{font-family:var(--pixel);font-size:18px;color:var(--text);line-height:1}
-.stat-value.accent{color:var(--accent);text-shadow:0 0 8px rgba(0,229,176,.4)}
-.stat-sub{font-family:var(--vt);font-size:14px;color:var(--muted);margin-top:6px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:0 24px 32px;max-width:1200px;margin:0 auto}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 16px;transition:all .25s;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:.25s}
+.stat-card:hover{border-color:rgba(0,229,176,.25);transform:translateY(-2px)}
+.stat-card:hover::before{opacity:1}
+.stat-label{font-size:11px;color:var(--muted);font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.stat-value{font-size:26px;font-weight:700;font-family:var(--font-mono);color:var(--text)}
+.stat-value.accent{color:var(--accent)}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)}
 
-/* Search section */
-.search-section{padding:0 20px 28px;max-width:700px;margin:0 auto}
-.search-title{font-family:var(--pixel);font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.search-box{display:flex;gap:0}
-.search-input{
-  flex:1;background:var(--bg2);border:2px solid var(--border);
-  border-right:none;padding:12px 14px;color:var(--text);
-  font-family:var(--silk);font-size:13px;outline:none;transition:border-color .2s;
-}
+.search-section{padding:0 24px 32px;max-width:700px;margin:0 auto}
+.search-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-family:var(--font-mono)}
+.search-box{display:flex;gap:8px}
+.search-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-size:13px;font-family:var(--font-mono);outline:none;transition:border-color .2s}
 .search-input:focus{border-color:var(--accent)}
-.search-input::placeholder{color:var(--muted);font-family:var(--vt);font-size:16px}
-.btn{padding:10px 18px;font-family:var(--pixel);font-size:8px;cursor:pointer;border:none;transition:all .15s;letter-spacing:.04em}
-.btn-accent{background:var(--accent);color:#000;border:2px solid var(--accent)}
-.btn-accent:hover{background:#00ffc4;transform:translateY(-2px);box-shadow:0 4px 0 #004d3a}
-.btn-accent:active{transform:translateY(0);box-shadow:none}
+.search-input::placeholder{color:var(--muted)}
+.btn{padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font-main)}
+.btn-accent{background:var(--accent);color:#000}
+.btn-accent:hover{background:#00ffc4;transform:translateY(-1px)}
+.btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
 
-/* Miner card */
-.miner-card{background:var(--bg2);border:2px solid var(--accent);padding:18px;animation:fadeUp .3s ease;box-shadow:4px 4px 0 rgba(0,229,176,.2)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.miner-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
-.miner-rank-badge{font-family:var(--pixel);font-size:16px;color:var(--accent);background:rgba(0,229,176,.08);border:2px solid rgba(0,229,176,.3);padding:4px 12px;flex-shrink:0;text-shadow:0 0 8px rgba(0,229,176,.5)}
+#minerResult{margin-top:16px}
+.miner-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.miner-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.miner-rank-badge{font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--accent);background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:4px 14px;flex-shrink:0}
 .miner-info{flex:1;min-width:0}
-.miner-name{font-family:var(--pixel);font-size:11px;color:var(--accent);margin-bottom:5px}
-.miner-addr{font-family:var(--silk);font-size:11px;color:var(--muted);word-break:break-all;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.copy-btn{background:none;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:11px;padding:2px 5px;transition:all .2s}
-.copy-btn:hover{color:var(--accent);border-color:var(--accent)}
-.miner-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
-.uptime-badge{font-family:var(--pixel);font-size:7px;font-weight:600;padding:3px 8px;border:2px solid}
-.uptime-100{background:rgba(16,185,129,.1);color:var(--green);border-color:var(--green)}
-.uptime-high{background:rgba(245,158,11,.1);color:var(--yellow);border-color:var(--yellow)}
-.uptime-low{background:rgba(239,68,68,.1);color:var(--red);border-color:var(--red)}
-.uptime-unknown{background:rgba(100,116,139,.1);color:var(--muted);border-color:var(--muted)}
-.miner-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:14px}
-.miner-stat{background:var(--bg3);padding:10px;text-align:center;border:2px solid var(--border)}
-.miner-stat-label{font-family:var(--pixel);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
-.miner-stat-value{font-family:var(--pixel);font-size:14px;color:var(--text)}
-.progress-bar-wrap{margin-bottom:12px}
-.progress-bar-label{display:flex;justify-content:space-between;font-family:var(--pixel);font-size:7px;color:var(--muted);margin-bottom:5px}
-.progress-bar-track{height:8px;background:var(--bg4);border:2px solid var(--border)}
-.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s ease}
-.share-btn{width:100%;padding:10px;font-family:var(--pixel);font-size:8px;border:2px solid rgba(59,130,246,.4);background:rgba(59,130,246,.08);color:var(--accent2);cursor:pointer;transition:all .2s;letter-spacing:.04em}
-.share-btn:hover{background:rgba(59,130,246,.2);transform:translateY(-2px);box-shadow:0 4px 0 rgba(59,130,246,.3)}
+.miner-name{font-size:17px;font-weight:700;color:var(--accent);margin-bottom:4px;font-family:var(--font-mono)}
+.miner-addr{font-size:11px;color:var(--muted);font-family:var(--font-mono);word-break:break-all;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.copy-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:4px;transition:all .2s;flex-shrink:0}
+.copy-btn:hover{color:var(--accent);background:rgba(0,229,176,.08)}
+.miner-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.uptime-badge{font-size:11px;font-family:var(--font-mono);font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid}
+.uptime-100{background:rgba(16,185,129,.1);color:var(--green);border-color:rgba(16,185,129,.3)}
+.uptime-high{background:rgba(245,158,11,.1);color:var(--yellow);border-color:rgba(245,158,11,.3)}
+.uptime-low{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)}
+.uptime-unknown{background:rgba(100,116,139,.1);color:var(--muted);border-color:rgba(100,116,139,.3)}
+.miner-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.miner-stat{background:var(--bg3);border-radius:8px;padding:12px;text-align:center}
+.miner-stat-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.miner-stat-value{font-size:20px;font-weight:700;font-family:var(--font-mono);color:var(--text)}
+.progress-bar-wrap{margin-bottom:14px}
+.progress-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:6px}
+.progress-bar-track{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s ease}
+.share-btn{width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid rgba(59,130,246,.3);background:rgba(59,130,246,.08);color:var(--accent2);cursor:pointer;transition:all .2s}
+.share-btn:hover{background:rgba(59,130,246,.15);border-color:var(--accent2)}
 
-/* Section */
-.section{padding:0 20px 36px;max-width:1200px;margin:0 auto}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.section-title{font-family:var(--pixel);font-size:10px;color:var(--text);letter-spacing:.06em}
-.refresh-btn{font-family:var(--pixel);font-size:7px;color:var(--muted);background:none;border:2px solid var(--border);padding:5px 10px;cursor:pointer;transition:all .2s;letter-spacing:.04em}
+.section{padding:0 24px 40px;max-width:1200px;margin:0 auto}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.section-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text);font-family:var(--font-mono)}
+.refresh-btn{font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .2s;font-family:var(--font-mono)}
 .refresh-btn:hover{color:var(--accent);border-color:var(--accent)}
 
-/* Sort bar */
-.sort-bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
-.sort-btn{font-family:var(--pixel);font-size:7px;padding:5px 10px;border:2px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;letter-spacing:.03em}
+/* SORT BUTTONS */
+.sort-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sort-btn{font-size:11px;font-family:var(--font-mono);padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .2s;font-weight:600}
 .sort-btn:hover{color:var(--text);border-color:var(--muted)}
-.sort-btn.active{background:rgba(0,229,176,.1);border-color:var(--accent);color:var(--accent)}
+.sort-btn.active{background:rgba(0,229,176,.1);border-color:rgba(0,229,176,.4);color:var(--accent)}
 
-/* Table */
-.table-wrap{overflow-x:auto;border:2px solid var(--border)}
-table{width:100%;border-collapse:collapse;font-size:12px}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
 thead tr{background:var(--bg3)}
-th{padding:10px 12px;text-align:left;font-family:var(--pixel);font-size:7px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:400;white-space:nowrap;border-bottom:2px solid var(--border)}
-td{padding:10px 12px;border-bottom:1px solid rgba(30,42,58,.6);vertical-align:middle}
+th{padding:11px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;font-family:var(--font-mono);white-space:nowrap;border-bottom:1px solid var(--border)}
+td{padding:11px 14px;border-bottom:1px solid rgba(30,42,58,.6);vertical-align:middle}
 tbody tr{background:var(--bg2);transition:background .15s}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover{background:var(--bg3)}
 tbody tr.clickable-row{cursor:pointer}
-tbody tr.row-selected{background:rgba(0,229,176,.05);border-left:3px solid var(--accent)}
-.rank-cell{font-family:var(--pixel);font-size:11px;color:var(--accent);width:50px}
+tbody tr.clickable-row:hover td .addr-text{color:var(--accent)}
+tbody tr.row-selected{background:rgba(0,229,176,.05);border-left:2px solid var(--accent)}
+.rank-cell{font-family:var(--font-mono);font-weight:700;color:var(--accent);width:50px}
 .rank-1{color:var(--gold)}.rank-2{color:var(--silver)}.rank-3{color:var(--bronze)}
-.addr-cell{font-family:var(--silk);font-size:11px;color:var(--muted);word-break:break-all;max-width:260px}
+.addr-cell{font-family:var(--font-mono);font-size:11px;color:var(--muted);word-break:break-all;max-width:260px}
 .addr-text{transition:color .2s;cursor:pointer}
 .addr-text:hover{color:var(--accent)!important}
-.num-cell{font-family:var(--pixel);font-size:11px;font-weight:600;text-align:right;white-space:nowrap}
-.moniker-cell{font-family:var(--silk);font-size:12px;color:var(--text);font-weight:500}
+.num-cell{font-family:var(--font-mono);font-weight:600;text-align:right;white-space:nowrap}
+.moniker-cell{font-family:var(--font-mono);font-size:12px;color:var(--text);font-weight:500}
 .moniker-cell.empty{color:var(--muted);font-style:italic}
 
-/* Detail panel */
+/* MINER DETAIL PANEL */
 .miner-detail-panel{
-  background:var(--bg2);border:2px solid rgba(0,229,176,.4);
-  padding:22px;margin:0 20px 28px;max-width:1160px;margin-left:auto;margin-right:auto;
+  background:var(--bg2);border:1px solid rgba(0,229,176,.2);border-radius:16px;
+  padding:24px;margin:0 24px 32px;max-width:1152px;margin-left:auto;margin-right:auto;
   animation:slideDown .3s ease;position:relative;
-  box-shadow:0 0 20px rgba(0,229,176,.1),4px 4px 0 rgba(0,0,0,.5);
 }
-@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
-.detail-close{position:absolute;top:14px;right:14px;background:var(--bg3);border:2px solid var(--border);color:var(--muted);width:28px;height:28px;cursor:pointer;font-family:var(--pixel);font-size:10px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+.detail-close{position:absolute;top:16px;right:16px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
 .detail-close:hover{color:var(--text);border-color:var(--muted)}
-.detail-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;flex-wrap:wrap}
-.detail-avatar{width:50px;height:50px;background:linear-gradient(135deg,rgba(0,229,176,.2),rgba(59,130,246,.2));border:2px solid rgba(0,229,176,.4);display:flex;align-items:center;justify-content:center;font-family:var(--pixel);font-size:14px;color:var(--accent);flex-shrink:0}
-.detail-name{font-family:var(--pixel);font-size:14px;color:var(--text);margin-bottom:5px}
-.detail-status-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-.status-badge{font-family:var(--pixel);font-size:7px;padding:3px 8px;border:2px solid}
-.status-active{background:rgba(16,185,129,.1);color:var(--green);border-color:var(--green)}
-.status-inactive{background:rgba(100,116,139,.1);color:var(--muted);border-color:var(--muted)}
-.status-jailed{background:rgba(239,68,68,.1);color:var(--red);border-color:var(--red)}
-.detail-addr-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:14px}
-.detail-addr-item{background:var(--bg3);padding:10px 12px;border:2px solid var(--border)}
-.detail-addr-label{font-family:var(--pixel);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
-.detail-addr-value{font-family:var(--silk);font-size:11px;color:var(--text);word-break:break-all;display:flex;align-items:flex-start;gap:4px}
-.detail-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:18px}
-.detail-stat{background:var(--bg3);padding:12px;text-align:center;border:2px solid var(--border)}
-.detail-stat-label{font-family:var(--pixel);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
-.detail-stat-value{font-family:var(--pixel);font-size:16px}
-.detail-chart-title{font-family:var(--pixel);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.detail-chart-wrap{position:relative;height:140px;margin-bottom:18px}
-.detail-loading{text-align:center;padding:28px;color:var(--muted);font-family:var(--pixel);font-size:9px}
+.detail-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.detail-avatar{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,rgba(0,229,176,.2),rgba(59,130,246,.2));border:1px solid rgba(0,229,176,.3);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;font-family:var(--font-mono);color:var(--accent);flex-shrink:0}
+.detail-name{font-size:20px;font-weight:700;color:var(--text);font-family:var(--font-mono);margin-bottom:4px}
+.detail-status-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status-badge{font-size:11px;font-family:var(--font-mono);font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid}
+.status-active{background:rgba(16,185,129,.1);color:var(--green);border-color:rgba(16,185,129,.3)}
+.status-inactive{background:rgba(100,116,139,.1);color:var(--muted);border-color:rgba(100,116,139,.3)}
+.status-jailed{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)}
+.detail-addr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.detail-addr-item{background:var(--bg3);border-radius:8px;padding:10px 12px}
+.detail-addr-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.detail-addr-value{font-size:11px;font-family:var(--font-mono);color:var(--text);word-break:break-all;display:flex;align-items:flex-start;gap:4px}
+.detail-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.detail-stat{background:var(--bg3);border-radius:8px;padding:12px;text-align:center}
+.detail-stat-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.detail-stat-value{font-size:20px;font-weight:700;font-family:var(--font-mono)}
+.detail-chart-title{font-size:12px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.detail-chart-wrap{position:relative;height:150px;margin-bottom:20px}
+.detail-jobs-title{font-size:12px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.detail-jobs-table-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;overflow-x:auto}
+.detail-jobs-table{width:100%;border-collapse:collapse;font-size:12px}
+.detail-jobs-table th{padding:8px 12px;background:var(--bg3);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-family:var(--font-mono);text-align:left;white-space:nowrap}
+.detail-jobs-table td{padding:8px 12px;border-top:1px solid rgba(30,42,58,.6);font-family:var(--font-mono);font-size:11px;color:var(--text)}
+.detail-jobs-table tr:hover td{background:var(--bg3)}
+.tx-link{color:var(--accent2);text-decoration:none}
+.tx-link:hover{text-decoration:underline}
+.detail-loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;font-family:var(--font-mono)}
 
-/* Pages */
 .page{display:none}
 .page.active{display:block}
 
-/* Leaderboard */
-.lb-hero{padding:32px 20px 18px;text-align:center;background:repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(0,229,176,.02) 31px,rgba(0,229,176,.02) 32px)}
-.lb-hero h2{font-family:var(--pixel);font-size:clamp(14px,2.5vw,22px);font-weight:400;margin-bottom:8px;line-height:1.7}
-.lb-hero h2 span{color:var(--accent);text-shadow:0 0 12px rgba(0,229,176,.4)}
-.lb-hero p{font-family:var(--vt);color:var(--muted);font-size:18px}
-.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:3px;padding:18px 20px 28px;max-width:700px;margin:0 auto}
-.podium-item{flex:1;max-width:200px;background:var(--bg2);border:2px solid var(--border);padding:14px 10px;text-align:center;position:relative;transition:all .2s;cursor:pointer}
-.podium-item:hover{transform:translateY(-3px);border-color:var(--accent)}
-.podium-item.p1{border-color:rgba(245,158,11,.5);background:linear-gradient(180deg,rgba(245,158,11,.05),var(--bg2))}
-.podium-item.p2{border-color:rgba(148,163,184,.3)}
-.podium-item.p3{border-color:rgba(205,124,58,.3)}
-.podium-medal{font-size:24px;margin-bottom:6px}
-.podium-rank-num{font-family:var(--pixel);font-size:8px;color:var(--muted);margin-bottom:5px}
-.podium-moniker{font-family:var(--pixel);font-size:9px;color:var(--text);margin-bottom:3px;word-break:break-all}
-.podium-addr{font-family:var(--silk);font-size:10px;color:var(--muted);word-break:break-all}
-.podium-score{font-family:var(--pixel);font-size:14px;color:var(--accent);margin:8px 0 4px;text-shadow:0 0 8px rgba(0,229,176,.4)}
+.lb-hero{padding:36px 24px 20px;text-align:center;background:radial-gradient(ellipse 70% 40% at 50% -5%,rgba(0,229,176,.05) 0%,transparent 70%)}
+.lb-hero h2{font-size:28px;font-weight:800;margin-bottom:6px}
+.lb-hero h2 span{color:var(--accent)}
+.lb-hero p{color:var(--muted);font-size:14px}
 
-.lb-search-wrap{padding:0 20px 14px;max-width:1200px;margin:0 auto}
-.lb-search-input{width:100%;background:var(--bg2);border:2px solid var(--border);padding:10px 14px;color:var(--text);font-family:var(--silk);font-size:13px;outline:none;transition:border-color .2s}
+.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:12px;padding:20px 24px 32px;max-width:700px;margin:0 auto}
+.podium-item{flex:1;max-width:200px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;position:relative;transition:all .25s;cursor:pointer}
+.podium-item:hover{transform:translateY(-3px);border-color:rgba(0,229,176,.2)}
+.podium-item.p1{border-color:rgba(245,158,11,.3);background:linear-gradient(180deg,rgba(245,158,11,.05),var(--bg2))}
+.podium-item.p2{border-color:rgba(148,163,184,.2)}
+.podium-item.p3{border-color:rgba(205,124,58,.2)}
+.podium-medal{font-size:26px;margin-bottom:8px}
+.podium-rank-num{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:6px}
+.podium-moniker{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;word-break:break-all}
+.podium-addr{font-family:var(--font-mono);font-size:10px;color:var(--muted);word-break:break-all}
+.podium-score{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--accent);margin:10px 0 4px}
+.podium-uptime{font-size:10px;font-family:var(--font-mono)}
+
+.lb-search-wrap{padding:0 24px 16px;max-width:1200px;margin:0 auto}
+.lb-search-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 16px;color:var(--text);font-size:13px;font-family:var(--font-mono);outline:none;transition:border-color .2s}
 .lb-search-input:focus{border-color:var(--accent)}
 .lb-search-input::placeholder{color:var(--muted)}
 
-/* Ecosystem */
-.eco-hero{padding:32px 20px 18px;text-align:center}
-.eco-hero h2{font-family:var(--pixel);font-size:clamp(14px,2.5vw,22px);font-weight:400;margin-bottom:8px;line-height:1.7}
-.eco-hero p{font-family:var(--vt);color:var(--muted);font-size:18px;max-width:500px;margin:0 auto}
-.filter-bar{display:flex;gap:4px;padding:0 20px 18px;flex-wrap:wrap;max-width:1200px;margin:0 auto}
-.filter-btn{padding:5px 12px;font-family:var(--pixel);font-size:7px;cursor:pointer;border:2px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .15s;letter-spacing:.04em}
-.filter-btn:hover{color:var(--text);border-color:var(--muted)}
-.filter-btn.active{background:rgba(0,229,176,.08);border-color:var(--accent);color:var(--accent)}
-.eco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:3px;padding:0 20px 36px;max-width:1200px;margin:0 auto}
-.eco-card{background:var(--bg2);border:2px solid var(--border);padding:16px;transition:all .2s;cursor:pointer}
-.eco-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:4px 4px 0 rgba(0,229,176,.15)}
+.eco-hero{padding:36px 24px 20px;text-align:center}
+.eco-hero h2{font-size:26px;font-weight:800;margin-bottom:6px}
+.eco-hero p{color:var(--muted);font-size:14px;max-width:500px;margin:0 auto}
+.filter-bar{display:flex;gap:6px;padding:0 24px 20px;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+.filter-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .2s}
+.filter-btn:hover{color:var(--text);border-color:var(--border)}
+.filter-btn.active{background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.3);color:var(--accent)}
+.eco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;padding:0 24px 40px;max-width:1200px;margin:0 auto}
+.eco-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;transition:all .25s;cursor:pointer}
+.eco-card:hover{border-color:rgba(0,229,176,.2);transform:translateY(-2px)}
 .eco-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-.eco-card-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg3);border:2px solid var(--border)}
-.cat-badge{font-family:var(--pixel);font-size:7px;padding:3px 7px;border:2px solid;letter-spacing:.04em}
-.cat-DeFi{background:rgba(0,229,176,.1);color:var(--accent);border-color:rgba(0,229,176,.4)}
-.cat-AI{background:rgba(59,130,246,.1);color:var(--accent2);border-color:rgba(59,130,246,.4)}
-.cat-Tool{background:rgba(245,158,11,.1);color:var(--gold);border-color:rgba(245,158,11,.4)}
-.cat-Infrastructure{background:rgba(139,92,246,.1);color:#a78bfa;border-color:rgba(139,92,246,.4)}
-.cat-Explorer{background:rgba(236,72,153,.1);color:#f472b6;border-color:rgba(236,72,153,.4)}
-.cat-Other{background:rgba(100,116,139,.1);color:var(--muted);border-color:rgba(100,116,139,.4)}
-.eco-card-name{font-family:var(--pixel);font-size:10px;margin-bottom:5px;line-height:1.6}
-.eco-card-desc{font-family:var(--vt);font-size:16px;color:var(--muted);line-height:1.4}
-.eco-card-link{font-family:var(--pixel);font-size:8px;color:var(--accent2);margin-top:10px;display:block;letter-spacing:.04em}
+.eco-card-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg3)}
+.cat-badge{font-size:10px;font-weight:600;font-family:var(--font-mono);padding:3px 8px;border-radius:20px;letter-spacing:.05em}
+.cat-DeFi{background:rgba(0,229,176,.1);color:var(--accent);border:1px solid rgba(0,229,176,.2)}
+.cat-AI{background:rgba(59,130,246,.1);color:var(--accent2);border:1px solid rgba(59,130,246,.2)}
+.cat-Tool{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.2)}
+.cat-Infrastructure{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+.cat-Explorer{background:rgba(236,72,153,.1);color:#f472b6;border:1px solid rgba(236,72,153,.2)}
+.cat-Other{background:rgba(100,116,139,.1);color:var(--muted);border:1px solid rgba(100,116,139,.2)}
+.eco-card-name{font-size:16px;font-weight:700;margin-bottom:5px}
+.eco-card-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.eco-card-link{font-size:12px;color:var(--accent2);margin-top:10px;display:block}
 
-/* Submit */
-.submit-wrap{padding:32px 20px 36px;max-width:600px;margin:0 auto}
-.submit-wrap h2{font-family:var(--pixel);font-size:16px;font-weight:400;margin-bottom:8px;line-height:1.7}
-.submit-wrap>p{font-family:var(--vt);color:var(--muted);font-size:18px;margin-bottom:24px}
-.form-group{margin-bottom:14px}
-.form-label{font-family:var(--pixel);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;display:block}
-.form-input,.form-select,.form-textarea{width:100%;background:var(--bg2);border:2px solid var(--border);padding:10px 12px;color:var(--text);font-family:var(--silk);font-size:13px;outline:none;transition:border-color .2s}
+.submit-wrap{padding:36px 24px 40px;max-width:600px;margin:0 auto}
+.submit-wrap h2{font-size:24px;font-weight:800;margin-bottom:6px}
+.submit-wrap p{color:var(--muted);font-size:14px;margin-bottom:28px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:13px;font-family:var(--font-main);outline:none;transition:border-color .2s}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
 .form-select{appearance:none;cursor:pointer;background-color:var(--bg2)}
-.form-textarea{resize:vertical;min-height:80px}
+.form-textarea{resize:vertical;min-height:90px}
 
-/* Guides */
-.guides-wrap{padding:32px 20px 36px;max-width:960px;margin:0 auto}
-.guides-wrap h2{font-family:var(--pixel);font-size:16px;font-weight:400;margin-bottom:8px;line-height:1.7}
-.guides-wrap>p{font-family:var(--vt);color:var(--muted);font-size:18px;margin-bottom:20px}
-.guide-section-label{font-family:var(--pixel);font-size:8px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;padding-left:2px}
-.guide-tabs{display:flex;gap:3px;margin-bottom:20px;flex-wrap:wrap}
-.guide-tab{padding:7px 14px;font-family:var(--pixel);font-size:7px;cursor:pointer;border:2px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .15s;display:flex;align-items:center;gap:5px;letter-spacing:.04em}
+.guides-wrap{padding:36px 24px 40px;max-width:960px;margin:0 auto}
+.guides-wrap h2{font-size:24px;font-weight:800;margin-bottom:8px}
+.guides-wrap>p{color:var(--muted);font-size:14px;margin-bottom:24px}
+.guide-section-label{font-size:10px;font-family:var(--font-mono);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-left:2px}
+.guide-tabs{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap}
+.guide-tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:6px}
 .guide-tab:hover{color:var(--text)}
-.guide-tab.active{background:rgba(0,229,176,.08);border-color:var(--accent);color:var(--accent)}
+.guide-tab.active{background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.3);color:var(--accent)}
 .guide-content{display:none}
 .guide-content.active{display:block}
-.guide-step{margin-bottom:24px}
-.guide-step h3{font-family:var(--pixel);font-size:9px;font-weight:400;margin-bottom:8px;color:var(--text);display:flex;align-items:center;gap:7px;line-height:1.7}
-.guide-step p{font-family:var(--vt);font-size:17px;color:var(--muted);line-height:1.6;margin-bottom:8px}
+.guide-step{margin-bottom:28px}
+.guide-step h3{font-size:15px;font-weight:700;margin-bottom:10px;color:var(--text);display:flex;align-items:center;gap:8px}
+.guide-step p{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:10px}
 .guide-step a{color:var(--accent2);text-decoration:none}
 .guide-step a:hover{text-decoration:underline}
-.code-block{background:var(--bg3);border:2px solid var(--border);padding:12px 14px;position:relative;margin-bottom:8px}
-.code-block pre{font-family:var(--silk);font-size:12px;color:var(--accent);white-space:pre-wrap;word-break:break-all;padding-right:44px;line-height:1.7}
-.code-copy{position:absolute;top:6px;right:6px;font-family:var(--pixel);font-size:7px;background:var(--bg4);border:2px solid var(--border);color:var(--muted);padding:3px 7px;cursor:pointer;transition:all .2s;letter-spacing:.04em}
+.code-block{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;margin-bottom:10px}
+.code-block pre{font-family:var(--font-mono);font-size:12px;color:var(--text);white-space:pre-wrap;word-break:break-all;padding-right:48px}
+.code-copy{position:absolute;top:8px;right:8px;font-size:10px;font-family:var(--font-mono);background:var(--bg4);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:5px;cursor:pointer;transition:all .2s}
 .code-copy:hover{color:var(--accent);border-color:var(--accent)}
-.guide-note{background:rgba(59,130,246,.06);border:2px solid rgba(59,130,246,.3);padding:10px 12px;font-family:var(--pixel);font-size:7px;color:#93c5fd;margin-bottom:12px;line-height:2;letter-spacing:.03em}
-.guide-warn{background:rgba(245,158,11,.06);border:2px solid rgba(245,158,11,.3);padding:10px 12px;font-family:var(--pixel);font-size:7px;color:#fcd34d;margin-bottom:12px;line-height:2;letter-spacing:.03em}
-.guide-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px}
-.guide-link-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;font-family:var(--pixel);font-size:7px;text-decoration:none;border:2px solid;transition:all .15s;letter-spacing:.04em}
-.guide-link-btn.official{border-color:rgba(0,229,176,.4);color:var(--accent);background:rgba(0,229,176,.06)}
-.guide-link-btn.official:hover{background:rgba(0,229,176,.14)}
-.guide-link-btn.community{border-color:rgba(59,130,246,.4);color:var(--accent2);background:rgba(59,130,246,.06)}
-.guide-link-btn.community:hover{background:rgba(59,130,246,.14)}
-.guide-link-btn.discord{border-color:rgba(139,92,246,.4);color:#a78bfa;background:rgba(139,92,246,.06)}
-.guide-link-btn.discord:hover{background:rgba(139,92,246,.14)}
+.guide-note{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:#93c5fd;font-family:var(--font-mono);margin-bottom:14px;line-height:1.6}
+.guide-warn{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:#fcd34d;font-family:var(--font-mono);margin-bottom:14px;line-height:1.6}
+.guide-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.guide-link-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid;transition:all .2s;font-family:var(--font-mono)}
+.guide-link-btn.official{border-color:rgba(0,229,176,.3);color:var(--accent);background:rgba(0,229,176,.06)}
+.guide-link-btn.official:hover{background:rgba(0,229,176,.12)}
+.guide-link-btn.community{border-color:rgba(59,130,246,.3);color:var(--accent2);background:rgba(59,130,246,.06)}
+.guide-link-btn.community:hover{background:rgba(59,130,246,.12)}
+.guide-link-btn.discord{border-color:rgba(139,92,246,.3);color:#a78bfa;background:rgba(139,92,246,.06)}
+.guide-link-btn.discord:hover{background:rgba(139,92,246,.12)}
 
-/* Points */
-.points-wrap{padding:32px 20px 52px;max-width:680px;margin:0 auto}
-.points-hero{text-align:center;margin-bottom:28px}
-.points-hero h2{font-family:var(--pixel);font-size:clamp(12px,2vw,18px);font-weight:400;margin-bottom:8px;line-height:1.8}
-.points-hero h2 span{color:var(--accent);text-shadow:0 0 10px rgba(0,229,176,.4)}
-.points-hero p{font-family:var(--vt);color:var(--muted);font-size:18px;max-width:480px;margin:0 auto}
-.points-card{background:var(--bg2);border:2px solid var(--border);padding:22px;margin-bottom:3px}
-.points-card-title{font-family:var(--pixel);font-size:8px;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:7px}
-.points-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2);text-align:center}
+.footer-logo{font-family:var(--font-mono);font-weight:700;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:6px}
+.footer-logo span{color:var(--muted)}
+.footer-sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+.footer-links{display:flex;justify-content:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.footer-link{font-size:12px;color:var(--muted);text-decoration:none;padding:6px 14px;border-radius:6px;border:1px solid var(--border);transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.footer-link:hover{color:var(--accent);border-color:rgba(0,229,176,.3)}
+.footer-link svg{width:14px;height:14px;flex-shrink:0}
+.footer-copy{font-size:11px;color:var(--muted);font-family:var(--font-mono)}
+
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border:none;background:none;border-radius:6px;transition:background .2s}
+.hamburger:hover{background:var(--bg3)}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all .3s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(7,9,15,.97);z-index:200;flex-direction:column;padding:24px;animation:slideIn .25s ease}
+.mobile-menu.open{display:flex}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.mobile-menu-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.mobile-menu-logo{font-family:var(--font-mono);font-weight:700;font-size:16px;color:var(--accent)}
+.mobile-close{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:18px;line-height:1}
+.mobile-nav-links{display:flex;flex-direction:column;gap:8px;flex:1}
+.mobile-nav-link{padding:14px 16px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:10px;text-align:left;text-decoration:none}
+.mobile-nav-link:hover,.mobile-nav-link.active{color:var(--accent);background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.2)}
+.mobile-nav-link.points{color:var(--gold);border-color:rgba(245,158,11,.2)}
+.mobile-nav-link.submit{color:var(--accent2);border-color:rgba(59,130,246,.2)}
+
+.points-wrap{padding:36px 24px 60px;max-width:680px;margin:0 auto}
+.points-hero{text-align:center;margin-bottom:36px}
+.points-hero h2{font-size:28px;font-weight:800;margin-bottom:8px}
+.points-hero h2 span{color:var(--accent)}
+.points-hero p{color:var(--muted);font-size:14px;max-width:480px;margin:0 auto}
+.points-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px}
+.points-card-title{font-size:13px;font-weight:700;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.points-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .points-row.single{grid-template-columns:1fr}
 @media(max-width:600px){.points-row{grid-template-columns:1fr}}
-.job-entry{background:var(--bg3);border:2px solid var(--border);padding:12px;margin-bottom:3px;animation:fadeUp .2s ease}
-.job-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.job-entry-num{font-family:var(--pixel);font-size:8px;color:var(--accent);background:rgba(0,229,176,.08);padding:2px 7px;border:2px solid rgba(0,229,176,.3)}
-.job-remove{background:none;border:2px solid var(--border);color:var(--muted);cursor:pointer;font-size:14px;padding:1px 6px;transition:all .2s}
-.job-remove:hover{color:var(--red);border-color:var(--red)}
-.job-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.job-entry{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;position:relative;animation:fadeIn .2s ease}
+.job-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.job-entry-num{font-family:var(--font-mono);font-size:11px;color:var(--accent);font-weight:700;background:rgba(0,229,176,.08);padding:2px 8px;border-radius:4px;border:1px solid rgba(0,229,176,.2)}
+.job-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:all .2s;line-height:1}
+.job-remove:hover{color:var(--red);background:rgba(239,68,68,.1)}
+.job-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:600px){.job-grid{grid-template-columns:1fr}}
-.add-job-btn{width:100%;padding:10px;border:2px dashed var(--border);background:transparent;color:var(--muted);font-family:var(--pixel);font-size:8px;cursor:pointer;transition:all .2s;margin-top:4px;letter-spacing:.04em}
-.add-job-btn:hover{border-color:var(--accent);color:var(--accent)}
-.submit-big-btn{width:100%;padding:14px;font-family:var(--pixel);font-size:10px;cursor:pointer;border:none;background:linear-gradient(135deg,var(--accent),#00b894);color:#000;transition:all .2s;margin-top:8px;letter-spacing:.05em}
-.submit-big-btn:hover{transform:translateY(-3px);box-shadow:0 6px 0 #004d3a}
-.submit-big-btn:active{transform:translateY(0);box-shadow:none}
+.add-job-btn{width:100%;padding:12px;border-radius:10px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font-main);margin-top:4px}
+.add-job-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,176,.04)}
+.submit-big-btn{width:100%;padding:16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,var(--accent),#00b894);color:#000;transition:all .2s;font-family:var(--font-main);margin-top:8px}
+.submit-big-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,176,.25)}
 .submit-big-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.points-success{text-align:center;padding:36px 18px;animation:fadeUp .4s ease}
-.points-success-icon{font-size:52px;margin-bottom:14px}
-.points-success h3{font-family:var(--pixel);font-size:14px;font-weight:400;margin-bottom:8px;color:var(--accent);line-height:1.7}
-.points-success p{font-family:var(--vt);color:var(--muted);font-size:18px;margin-bottom:18px}
-.points-note{background:rgba(59,130,246,.06);border:2px solid rgba(59,130,246,.2);padding:10px 14px;font-family:var(--pixel);font-size:7px;color:#93c5fd;line-height:2.2;margin-bottom:18px;letter-spacing:.03em}
+.points-success{text-align:center;padding:40px 20px;animation:fadeIn .4s ease}
+.points-success-icon{font-size:56px;margin-bottom:16px}
+.points-success h3{font-size:22px;font-weight:800;margin-bottom:8px;color:var(--accent)}
+.points-success p{color:var(--muted);font-size:14px;margin-bottom:20px}
+.points-note{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:12px 16px;font-size:12px;color:#93c5fd;font-family:var(--font-mono);line-height:1.6;margin-bottom:20px}
 
-.loading{font-family:var(--pixel);color:var(--muted);font-size:9px;padding:22px;text-align:center}
-.error-msg{color:var(--red);font-family:var(--pixel);font-size:8px;padding:10px 14px;background:rgba(239,68,68,.07);border:2px solid rgba(239,68,68,.3);margin-top:8px;line-height:1.8}
-.empty-state{padding:36px 20px;text-align:center;font-family:var(--pixel);color:var(--muted);font-size:9px}
+.loading{color:var(--muted);font-size:13px;font-family:var(--font-mono);padding:24px;text-align:center}
+.error-msg{color:var(--red);font-size:13px;font-family:var(--font-mono);padding:12px 16px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;margin-top:10px}
+.empty-state{padding:40px 24px;text-align:center;color:var(--muted);font-size:13px}
 
-/* Footer */
-footer{border-top:3px solid var(--border);padding:24px 20px;background:var(--bg2);text-align:center}
-.footer-logo{font-family:var(--pixel);font-size:11px;color:var(--accent);margin-bottom:5px;display:flex;align-items:center;justify-content:center;gap:6px;text-shadow:0 0 8px rgba(0,229,176,.4)}
-.footer-logo span{color:var(--muted)}
-.footer-sub{font-family:var(--vt);font-size:16px;color:var(--muted);margin-bottom:14px}
-.footer-links{display:flex;justify-content:center;gap:4px;margin-bottom:12px;flex-wrap:wrap}
-.footer-link{font-family:var(--pixel);font-size:7px;color:var(--muted);text-decoration:none;padding:5px 12px;border:2px solid var(--border);transition:all .2s;display:inline-flex;align-items:center;gap:5px;letter-spacing:.04em}
-.footer-link:hover{color:var(--accent);border-color:rgba(0,229,176,.4)}
-.footer-link svg{width:13px;height:13px;flex-shrink:0}
-.footer-copy{font-family:var(--pixel);font-size:7px;color:var(--muted)}
-
-/* Mobile */
-.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border:none;background:none}
-.hamburger span{display:block;width:22px;height:3px;background:var(--text);transition:all .3s}
-.hamburger.open span:nth-child(1){transform:translateY(8px) rotate(45deg)}
-.hamburger.open span:nth-child(2){opacity:0}
-.hamburger.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
-.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(7,9,15,.97);z-index:200;flex-direction:column;padding:20px}
-.mobile-menu.open{display:flex}
-.mobile-menu-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
-.mobile-menu-logo{font-family:var(--pixel);font-size:11px;color:var(--accent)}
-.mobile-close{background:none;border:2px solid var(--border);color:var(--muted);padding:5px 10px;cursor:pointer;font-size:16px}
-.mobile-nav-links{display:flex;flex-direction:column;gap:4px;flex:1}
-.mobile-nav-link{padding:12px 14px;font-family:var(--pixel);font-size:9px;cursor:pointer;color:var(--muted);border:2px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:8px;text-align:left;text-decoration:none;letter-spacing:.04em;transition:all .2s}
-.mobile-nav-link:hover,.mobile-nav-link.active{color:var(--accent);background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.3)}
-.mobile-nav-link.submit{color:var(--accent2);border-color:rgba(59,130,246,.3)}
-
-/* Toast */
-#toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;font-family:var(--pixel);font-size:8px;background:var(--bg3);border:2px solid var(--accent);color:var(--accent);opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:999;letter-spacing:.04em}
+#toast{position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;font-size:13px;font-family:var(--font-mono);font-weight:600;background:var(--bg3);border:1px solid var(--accent);color:var(--accent);opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:999}
 #toast.show{opacity:1;transform:none}
 
-/* Pixel progress bar on table rows */
-.points-meter{display:inline-flex;gap:2px;align-items:center}
-.points-meter-block{width:8px;height:10px;background:var(--bg4);border:1px solid var(--border)}
-.points-meter-block.filled{background:var(--accent)}
-
-/* Dark/Light toggle */
-.theme-toggle{position:fixed;bottom:20px;left:20px;z-index:500;background:var(--bg2);border:2px solid var(--accent);width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all .2s}
-.theme-toggle:hover{background:rgba(0,229,176,.1);transform:translateY(-2px);box-shadow:0 4px 0 rgba(0,229,176,.3)}
-body.light-mode{
-  --bg:#f8fafc;--bg2:#ffffff;--bg3:#f1f5f9;--bg4:#e2e8f0;
-  --text:#0f172a;--muted:#64748b;--border:#cbd5e1;
-}
-body.light-mode #chainBanner{border-bottom-color:rgba(0,180,140,.5)}
-body.light-mode .stat-value{color:var(--text)}
-body.light-mode nav{box-shadow:0 4px 0 rgba(0,0,0,.1)}
-
 @media(max-width:768px){
-  nav{padding:0 12px;height:50px}
+  nav{padding:0 12px;height:52px}
   .nav-links{display:none}
   .hamburger{display:flex}
-  .stats-grid{padding:0 12px 22px;grid-template-columns:repeat(2,1fr)}
-  .search-section,.section{padding:0 12px 26px}
+  .stats-grid{padding:0 14px 24px;grid-template-columns:repeat(2,1fr)}
+  .search-section{padding:0 14px 24px}
+  .section{padding:0 14px 30px}
   .miner-stats{grid-template-columns:repeat(3,1fr)}
-  .podium-wrap{gap:3px;padding:14px 12px 22px}
-  .guides-wrap,.submit-wrap{padding:22px 12px 28px}
-  .addr-cell{max-width:140px}
+  .podium-wrap{gap:8px;padding:16px 14px 24px}
+  .guides-wrap,.submit-wrap{padding:24px 14px 32px}
+  .addr-cell{max-width:160px}
   .detail-addr-grid{grid-template-columns:1fr}
   .detail-stats-row{grid-template-columns:repeat(2,1fr)}
-  .miner-detail-panel{margin:0 12px 22px}
+  .miner-detail-panel{margin:0 14px 24px}
 }
-
-/* Pixel particle effect */
-.px-particle{position:fixed;pointer-events:none;z-index:1;width:4px;height:4px;background:var(--accent);animation:px-float 2s ease-out forwards;opacity:.8}
-@keyframes px-float{0%{transform:translateY(0) translateX(0);opacity:.8}100%{transform:translateY(-120px) translateX(var(--dx));opacity:0}}
 </style>
 </head>
 <body>
-<div class="scanlines"></div>
 
-<!-- ═══ SPLASH SCREEN ═══ -->
-<div id="splash" onclick="enterApp()">
-  <!-- Stars -->
-  <div class="px-stars" id="starsContainer"></div>
+<div id="chainBanner" class="checking">
+  <span class="chain-dot checking" id="chainDot"></span>
+  <span id="chainText">Checking chain status...</span>
+</div>
 
-  <!-- Mountains -->
-  <div class="px-mountains-back"></div>
-  <div class="px-mountains-front"></div>
-
-  <!-- Ground layers -->
-  <div class="px-ground">
-    <div class="px-ground-far"></div>
-    <div class="px-ground-mid"></div>
-    <div class="px-ground-near"></div>
+<nav>
+  <div class="nav-logo">
+    <span class="nav-logo-icon">⛏️</span>
+    REPUBLIC<span>/STATS</span>
   </div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="showPage('home',this)"><span class="nav-icon">🏠</span>Home</button>
+    <button class="nav-link" onclick="showPage('leaderboard',this)"><span class="nav-icon">🏆</span>Leaderboard</button>
+    <button class="nav-link" onclick="showPage('ecosystem',this)"><span class="nav-icon">🌐</span>Ecosystem</button>
+    <button class="nav-link" onclick="showPage('guides',this)"><span class="nav-icon">📚</span>Guides</button>
+    <button class="nav-link" onclick="showPage('points',this)"><span class="nav-icon">🎁</span>Points Form</button>
+    <button class="nav-btn submit" onclick="showPage('submit',this)">+ Submit Project</button>
+  </div>
+  <button class="hamburger" id="hamburgerBtn" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-  <!-- Trees -->
-  <div class="px-trees" id="treesContainer"></div>
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+    <div class="mobile-menu-logo">⛏️ REPUBLIC/STATS</div>
+    <button class="mobile-close" onclick="toggleMenu()">✕</button>
+  </div>
+  <div class="mobile-nav-links">
+    <button class="mobile-nav-link active" onclick="showPage('home',this);toggleMenu()">🏠 Home</button>
+    <button class="mobile-nav-link" onclick="showPage('leaderboard',this);toggleMenu()">🏆 Leaderboard</button>
+    <button class="mobile-nav-link" onclick="showPage('ecosystem',this);toggleMenu()">🌐 Ecosystem</button>
+    <button class="mobile-nav-link" onclick="showPage('guides',this);toggleMenu()">📚 Guides</button>
+    <button class="mobile-nav-link" onclick="showPage('points',this);toggleMenu()">🎁 Points Form</button>
+    <button class="mobile-nav-link submit" onclick="showPage('submit',this);toggleMenu()">+ Submit Project</button>
+  </div>
+</div>
 
-  <!-- Flowers -->
-  <div class="px-flowers" id="flowersContainer"></div>
-
-  <!-- Pixel GPU Computer -->
-  <div class="px-computer">
-    <div class="px-monitor">
-      <div class="px-screen">
-        <div class="px-screen-text">MINING<br>>_<br/>GPU OK</div>
-        <div class="px-eyes"><div class="px-eye"></div><div class="px-eye"></div></div>
-      </div>
+<!-- ═══ HOME PAGE ═══ -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-badge">
+      <span class="chain-dot live" style="width:6px;height:6px"></span>
+      REPUBLIC AI TESTNET
     </div>
-    <div class="px-monitor-neck"></div>
-    <div class="px-monitor-base"></div>
-    <div class="px-monitor-stand"></div>
+    <h1>GPU Miner <span>Dashboard</span></h1>
+    <p>Track miner activity, explore the leaderboard, and discover projects building on Republic AI.</p>
   </div>
 
-  <!-- GPU Chips right side -->
-  <div class="px-gpu-chips">
-    <div class="px-chip"></div>
-    <div style="display:flex;gap:4px"><div class="px-chip-sm"></div><div class="px-chip-sm"></div><div class="px-chip-sm"></div></div>
-    <div class="px-chip"></div>
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card"><div class="stat-label">Total Miners</div><div class="stat-value accent" id="statMiners">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total Jobs</div><div class="stat-value" id="statJobs">—</div></div>
+    <div class="stat-card"><div class="stat-label">Submit Job</div><div class="stat-value" id="statSubmit">—</div></div>
+    <div class="stat-card"><div class="stat-label">Submit Result</div><div class="stat-value" id="statResult">—</div></div>
+    <div class="stat-card">
+      <div class="stat-label">Last Block</div>
+      <div class="stat-value" id="statBlock">—</div>
+      <div class="stat-sub" id="statScanTime"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Top Miner</div>
+      <div class="stat-value accent" id="statTopMiner">—</div>
+      <div class="stat-sub" id="statTopScore"></div>
+    </div>
   </div>
 
-  <!-- Center content -->
-  <div class="splash-center">
-    <div class="splash-badge">⛏ REPUBLIC AI TESTNET ⛏</div>
-    <div class="splash-frame">
-      <div class="corner corner-tl"></div>
-      <div class="corner corner-tr"></div>
-      <div class="corner corner-bl"></div>
-      <div class="corner corner-br"></div>
+  <div class="search-section">
+    <div class="search-title">🔍 Search Miner by Address</div>
+    <div class="search-box">
+      <input id="minerSearchInput" class="search-input" placeholder="rai1..." type="text"/>
+      <button class="btn btn-accent" onclick="searchMiner()">Search</button>
+    </div>
+    <div id="minerResult"></div>
+  </div>
 
-      <div class="splash-title">
-        <span class="t-green">RepublicAI</span><br/>
-        GPU Mining<br/>
-        <span class="t-blue">STATS</span>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">⚡ Top Miners</div>
+      <button class="refresh-btn" id="mainRefreshBtn" onclick="triggerRefresh()">↻ Refresh</button>
+    </div>
+    <!-- SORT BUTTONS -->
+    <div class="sort-bar">
+      <span style="font-size:11px;color:var(--muted);font-family:var(--font-mono);padding:5px 0;margin-right:2px">Sort:</span>
+      <button class="sort-btn active" id="home-sort-total" onclick="homeSetSort('total',this)">Total Points</button>
+      <button class="sort-btn" id="home-sort-submit" onclick="homeSetSort('submit',this)">Submit Jobs</button>
+      <button class="sort-btn" id="home-sort-result" onclick="homeSetSort('result',this)">Submit Results</button>
+      <button class="sort-btn" id="home-sort-uptime" onclick="homeSetSort('uptime',this)">Uptime</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Rank</th>
+          <th>Moniker / Address</th>
+          <th style="text-align:right">Submit</th>
+          <th style="text-align:right">Result</th>
+          <th style="text-align:right">Uptime</th>
+          <th style="text-align:right">Total</th>
+          <th style="text-align:center">Points</th>
+        </tr></thead>
+        <tbody id="topMinersBody"><tr><td colspan="7" class="loading">Loading stats...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MINER DETAIL PANEL (home) -->
+  <div id="homeDetailPanel" style="display:none"></div>
+</div>
+
+<!-- ═══ LEADERBOARD PAGE ═══ -->
+<div id="page-leaderboard" class="page">
+  <div class="lb-hero">
+    <h2>Full <span>Leaderboard</span></h2>
+    <p>All miners ranked by total job score on Republic AI Testnet</p>
+  </div>
+
+  <div class="podium-wrap" id="podiumWrap">
+    <div class="loading">Loading podium...</div>
+  </div>
+
+  <div class="lb-search-wrap">
+    <input id="lbSearch" class="lb-search-input" placeholder="🔍  Search by moniker or address..." oninput="filterLeaderboard()"/>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title" id="lbCount">Full Leaderboard</div>
+      <button class="refresh-btn" onclick="loadLeaderboard()">↻ Refresh</button>
+    </div>
+    <!-- SORT BUTTONS LEADERBOARD -->
+    <div class="sort-bar">
+      <span style="font-size:11px;color:var(--muted);font-family:var(--font-mono);padding:5px 0;margin-right:2px">Sort:</span>
+      <button class="sort-btn active" id="lb-sort-total" onclick="lbSetSort('total',this)">Total Points</button>
+      <button class="sort-btn" id="lb-sort-submit" onclick="lbSetSort('submit',this)">Submit Jobs</button>
+      <button class="sort-btn" id="lb-sort-result" onclick="lbSetSort('result',this)">Submit Results</button>
+      <button class="sort-btn" id="lb-sort-uptime" onclick="lbSetSort('uptime',this)">Uptime</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Rank</th>
+          <th>Moniker</th>
+          <th>Address</th>
+          <th style="text-align:right">Submit</th>
+          <th style="text-align:right">Result</th>
+          <th style="text-align:right">Uptime</th>
+          <th style="text-align:right">Total</th>
+        </tr></thead>
+        <tbody id="lbBody"><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MINER DETAIL PANEL (leaderboard) -->
+  <div id="lbDetailPanel" style="display:none"></div>
+</div>
+
+<!-- ═══ ECOSYSTEM PAGE ═══ -->
+<div id="page-ecosystem" class="page">
+  <div class="eco-hero">
+    <h2>🌐 Ecosystem</h2>
+    <p>Projects, tools, and infrastructure building on Republic AI Testnet</p>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterEco('All',this)">All</button>
+    <button class="filter-btn" onclick="filterEco('AI',this)">🤖 AI</button>
+    <button class="filter-btn" onclick="filterEco('Tool',this)">🔧 Tool</button>
+    <button class="filter-btn" onclick="filterEco('Infrastructure',this)">🏛️ Infrastructure</button>
+    <button class="filter-btn" onclick="filterEco('Explorer',this)">🔍 Explorer</button>
+    <button class="filter-btn" onclick="filterEco('DeFi',this)">💎 DeFi</button>
+    <button class="filter-btn" onclick="filterEco('Other',this)">⚡ Other</button>
+  </div>
+  <div class="eco-grid" id="ecoGrid"><div class="loading">Loading projects...</div></div>
+</div>
+
+<!-- ═══ SUBMIT PROJECT PAGE ═══ -->
+<div id="page-submit" class="page">
+  <div class="submit-wrap">
+    <h2>+ Submit Project</h2>
+    <p>Add your project to the Republic AI ecosystem directory</p>
+    <div class="form-group"><label class="form-label">Project Name *</label><input id="f-name" class="form-input" placeholder="My Republic Project"/></div>
+    <div class="form-group"><label class="form-label">Description *</label><textarea id="f-desc" class="form-textarea" placeholder="What does your project do?"></textarea></div>
+    <div class="form-group"><label class="form-label">Category *</label><select id="f-cat" class="form-select"><option value="">Select category...</option><option>AI</option><option>Tool</option><option>Infrastructure</option><option>Explorer</option><option>DeFi</option><option>Other</option></select></div>
+    <div class="form-group"><label class="form-label">Website URL</label><input id="f-url" class="form-input" placeholder="https://yourproject.xyz"/></div>
+    <div class="form-group"><label class="form-label">GitHub</label><input id="f-github" class="form-input" placeholder="https://github.com/..."/></div>
+    <div class="form-group"><label class="form-label">Icon Emoji</label><input id="f-icon" class="form-input" placeholder="🚀" maxlength="4" style="max-width:100px"/></div>
+    <button class="btn btn-accent" style="width:100%;padding:13px" onclick="submitProject()">Submit for Review</button>
+    <div id="submitMsg" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- ═══ POINTS FORM PAGE ═══ -->
+<div id="page-points" class="page">
+  <div class="points-wrap">
+    <div class="points-hero">
+      <h2>🎁 Points <span>Submission</span></h2>
+      <p>Submit your completed GPU mining jobs to claim Republic AI testnet points. Add multiple jobs at once!</p>
+    </div>
+    <div id="pointsFormWrap">
+      <div class="points-note">ℹ️ Fill your details once, then add as many Job ID + TX Hash pairs as you completed. All submissions go directly to the Republic AI team.</div>
+      <div class="points-card">
+        <div class="points-card-title">👤 Your Details</div>
+        <div class="points-row">
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Web App Username *</label><input id="pf-username" class="form-input" placeholder="your username"/></div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Discord Username *</label><input id="pf-discord" class="form-input" placeholder="username#0000"/></div>
+        </div>
+        <div class="points-row" style="margin-top:12px">
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Validator Moniker *</label><input id="pf-moniker" class="form-input" placeholder="MyValidator"/></div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Operator Wallet Address *</label><input id="pf-wallet" class="form-input" placeholder="rai1..."/></div>
+        </div>
+        <div class="points-row single" style="margin-top:12px">
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Raivaloper Address *</label><input id="pf-raivaloper" class="form-input" placeholder="raivaloper1..."/></div>
+        </div>
       </div>
-
-      <div class="code-rain">
-        <div class="code-line">$ republic-miner status --live</div>
-        <div class="code-line">✓ GPU detected: RTX 4090 [24GB VRAM]</div>
-        <div class="code-line">⛏ Jobs submitted: 47,199 | Results: 19,020</div>
-        <div class="code-line">🏆 Rank #1 | Uptime: 100.00% | Pts: 47,199</div>
+      <div class="points-card">
+        <div class="points-card-title">⛏️ Completed Jobs <span id="jobCountBadge" style="color:var(--muted);font-weight:400;font-size:11px">(1 job)</span></div>
+        <div id="jobEntriesWrap"></div>
+        <button class="add-job-btn" onclick="addJobEntry()">+ Add Another Job</button>
       </div>
-
-      <div class="click-anywhere">▶ CLICK ANYWHERE TO CHECK YOUR STATS ◀</div>
+      <div class="points-card">
+        <div class="points-card-title">🖥️ Hardware Proof</div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">nvidia-smi Screenshot *</label>
+          <label class="proof-upload" id="hwUploadLabel">
+            <input type="file" id="pf-hw" accept="image/*" onchange="handleHwUpload(this)"/>
+            <div class="proof-upload-icon">📸</div>
+            <div class="proof-upload-text">Click to upload · <span>Max 10MB</span> · JPG/PNG</div>
+          </label>
+          <div id="hwPreview" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div id="pfMsg"></div>
+      <button class="submit-big-btn" id="pointsSubmitBtn" onclick="submitPointsForm()">🚀 Submit All Jobs</button>
+    </div>
+    <div id="pointsSuccess" style="display:none">
+      <div class="points-success">
+        <div class="points-success-icon">✅</div>
+        <h3>Submission Complete!</h3>
+        <p id="pointsSuccessMsg">Your jobs have been submitted successfully.</p>
+        <button class="btn btn-accent" onclick="resetPointsForm()" style="margin-top:8px">Submit More Jobs</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══ MAIN APP ═══ -->
-<div id="app">
-  <div id="chainBanner" class="checking">
-    <span class="chain-dot checking" id="chainDot"></span>
-    <span id="chainText">CHECKING CHAIN STATUS...</span>
-  </div>
-
-  <nav>
-    <div class="nav-logo">⛏️ REPUBLIC<span>/STATS</span></div>
-    <div class="nav-links">
-      <button class="nav-link active" onclick="showPage('home',this)">🏠 HOME</button>
-      <button class="nav-link" onclick="showPage('leaderboard',this)">🏆 LEADERBOARD</button>
-      <button class="nav-link" onclick="showPage('ecosystem',this)">🌐 ECOSYSTEM</button>
-      <button class="nav-link" onclick="showPage('guides',this)">📚 GUIDES</button>
-      <button class="nav-link" onclick="showPage('points',this)">🎁 POINTS</button>
-      <button class="nav-btn" onclick="showPage('submit',this)">+ SUBMIT</button>
-    </div>
-    <button class="hamburger" id="hamburgerBtn" onclick="toggleMenu()"><span></span><span></span><span></span></button>
-  </nav>
-
-  <div class="mobile-menu" id="mobileMenu">
-    <div class="mobile-menu-header">
-      <div class="mobile-menu-logo">⛏️ REPUBLIC/STATS</div>
-      <button class="mobile-close" onclick="toggleMenu()">✕</button>
-    </div>
-    <div class="mobile-nav-links">
-      <button class="mobile-nav-link active" onclick="showPage('home',this);toggleMenu()">🏠 HOME</button>
-      <button class="mobile-nav-link" onclick="showPage('leaderboard',this);toggleMenu()">🏆 LEADERBOARD</button>
-      <button class="mobile-nav-link" onclick="showPage('ecosystem',this);toggleMenu()">🌐 ECOSYSTEM</button>
-      <button class="mobile-nav-link" onclick="showPage('guides',this);toggleMenu()">📚 GUIDES</button>
-      <button class="mobile-nav-link" onclick="showPage('points',this);toggleMenu()">🎁 POINTS</button>
-      <button class="mobile-nav-link submit" onclick="showPage('submit',this);toggleMenu()">+ SUBMIT PROJECT</button>
-    </div>
-  </div>
-
-  <!-- HOME PAGE -->
-  <div id="page-home" class="page active">
-    <div class="hero">
-      <div class="hero-badge"><span class="chain-dot live" style="width:7px;height:7px"></span>REPUBLIC AI TESTNET</div>
-      <h1>GPU Miner <span>Dashboard</span></h1>
-      <p>Track miner activity, explore the leaderboard, and discover projects building on Republic AI.</p>
-    </div>
-
-    <div class="stats-grid" id="statsGrid">
-      <div class="stat-card"><div class="stat-label">Total Miners</div><div class="stat-value accent" id="statMiners">—</div></div>
-      <div class="stat-card"><div class="stat-label">Total Jobs</div><div class="stat-value" id="statJobs">—</div></div>
-      <div class="stat-card"><div class="stat-label">Submit Job</div><div class="stat-value" id="statSubmit">—</div></div>
-      <div class="stat-card"><div class="stat-label">Submit Result</div><div class="stat-value" id="statResult">—</div></div>
-      <div class="stat-card"><div class="stat-label">Last Block</div><div class="stat-value" id="statBlock">—</div><div class="stat-sub" id="statScanTime"></div></div>
-      <div class="stat-card"><div class="stat-label">Top Miner</div><div class="stat-value accent" id="statTopMiner">—</div><div class="stat-sub" id="statTopScore"></div></div>
-    </div>
-
-    <div class="search-section">
-      <div class="search-title">🔍 SEARCH MINER BY ADDRESS</div>
-      <div class="search-box">
-        <input id="minerSearchInput" class="search-input" placeholder="rai1..." type="text"/>
-        <button class="btn btn-accent" onclick="searchMiner()">SEARCH</button>
-      </div>
-      <div id="minerResult"></div>
-    </div>
-
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">⚡ TOP MINERS</div>
-        <button class="refresh-btn" id="mainRefreshBtn" onclick="triggerRefresh()">↻ REFRESH</button>
-      </div>
-      <div class="sort-bar">
-        <span style="font-family:var(--pixel);font-size:7px;color:var(--muted);padding:5px 0;margin-right:2px">SORT:</span>
-        <button class="sort-btn active" id="home-sort-total" onclick="homeSetSort('total',this)">TOTAL PTS</button>
-        <button class="sort-btn" id="home-sort-submit" onclick="homeSetSort('submit',this)">SUBMIT</button>
-        <button class="sort-btn" id="home-sort-result" onclick="homeSetSort('result',this)">RESULT</button>
-        <button class="sort-btn" id="home-sort-uptime" onclick="homeSetSort('uptime',this)">UPTIME</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>Rank</th><th>Moniker / Address</th>
-            <th style="text-align:right">Submit</th><th style="text-align:right">Result</th>
-            <th style="text-align:right">Uptime</th><th style="text-align:right">Total</th>
-            <th style="text-align:center">Points</th>
-          </tr></thead>
-          <tbody id="topMinersBody"><tr><td colspan="7" class="loading">LOADING STATS...</td></tr></tbody>
-        </table>
+<!-- ═══ GUIDES PAGE ═══ -->
+<div id="page-guides" class="page">
+  <div class="guides-wrap">
+    <h2>📚 Guides</h2>
+    <p>Official and community guides for running Republic AI nodes and miners</p>
+    <div style="margin-bottom:28px">
+      <div class="guide-section-label">🔗 Official Resources</div>
+      <div class="guide-links">
+        <a href="https://republic.ai" target="_blank" class="guide-link-btn official">🏛️ Republic AI Official</a>
+        <a href="https://docs.republic.ai" target="_blank" class="guide-link-btn official">📖 Official Docs</a>
+        <a href="https://discord.gg/republicai" target="_blank" class="guide-link-btn discord">💬 Discord</a>
+        <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="guide-link-btn community">🐙 Dashboard GitHub</a>
       </div>
     </div>
-    <div id="homeDetailPanel" style="display:none"></div>
-  </div>
-
-  <!-- LEADERBOARD PAGE -->
-  <div id="page-leaderboard" class="page">
-    <div class="lb-hero">
-      <h2>FULL <span>LEADERBOARD</span></h2>
-      <p>All miners ranked by total job score on Republic AI Testnet</p>
+    <div class="guide-tabs">
+      <button class="guide-tab active" onclick="showGuide('gpu',this)">⛏️ GPU Miner</button>
+      <button class="guide-tab" onclick="showGuide('cpu',this)">🖥️ CPU Validator</button>
+      <button class="guide-tab" onclick="showGuide('snapshot',this)">📸 Snapshot</button>
+      <button class="guide-tab" onclick="showGuide('cmds',this)">⚡ Useful Commands</button>
     </div>
-    <div class="podium-wrap" id="podiumWrap"><div class="loading">LOADING PODIUM...</div></div>
-    <div class="lb-search-wrap">
-      <input id="lbSearch" class="lb-search-input" placeholder="🔍  Search by moniker or address..." oninput="filterLeaderboard()"/>
-    </div>
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title" id="lbCount">🏆 FULL LEADERBOARD</div>
-        <button class="refresh-btn" onclick="loadLeaderboard()">↻ REFRESH</button>
-      </div>
-      <div class="sort-bar">
-        <span style="font-family:var(--pixel);font-size:7px;color:var(--muted);padding:5px 0;margin-right:2px">SORT:</span>
-        <button class="sort-btn active" id="lb-sort-total" onclick="lbSetSort('total',this)">TOTAL PTS</button>
-        <button class="sort-btn" id="lb-sort-submit" onclick="lbSetSort('submit',this)">SUBMIT</button>
-        <button class="sort-btn" id="lb-sort-result" onclick="lbSetSort('result',this)">RESULT</button>
-        <button class="sort-btn" id="lb-sort-uptime" onclick="lbSetSort('uptime',this)">UPTIME</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>Rank</th><th>Moniker</th><th>Address</th>
-            <th style="text-align:right">Submit</th><th style="text-align:right">Result</th>
-            <th style="text-align:right">Uptime</th><th style="text-align:right">Total</th>
-          </tr></thead>
-          <tbody id="lbBody"><tr><td colspan="7" class="loading">LOADING...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-    <div id="lbDetailPanel" style="display:none"></div>
-  </div>
-
-  <!-- ECOSYSTEM PAGE -->
-  <div id="page-ecosystem" class="page">
-    <div class="eco-hero"><h2>🌐 ECOSYSTEM</h2><p>Projects, tools, and infrastructure building on Republic AI Testnet</p></div>
-    <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterEco('All',this)">ALL</button>
-      <button class="filter-btn" onclick="filterEco('AI',this)">🤖 AI</button>
-      <button class="filter-btn" onclick="filterEco('Tool',this)">🔧 TOOL</button>
-      <button class="filter-btn" onclick="filterEco('Infrastructure',this)">🏛️ INFRA</button>
-      <button class="filter-btn" onclick="filterEco('Explorer',this)">🔍 EXPLORER</button>
-      <button class="filter-btn" onclick="filterEco('DeFi',this)">💎 DEFI</button>
-      <button class="filter-btn" onclick="filterEco('Other',this)">⚡ OTHER</button>
-    </div>
-    <div class="eco-grid" id="ecoGrid"><div class="loading">LOADING PROJECTS...</div></div>
-  </div>
-
-  <!-- SUBMIT PAGE -->
-  <div id="page-submit" class="page">
-    <div class="submit-wrap">
-      <h2>+ SUBMIT PROJECT</h2>
-      <p>Add your project to the Republic AI ecosystem directory</p>
-      <div class="form-group"><label class="form-label">Project Name *</label><input id="f-name" class="form-input" placeholder="My Republic Project"/></div>
-      <div class="form-group"><label class="form-label">Description *</label><textarea id="f-desc" class="form-textarea" placeholder="What does your project do?"></textarea></div>
-      <div class="form-group"><label class="form-label">Category *</label><select id="f-cat" class="form-select"><option value="">Select category...</option><option>AI</option><option>Tool</option><option>Infrastructure</option><option>Explorer</option><option>DeFi</option><option>Other</option></select></div>
-      <div class="form-group"><label class="form-label">Website URL</label><input id="f-url" class="form-input" placeholder="https://yourproject.xyz"/></div>
-      <div class="form-group"><label class="form-label">GitHub</label><input id="f-github" class="form-input" placeholder="https://github.com/..."/></div>
-      <div class="form-group"><label class="form-label">Icon Emoji</label><input id="f-icon" class="form-input" placeholder="🚀" maxlength="4" style="max-width:100px"/></div>
-      <button class="btn btn-accent" style="width:100%;padding:13px" onclick="submitProject()">SUBMIT FOR REVIEW</button>
-      <div id="submitMsg" style="margin-top:12px"></div>
-    </div>
-  </div>
-
-  <!-- POINTS PAGE -->
-  <div id="page-points" class="page">
-    <div class="points-wrap">
-      <div class="points-hero">
-        <h2>🎁 POINTS <span>SUBMISSION</span></h2>
-        <p>Submit your completed GPU mining jobs to claim Republic AI testnet points.</p>
-      </div>
-      <div id="pointsFormWrap">
-        <div class="points-note">ℹ️ Fill your details once, then add as many Job ID + TX Hash pairs as you completed.</div>
-        <div class="points-card">
-          <div class="points-card-title">👤 YOUR DETAILS</div>
-          <div class="points-row">
-            <div class="form-group" style="margin-bottom:0"><label class="form-label">Web App Username *</label><input id="pf-username" class="form-input" placeholder="your username"/></div>
-            <div class="form-group" style="margin-bottom:0"><label class="form-label">Discord Username *</label><input id="pf-discord" class="form-input" placeholder="username#0000"/></div>
-          </div>
-          <div class="points-row" style="margin-top:10px">
-            <div class="form-group" style="margin-bottom:0"><label class="form-label">Validator Moniker *</label><input id="pf-moniker" class="form-input" placeholder="MyValidator"/></div>
-            <div class="form-group" style="margin-bottom:0"><label class="form-label">Operator Wallet *</label><input id="pf-wallet" class="form-input" placeholder="rai1..."/></div>
-          </div>
-          <div class="points-row single" style="margin-top:10px">
-            <div class="form-group" style="margin-bottom:0"><label class="form-label">Raivaloper Address *</label><input id="pf-raivaloper" class="form-input" placeholder="raivaloper1..."/></div>
-          </div>
-        </div>
-        <div class="points-card">
-          <div class="points-card-title">⛏️ COMPLETED JOBS <span id="jobCountBadge" style="color:var(--muted);font-weight:400;font-size:8px">(1 JOB)</span></div>
-          <div id="jobEntriesWrap"></div>
-          <button class="add-job-btn" onclick="addJobEntry()">+ ADD ANOTHER JOB</button>
-        </div>
-        <div class="points-card">
-          <div class="points-card-title">🖥️ HARDWARE PROOF</div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">nvidia-smi Screenshot *</label>
-            <label id="hwUploadLabel" style="display:flex;align-items:center;gap:10px;padding:14px;border:2px dashed var(--border);cursor:pointer;background:var(--bg3);transition:border-color .2s">
-              <input type="file" id="pf-hw" accept="image/*" style="display:none" onchange="handleHwUpload(this)"/>
-              <span style="font-size:20px">📸</span>
-              <span style="font-family:var(--pixel);font-size:7px;color:var(--muted);letter-spacing:.04em">CLICK TO UPLOAD · MAX 10MB · JPG/PNG</span>
-            </label>
-            <div id="hwPreview" style="margin-top:6px"></div>
-          </div>
-        </div>
-        <div id="pfMsg"></div>
-        <button class="submit-big-btn" id="pointsSubmitBtn" onclick="submitPointsForm()">🚀 SUBMIT ALL JOBS</button>
-      </div>
-      <div id="pointsSuccess" style="display:none">
-        <div class="points-success">
-          <div class="points-success-icon">✅</div>
-          <h3>SUBMISSION COMPLETE!</h3>
-          <p id="pointsSuccessMsg">Your jobs have been submitted successfully.</p>
-          <button class="btn btn-accent" onclick="resetPointsForm()" style="margin-top:8px;padding:10px 20px">SUBMIT MORE JOBS</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- GUIDES PAGE -->
-  <div id="page-guides" class="page">
-    <div class="guides-wrap">
-      <h2>📚 GUIDES</h2>
-      <p>Official and community guides for running Republic AI nodes and miners</p>
-      <div style="margin-bottom:24px">
-        <div class="guide-section-label">🔗 Official Resources</div>
-        <div class="guide-links">
-          <a href="https://republic.ai" target="_blank" class="guide-link-btn official">🏛️ REPUBLIC AI</a>
-          <a href="https://docs.republic.ai" target="_blank" class="guide-link-btn official">📖 DOCS</a>
-          <a href="https://discord.gg/republicai" target="_blank" class="guide-link-btn discord">💬 DISCORD</a>
-          <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="guide-link-btn community">🐙 GITHUB</a>
-        </div>
-      </div>
-      <div class="guide-tabs">
-        <button class="guide-tab active" onclick="showGuide('gpu',this)">⛏️ GPU MINER</button>
-        <button class="guide-tab" onclick="showGuide('cpu',this)">🖥️ CPU VALIDATOR</button>
-        <button class="guide-tab" onclick="showGuide('snapshot',this)">📸 SNAPSHOT</button>
-        <button class="guide-tab" onclick="showGuide('cmds',this)">⚡ COMMANDS</button>
-      </div>
-      <div id="guide-gpu" class="guide-content active">
-        <div class="guide-note">ℹ️ This guide covers GPU miner setup for Republic AI Testnet. Always check Discord for the latest version updates.</div>
-        <div class="guide-step"><h3>1. System Requirements</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>OS: Ubuntu 22.04 / 24.04 LTS
-GPU: NVIDIA 8GB+ VRAM (RTX 3080/4090/A100)
-RAM: 16GB min, 32GB recommended
-Disk: 100GB+ SSD | CPU: 8 cores min</pre></div></div>
-        <div class="guide-step"><h3>2. Install Dependencies</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo apt update && sudo apt upgrade -y
+    <div id="guide-gpu" class="guide-content active">
+      <div class="guide-note">ℹ️ This guide covers GPU miner setup for Republic AI Testnet. Always check <a href="https://discord.gg/republicai" target="_blank">Discord</a> for the latest version updates.</div>
+      <div class="guide-step"><h3>1. System Requirements</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>OS: Ubuntu 22.04 / 24.04 LTS (recommended)
+GPU: NVIDIA with 8GB+ VRAM (RTX 3080 / 4090 / A100 etc.)
+RAM: 16GB minimum, 32GB recommended
+Disk: 100GB+ SSD
+CPU: 8 cores minimum</pre></div></div>
+      <div class="guide-step"><h3>2. Install System Dependencies</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo apt update && sudo apt upgrade -y
 sudo apt install -y curl wget git build-essential jq lz4 unzip</pre></div></div>
-        <div class="guide-step"><h3>3. Install NVIDIA CUDA</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+      <div class="guide-step"><h3>3. Install NVIDIA Drivers & CUDA</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
 sudo dpkg -i cuda-keyring_1.1-1_all.deb
-sudo apt-get update && sudo apt-get install -y cuda-toolkit-12-3
+sudo apt-get update
+sudo apt-get install -y cuda-toolkit-12-3
 nvidia-smi</pre></div></div>
-        <div class="guide-step"><h3>4. Install Go</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>cd $HOME
+      <div class="guide-step"><h3>4. Install Go</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>cd $HOME
 wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz
 sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
 echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> $HOME/.bashrc
-source $HOME/.bashrc && go version</pre></div></div>
-        <div class="guide-step"><h3>5. Install GPU Miner</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>curl -sSL https://raw.githubusercontent.com/RepublicAI/gpu-miner/main/install.sh | bash</pre></div><div class="guide-warn">⚠️ Always verify install scripts. Check Discord for latest version.</div></div>
-        <div class="guide-step"><h3>6. Configure & Start</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>export WALLET_ADDRESS="rai1your_address_here"
+source $HOME/.bashrc
+go version</pre></div></div>
+      <div class="guide-step"><h3>5. Install Republic GPU Miner</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>curl -sSL https://raw.githubusercontent.com/RepublicAI/gpu-miner/main/install.sh | bash</pre></div><div class="guide-warn">⚠️ Always verify install scripts from official sources. Check <a href="https://discord.gg/republicai" target="_blank" style="color:var(--yellow)">Discord</a> for the latest version.</div></div>
+      <div class="guide-step"><h3>6. Configure Miner</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>export WALLET_ADDRESS="rai1your_address_here"
 export MONIKER="YourMinerName"
-sudo systemctl enable republic-miner && sudo systemctl start republic-miner
+nano $HOME/.republic-miner/config.yaml</pre></div></div>
+      <div class="guide-step"><h3>7. Create Systemd Service & Start</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo tee /etc/systemd/system/republic-miner.service > /dev/null &lt;&lt;EOF
+[Unit]
+Description=Republic AI GPU Miner
+After=network-online.target
+[Service]
+User=$USER
+ExecStart=/usr/local/bin/republic-miner start
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl enable republic-miner
+sudo systemctl start republic-miner</pre></div></div>
+      <div class="guide-step"><h3>8. Check Miner Status</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo systemctl status republic-miner
 journalctl -u republic-miner -f -o cat</pre></div></div>
-      </div>
-      <div id="guide-cpu" class="guide-content">
-        <div class="guide-note">ℹ️ CPU Validator guide for Republic AI Testnet.</div>
-        <div class="guide-step"><h3>1. System Requirements</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>OS: Ubuntu 22.04 / 24.04 LTS
-CPU: 4+ cores | RAM: 16GB min | Disk: 200GB+ SSD</pre></div></div>
-        <div class="guide-step"><h3>2. Install & Init Node</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>curl -sSL https://raw.githubusercontent.com/RepublicAI/node/main/install.sh | bash
-republicd init YOUR_MONIKER --chain-id republic-testnet-1</pre></div></div>
-        <div class="guide-step"><h3>3. Start & Check Sync</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo systemctl enable republicd && sudo systemctl start republicd
-republicd status 2>&1 | jq .SyncInfo</pre></div></div>
-      </div>
-      <div id="guide-snapshot" class="guide-content">
-        <div class="guide-note">ℹ️ Use snapshots to skip syncing from genesis. Saves hours!</div>
-        <div class="guide-step"><h3>Stop & Backup</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>cp $HOME/.republic/config/priv_validator_key.json $HOME/priv_validator_key.json.bak
-sudo systemctl stop republicd</pre></div><div class="guide-warn">⚠️ Always backup priv_validator_key.json before applying a snapshot!</div></div>
-        <div class="guide-step"><h3>Apply Snapshot</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd tendermint unsafe-reset-all --home $HOME/.republic --keep-addr-book
-wget -O $HOME/republic_snapshot.tar.lz4 https://snapshot.republicstats.xyz/latest.tar.lz4
-lz4 -d $HOME/republic_snapshot.tar.lz4 | tar -xf - -C $HOME/.republic/
+    </div>
+    <div id="guide-cpu" class="guide-content">
+      <div class="guide-note">ℹ️ CPU Validator guide for Republic AI Testnet. Check <a href="https://discord.gg/republicai" target="_blank">Discord</a> for requirements.</div>
+      <div class="guide-step"><h3>1. System Requirements</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>OS: Ubuntu 22.04 / 24.04 LTS
+CPU: 4 cores minimum (8 recommended)
+RAM: 16GB minimum
+Disk: 200GB+ SSD (NVMe preferred)
+Network: 100Mbps+ stable connection</pre></div></div>
+      <div class="guide-step"><h3>2. Install Republic Node Binary</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo apt update && sudo apt install -y curl git jq build-essential lz4
+curl -sSL https://raw.githubusercontent.com/RepublicAI/node/main/install.sh | bash
+republicd version</pre></div></div>
+      <div class="guide-step"><h3>3. Initialize Node</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd init YOUR_MONIKER --chain-id republic-testnet-1
+republicd config chain-id republic-testnet-1
+republicd config keyring-backend file</pre></div></div>
+      <div class="guide-step"><h3>4. Download Genesis & Configure Peers</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>wget -O $HOME/.republic/config/genesis.json \
+  https://raw.githubusercontent.com/RepublicAI/networks/main/testnet/genesis.json
+SEEDS="seed1@seed.republic.ai:26656,seed2@seed2.republic.ai:26656"
+sed -i "s/^seeds = .*/seeds = \"$SEEDS\"/" $HOME/.republic/config/config.toml</pre></div></div>
+      <div class="guide-step"><h3>5. Create Systemd Service & Start</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo tee /etc/systemd/system/republicd.service > /dev/null &lt;&lt;EOF
+[Unit]
+Description=Republic AI Node
+After=network-online.target
+[Service]
+User=$USER
+ExecStart=$(which republicd) start
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl enable republicd
 sudo systemctl start republicd</pre></div></div>
-      </div>
-      <div id="guide-cmds" class="guide-content">
-        <div class="guide-step"><h3>🔍 Node Status</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd status 2>&1 | jq .SyncInfo
-republicd status 2>&1 | jq .SyncInfo.catching_up</pre></div></div>
-        <div class="guide-step"><h3>💰 Wallet & Balance</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd query bank balances YOUR_ADDRESS
-republicd keys list --keyring-backend file</pre></div></div>
-        <div class="guide-step"><h3>📊 API Queries</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>curl https://api.republicstats.xyz/api/miner/YOUR_ADDRESS | jq
+      <div class="guide-step"><h3>6. Check Sync Status</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd status 2>&1 | jq .SyncInfo
+journalctl -u republicd -f -o cat</pre></div><div class="guide-note">⏳ Full sync can take hours. Use the Snapshot guide to speed this up.</div></div>
+    </div>
+    <div id="guide-snapshot" class="guide-content">
+      <div class="guide-note">ℹ️ Use snapshots to skip syncing from genesis block. Saves hours of sync time.</div>
+      <div class="guide-step"><h3>Stop Node & Backup Keys</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>cp $HOME/.republic/config/priv_validator_key.json $HOME/priv_validator_key.json.bak
+sudo systemctl stop republicd</pre></div><div class="guide-warn">⚠️ Always backup your priv_validator_key.json before applying a snapshot!</div></div>
+      <div class="guide-step"><h3>Reset Data</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo apt install -y lz4
+republicd tendermint unsafe-reset-all --home $HOME/.republic --keep-addr-book</pre></div></div>
+      <div class="guide-step"><h3>Download & Apply Snapshot</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>wget -O $HOME/republic_snapshot.tar.lz4 \
+  https://snapshot.republicstats.xyz/latest.tar.lz4
+lz4 -d $HOME/republic_snapshot.tar.lz4 | tar -xf - -C $HOME/.republic/
+rm -f $HOME/republic_snapshot.tar.lz4</pre></div></div>
+      <div class="guide-step"><h3>Restart Node</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>sudo systemctl start republicd
+watch -n 3 'republicd status 2>&1 | jq .SyncInfo.catching_up'</pre></div></div>
+    </div>
+    <div id="guide-cmds" class="guide-content">
+      <div class="guide-step"><h3>🔍 Node Status & Health</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd status 2>&1 | jq .SyncInfo
+republicd status 2>&1 | jq .SyncInfo.catching_up
+republicd status 2>&1 | jq .SyncInfo.latest_block_height</pre></div></div>
+      <div class="guide-step"><h3>💰 Wallet & Balance</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd query bank balances YOUR_ADDRESS
+republicd keys list --keyring-backend file
+republicd keys show MY_WALLET -a --keyring-backend file</pre></div></div>
+      <div class="guide-step"><h3>🏛️ Validator Commands</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>republicd tx slashing unjail \
+  --from=MY_WALLET --chain-id=republic-testnet-1 \
+  --gas=auto --gas-adjustment=1.4 \
+  --gas-prices="0.025urap" --keyring-backend=file -y</pre></div></div>
+      <div class="guide-step"><h3>📋 Service Management</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>journalctl -u republicd -f -o cat
+journalctl -u republic-miner -f -o cat
+sudo systemctl restart republicd
+sudo systemctl restart republic-miner
+sudo systemctl status republicd</pre></div></div>
+      <div class="guide-step"><h3>📊 Useful API Queries</h3><div class="code-block"><button class="code-copy" onclick="copyCode(this)">copy</button><pre>curl https://api.republicstats.xyz/api/miner/YOUR_ADDRESS | jq
 curl https://api.republicstats.xyz/api/leaderboard?limit=50 | jq
-curl https://api.republicstats.xyz/api/stats | jq</pre></div></div>
-      </div>
+curl https://api.republicstats.xyz/api/stats | jq
+curl https://api.republicstats.xyz/api/chain_status | jq</pre></div></div>
     </div>
   </div>
-
-  <footer>
-    <div class="footer-logo"><span>⛏️</span>REPUBLIC<span>/STATS</span></div>
-    <div class="footer-sub">GPU Miner Tracker & Ecosystem Dashboard for Republic AI Testnet</div>
-    <div style="font-family:var(--pixel);font-size:7px;color:var(--muted);margin-bottom:12px">BUILT WITH ❤️ BY <strong style="color:var(--text)">0xDARKSEIDBULL</strong></div>
-    <div class="footer-links">
-      <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="footer-link">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        GITHUB
-      </a>
-      <a href="https://t.me/republicgpuminerstatsbot" target="_blank" class="footer-link">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.17 13.547l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.978.012z"/></svg>
-        TELEGRAM BOT
-      </a>
-      <a href="https://x.com/cryptobhartiyax" target="_blank" class="footer-link">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        TWITTER
-      </a>
-    </div>
-    <div class="footer-copy">© 2026 REPUBLIC STATS · REPUBLICSTATS.XYZ</div>
-  </footer>
 </div>
 
-<!-- Theme toggle -->
-<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Light/Dark">🌙</button>
+<footer>
+  <div class="footer-logo"><span>⛏️</span>REPUBLIC<span>/STATS</span></div>
+  <div class="footer-sub">GPU Miner Tracker & Ecosystem Dashboard for Republic AI Testnet · Open source, community built.</div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Built with ❤️ by <strong style="color:var(--text)">0xDarkSeidBull</strong></div>
+  <div class="footer-links">
+    <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="footer-link">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <a href="https://t.me/republicgpuminerstatsbot" target="_blank" class="footer-link">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.17 13.547l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.978.012z"/></svg>
+      Telegram Bot
+    </a>
+    <a href="https://x.com/cryptobhartiyax" target="_blank" class="footer-link">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      Twitter
+    </a>
+    <a href="https://t.me/DarkSeidBull" target="_blank" class="footer-link">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.17 13.547l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.978.012z"/></svg>
+      Telegram
+    </a>
+  </div>
+  <div class="footer-copy">© 2026 Republic Stats · republicstats.xyz</div>
+</footer>
+
 <div id="toast"></div>
 
 <script>
 const API='https://api.republicstats.xyz';
-let allLbData=[],ecoData=[],currentEcoFilter='All',topScore=0;
-let homeRawData=[],homeSortKey='total',lbSortKey='total';
-let activeDetailAddr=null,activeDetailPage=null,detailChartInstance=null;
-let isLightMode=false;
-
-// ─── SPLASH ──────────────────────────────────────────────────
-function buildSplash(){
-  // Stars
-  const sc=document.getElementById('starsContainer');
-  for(let i=0;i<60;i++){
-    const s=document.createElement('div');
-    s.className='px-star';
-    s.style.left=Math.random()*100+'%';
-    s.style.top=Math.random()*100+'%';
-    s.style.animationDelay=Math.random()*2+'s';
-    sc.appendChild(s);
-  }
-  // Trees
-  const tc=document.getElementById('treesContainer');
-  const treePos=[5,12,18,28,38,58,68,75,82,90,95];
-  treePos.forEach(pos=>{
-    const t=document.createElement('div');t.className='px-tree';t.style.left=pos+'%';
-    const scale=0.7+Math.random()*0.6;t.style.transform=`scale(${scale})`;t.style.transformOrigin='bottom center';
-    t.innerHTML=`<div class="px-tree-top3"></div><div class="px-tree-top2"></div><div class="px-tree-top"></div><div class="px-tree-trunk"></div>`;
-    tc.appendChild(t);
-  });
-  // Flowers
-  const fc=document.getElementById('flowersContainer');
-  for(let i=0;i<20;i++){
-    const f=document.createElement('div');
-    const type=i%3===0?'px-flower2':i%3===1?'px-flower3':'';
-    f.className='px-flower '+type;
-    f.style.left=(i*5+Math.random()*4)+'%';
-    f.style.animationDelay=Math.random()*3+'s';
-    f.style.animationDuration=(2+Math.random()*2)+'s';
-    f.innerHTML=`<div class="px-flower-stem"></div><div class="px-flower-head"></div>`;
-    fc.appendChild(f);
-  }
-}
-
-function enterApp(){
-  const splash=document.getElementById('splash');
-  // Particle burst
-  for(let i=0;i<12;i++){
-    const p=document.createElement('div');p.className='px-particle';
-    p.style.left=Math.random()*100+'vw';
-    p.style.bottom='0';
-    p.style.setProperty('--dx',(Math.random()*80-40)+'px');
-    p.style.animationDelay=Math.random()*0.3+'s';
-    document.body.appendChild(p);
-    setTimeout(()=>p.remove(),2000);
-  }
-  splash.style.transition='opacity .6s ease,transform .6s ease';
-  splash.style.opacity='0';splash.style.transform='scale(1.02)';
-  setTimeout(()=>{
-    splash.style.display='none';
-    document.getElementById('app').style.display='block';
-    init();
-  },600);
-}
-
-// ─── THEME ────────────────────────────────────────────────────
-function toggleTheme(){
-  isLightMode=!isLightMode;
-  document.body.classList.toggle('light-mode',isLightMode);
-  document.getElementById('themeToggle').textContent=isLightMode?'🌙':'☀️';
-  showToast(isLightMode?'☀️ LIGHT MODE':'🌙 DARK MODE');
-}
+let allLbData=[];
+let ecoData=[];
+let currentEcoFilter='All';
+let topScore=0;
+let homeRawData=[];
+let homeSortKey='total';
+let lbSortKey='total';
+let activeDetailAddr=null;
+let activeDetailPage=null;
+let detailChartInstance=null;
 
 // ─── UTILS ───────────────────────────────────────────────────
 function fmt(n){if(n===null||n===undefined||n==='')return'—';n=Number(n);if(isNaN(n))return'—';return n.toLocaleString()}
 function rankClass(r){return r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':''}
 function shortAddr(a){if(!a)return'—';return a.slice(0,8)+'...'+a.slice(-6)}
+
 function uptimeBadgeHtml(uptime){
   if(uptime===null||uptime===undefined)return`<span class="uptime-badge uptime-unknown">—%</span>`;
-  const u=parseFloat(uptime);if(isNaN(u))return`<span class="uptime-badge uptime-unknown">—%</span>`;
+  const u=parseFloat(uptime);
+  if(isNaN(u))return`<span class="uptime-badge uptime-unknown">—%</span>`;
   let cls=u>=100?'uptime-100':u>=95?'uptime-high':'uptime-low';
   const icon=u>=100?'✓':u>=95?'~':'!';
   return`<span class="uptime-badge ${cls}">${icon} ${u.toFixed(2)}%</span>`;
 }
+
 function statusBadgeHtml(m){
-  if(m.jailed)return`<span class="status-badge status-jailed">JAILED</span>`;
+  if(m.jailed)return`<span class="status-badge status-jailed">Jailed</span>`;
   const total=m.total||m.total_points||0;
-  if(total>0)return`<span class="status-badge status-active">ACTIVE</span>`;
-  return`<span class="status-badge status-inactive">INACTIVE</span>`;
+  if(total>0)return`<span class="status-badge status-active">Active</span>`;
+  return`<span class="status-badge status-inactive">Inactive</span>`;
 }
+
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
-function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast('✓ COPIED!'))}
+function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast('✓ Copied!'))}
 function copyCode(btn){const code=btn.nextElementSibling.textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='copy',1500)})}
+
 function toggleMenu(){
-  const menu=document.getElementById('mobileMenu'),btn=document.getElementById('hamburgerBtn');
+  const menu=document.getElementById('mobileMenu');
+  const btn=document.getElementById('hamburgerBtn');
   const isOpen=menu.classList.contains('open');
   menu.classList.toggle('open');btn.classList.toggle('open');
   document.body.style.overflow=isOpen?'':'hidden';
 }
+
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(b=>b.classList.remove('active'));
@@ -1071,17 +826,19 @@ async function checkChain(){
   try{
     const r=await fetch(API+'/api/chain_status',{signal:AbortSignal.timeout(7000)});
     const d=await r.json();
-    const banner=document.getElementById('chainBanner'),dot=document.getElementById('chainDot'),txt=document.getElementById('chainText');
+    const banner=document.getElementById('chainBanner');
+    const dot=document.getElementById('chainDot');
+    const txt=document.getElementById('chainText');
     const isLive=d.is_live===true||d.status==='live'||d.status==='active'||d.halted===false||d.is_halted===false||d.live===true;
     const latestBlock=d.latest_block||d.height||d.latest_block_height||d.block_height||'—';
     const scannedBlock=d.last_scanned||d.last_scanned_height||latestBlock;
     const fmtN=n=>(n&&n!=='—')?Number(n).toLocaleString():'—';
-    if(isLive){banner.className='';dot.className='chain-dot live';txt.textContent=`✓ CHAIN LIVE · LATEST: ${fmtN(latestBlock)} · SCANNED: ${fmtN(scannedBlock)}`}
-    else{banner.className='halted';dot.className='chain-dot halted';txt.textContent=`⚠ CHAIN HALTED · ${d.message||'CHECK DISCORD'}`}
+    if(isLive){banner.className='';dot.className='chain-dot live';txt.textContent=`✓ Chain LIVE · Latest: ${fmtN(latestBlock)} · Scanned: ${fmtN(scannedBlock)}`}
+    else{banner.className='halted';dot.className='chain-dot halted';txt.textContent=`⚠ Chain HALTED · ${d.message||'Check Discord for updates'}`}
   }catch(e){
     document.getElementById('chainBanner').className='checking';
     document.getElementById('chainDot').className='chain-dot checking';
-    document.getElementById('chainText').textContent='CHAIN STATUS: CONNECTING...';
+    document.getElementById('chainText').textContent='Chain status: connecting...';
   }
 }
 
@@ -1105,7 +862,7 @@ async function loadStats(){
   }catch(e){console.warn('stats error',e)}
 }
 
-// ─── SORT ─────────────────────────────────────────────────────
+// ─── SORT HELPERS ─────────────────────────────────────────────
 function getSortVal(m,key){
   if(key==='total')return m.total||m.total_points||0;
   if(key==='submit')return m.submit_job||0;
@@ -1113,27 +870,42 @@ function getSortVal(m,key){
   if(key==='uptime')return parseFloat(m.uptime||0);
   return 0;
 }
-function homeSetSort(key,btn){homeSortKey=key;document.querySelectorAll('[id^="home-sort-"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderHomeTable(homeRawData)}
-function lbSetSort(key,btn){lbSortKey=key;document.querySelectorAll('[id^="lb-sort-"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const q=document.getElementById('lbSearch').value.toLowerCase();const filtered=q?allLbData.filter(m=>(m.address&&m.address.toLowerCase().includes(q))||(m.moniker&&m.moniker.toLowerCase().includes(q))):allLbData;renderLbTable(filtered)}
 
-// ─── TOP MINERS ────────────────────────────────────────────────
+function homeSetSort(key,btn){
+  homeSortKey=key;
+  document.querySelectorAll('[id^="home-sort-"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHomeTable(homeRawData);
+}
+
+function lbSetSort(key,btn){
+  lbSortKey=key;
+  document.querySelectorAll('[id^="lb-sort-"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const q=document.getElementById('lbSearch').value.toLowerCase();
+  const filtered=q?allLbData.filter(m=>(m.address&&m.address.toLowerCase().includes(q))||(m.moniker&&m.moniker.toLowerCase().includes(q))):allLbData;
+  renderLbTable(filtered);
+}
+
+// ─── TOP MINERS (HOME) ────────────────────────────────────────
 async function loadTopMiners(){
   const tbody=document.getElementById('topMinersBody');
-  tbody.innerHTML='<tr><td colspan="7" class="loading">LOADING...</td></tr>';
+  tbody.innerHTML='<tr><td colspan="7" class="loading">Loading...</td></tr>';
   try{
     const r=await fetch(API+'/api/leaderboard?limit=10',{signal:AbortSignal.timeout(8000)});
     const d=await r.json();
     homeRawData=d.data||d;
-    if(!homeRawData||!homeRawData.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">NO DATA AVAILABLE</td></tr>';return}
+    if(!homeRawData||!homeRawData.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">No data available</td></tr>';return}
     topScore=homeRawData[0].total||0;
     const top=homeRawData[0];
     document.getElementById('statTopMiner').textContent=top.moniker||shortAddr(top.address);
-    document.getElementById('statTopScore').textContent=fmt(top.total)+' PTS';
-    const submitEl=document.getElementById('statSubmit'),resultEl=document.getElementById('statResult');
+    document.getElementById('statTopScore').textContent=fmt(top.total)+' pts';
+    const submitEl=document.getElementById('statSubmit');
+    const resultEl=document.getElementById('statResult');
     if(submitEl.textContent==='—'){const ts=homeRawData.reduce((s,m)=>s+(m.submit_job||0),0);if(ts>0)submitEl.textContent=fmt(ts)}
     if(resultEl.textContent==='—'){const tr=homeRawData.reduce((s,m)=>s+(m.submit_job_result||0),0);if(tr>0)resultEl.textContent=fmt(tr)}
     renderHomeTable(homeRawData);
-  }catch(e){tbody.innerHTML=`<tr><td colspan="7" class="error-msg">FAILED TO LOAD. RETRYING...</td></tr>`}
+  }catch(e){tbody.innerHTML=`<tr><td colspan="7" class="error-msg">Failed to load. Retrying...</td></tr>`}
 }
 
 function renderHomeTable(data){
@@ -1142,62 +914,79 @@ function renderHomeTable(data){
   tbody.innerHTML=sorted.map((m,i)=>{
     const addr=m.address||'';
     const isSelected=addr===activeDetailAddr&&activeDetailPage==='home';
-    // pixel meter bars
-    const pts=m.total||0;const maxPts=topScore||1;const bars=Math.round((pts/maxPts)*8);
-    const meter=Array.from({length:8},(_,i)=>`<div class="points-meter-block${i<bars?' filled':''}"></div>`).join('');
     return`<tr class="clickable-row${isSelected?' row-selected':''}" onclick="openMinerDetail('${addr}','home')">
       <td class="rank-cell ${rankClass(m.rank)}">#${m.rank||i+1}</td>
       <td>
         <div class="moniker-cell ${!m.moniker?'empty':''}">${m.moniker||'—'}</div>
-        <div class="addr-cell" style="margin-top:3px"><span class="addr-text">${addr}</span></div>
+        <div class="addr-cell" style="margin-top:2px"><span class="addr-text">${addr}</span></div>
       </td>
       <td class="num-cell">${fmt(m.submit_job)}</td>
       <td class="num-cell">${fmt(m.submit_job_result)}</td>
       <td class="num-cell">${uptimeBadgeHtml(m.uptime)}</td>
       <td class="num-cell" style="color:var(--accent)">${fmt(m.total)}</td>
       <td style="text-align:center">
-        <button onclick="event.stopPropagation();prefillPointsForm('${addr}','${m.moniker||''}')" style="background:rgba(0,229,176,.1);border:2px solid rgba(0,229,176,.4);color:var(--accent);padding:4px 8px;cursor:pointer;font-family:var(--pixel);font-size:7px;white-space:nowrap;letter-spacing:.03em">📋 SUBMIT</button>
+        <button onclick="event.stopPropagation();prefillPointsForm('${addr}','${m.moniker||''}')" style="background:rgba(0,229,176,.12);border:1px solid rgba(0,229,176,.3);color:var(--accent);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap">📋 Submit</button>
       </td>
     </tr>`;
   }).join('');
 }
 
-// ─── MINER DETAIL ─────────────────────────────────────────────
+// ─── MINER DETAIL PANEL ───────────────────────────────────────
 async function openMinerDetail(addr,page){
   if(!addr)return;
   const panelId=page==='home'?'homeDetailPanel':'lbDetailPanel';
   const panel=document.getElementById(panelId);
+
+  // Toggle off if same row clicked again
   if(activeDetailAddr===addr&&activeDetailPage===page){
-    panel.style.display='none';activeDetailAddr=null;activeDetailPage=null;
-    if(page==='home')renderHomeTable(homeRawData);else renderLbTable(allLbData);
+    panel.style.display='none';
+    activeDetailAddr=null;activeDetailPage=null;
+    if(page==='home')renderHomeTable(homeRawData);
+    else renderLbTable(allLbData);
     if(detailChartInstance){detailChartInstance.destroy();detailChartInstance=null}
     return;
   }
+
   activeDetailAddr=addr;activeDetailPage=page;
   if(page==='home')renderHomeTable(homeRawData);else renderLbTable(allLbData);
+
   panel.style.display='block';
-  panel.innerHTML=`<div class="miner-detail-panel"><div class="detail-loading">⛏ LOADING MINER DATA...</div></div>`;
+  panel.innerHTML=`<div class="miner-detail-panel"><div class="detail-loading">Loading miner data...</div></div>`;
   panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+
   if(detailChartInstance){detailChartInstance.destroy();detailChartInstance=null}
+
   try{
     const minerRes=await fetch(`${API}/api/miner/${encodeURIComponent(addr)}`,{signal:AbortSignal.timeout(8000)});
     let miner={address:addr};
-    if(minerRes.ok){const d=await minerRes.json();miner={...miner,...d}}
-    else{const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{};miner={...miner,...cached}}
+    if(minerRes.ok){
+      const d=await minerRes.json();
+      miner={...miner,...d};
+    } else {
+      const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{};
+      miner={...miner,...cached};
+    }
     renderDetailPanel(panel,miner,addr,page);
-  }catch(e){const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{address:addr};renderDetailPanel(panel,cached,addr,page)}
+  }catch(e){
+    const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{address:addr};
+    renderDetailPanel(panel,cached,addr,page);
+  }
 }
 
 function renderDetailPanel(panel,miner,addr,page){
-  const moniker=miner.moniker||miner.name||'UNKNOWN';
+  const moniker=miner.moniker||miner.name||'Unknown';
   const initials=moniker.replace(/[^a-zA-Z0-9]/g,'').slice(0,2).toUpperCase()||'??';
-  const submit=miner.submit_job||0,result=miner.submit_job_result||0,total=miner.total||miner.total_points||0;
+  const submit=miner.submit_job||0;
+  const result=miner.submit_job_result||0;
+  const total=miner.total||miner.total_points||0;
   const uptime=parseFloat(miner.uptime||0).toFixed(2);
   const valoper=miner.valoper||miner.validator_address||miner.operator_address||'—';
   const efficiency=submit>0?Math.round(result/submit*100):0;
   const rank=miner.rank||'—';
+
   const dailyData=miner.daily_jobs||miner.daily||null;
   const hasDaily=dailyData&&Object.keys(dailyData).length>0;
+
   panel.innerHTML=`
   <div class="miner-detail-panel">
     <button class="detail-close" onclick="closeMinerDetail('${page}')">✕</button>
@@ -1208,35 +997,83 @@ function renderDetailPanel(panel,miner,addr,page){
         <div class="detail-status-row">
           ${statusBadgeHtml(miner)}
           ${uptimeBadgeHtml(miner.uptime)}
-          <span style="font-family:var(--pixel);font-size:8px;color:var(--muted)">RANK #${rank}</span>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Rank #${rank}</span>
+
         </div>
       </div>
+
     </div>
+
+
+
     <div class="detail-addr-grid">
       <div class="detail-addr-item" style="grid-column:1/-1">
         <div class="detail-addr-label">Wallet Address</div>
-        <div class="detail-addr-value"><span style="flex:1;word-break:break-all">${addr}</span><button class="copy-btn" onclick="copyText('${addr}')">⎘</button></div>
+        <div class="detail-addr-value">
+          <span style="flex:1;word-break:break-all">${addr}</span>
+          <button class="copy-btn" onclick="copyText('${addr}')" style="flex-shrink:0">⎘</button>
+        </div>
       </div>
-      ${valoper!=='—'?`<div class="detail-addr-item" style="grid-column:1/-1"><div class="detail-addr-label">Validator Address</div><div class="detail-addr-value"><span style="flex:1;word-break:break-all">${valoper}</span><button class="copy-btn" onclick="copyText('${valoper}')">⎘</button></div></div>`:''}
-      <div class="detail-addr-item"><div class="detail-addr-label">Last Scanned Block</div><div class="detail-addr-value" style="font-size:13px">${fmt(miner.last_scanned_height)||'—'}</div></div>
-      <div class="detail-addr-item"><div class="detail-addr-label">Last Scan Time</div><div class="detail-addr-value" style="font-size:12px">${miner.last_scan_time||'—'}</div></div>
+      ${valoper!=='—'?`
+      <div class="detail-addr-item" style="grid-column:1/-1">
+        <div class="detail-addr-label">Validator Address</div>
+        <div class="detail-addr-value">
+          <span style="flex:1;word-break:break-all">${valoper}</span>
+          <button class="copy-btn" onclick="copyText('${valoper}')" style="flex-shrink:0">⎘</button>
+        </div>
+      </div>`:''}
+      <div class="detail-addr-item">
+        <div class="detail-addr-label">Last Scanned Block</div>
+        <div class="detail-addr-value" style="font-size:13px">${fmt(miner.last_scanned_height)||'—'}</div>
+      </div>
+      <div class="detail-addr-item">
+        <div class="detail-addr-label">Last Scan Time</div>
+        <div class="detail-addr-value" style="font-size:12px">${miner.last_scan_time||'—'}</div>
+      </div>
     </div>
+
     <div class="detail-stats-row">
       <div class="detail-stat"><div class="detail-stat-label">Submit Jobs</div><div class="detail-stat-value">${fmt(submit)}</div></div>
       <div class="detail-stat"><div class="detail-stat-label">Submit Results</div><div class="detail-stat-value">${fmt(result)}</div></div>
       <div class="detail-stat"><div class="detail-stat-label">Efficiency</div><div class="detail-stat-value" style="color:${efficiency>=80?'var(--green)':efficiency>=50?'var(--yellow)':'var(--red)'}">${efficiency}%</div></div>
       <div class="detail-stat"><div class="detail-stat-label">Total Points</div><div class="detail-stat-value" style="color:var(--accent)">${fmt(total)}</div></div>
     </div>
-    <div class="detail-chart-title">ESTIMATED DAILY JOB DISTRIBUTION</div>
+
+    <div class="detail-chart-title">Estimated daily job distribution</div>
     <div class="detail-chart-wrap"><canvas id="detailChartCanvas"></canvas></div>
+
+
   </div>`;
+
+  // Render txns table separately (avoids quote conflicts in template literal)
+
+  // Render chart
   setTimeout(()=>{
-    const ctx=document.getElementById('detailChartCanvas');if(!ctx)return;
+    const ctx=document.getElementById('detailChartCanvas');
+    if(!ctx)return;
     let labels,values;
-    if(hasDaily){const entries=Object.entries(dailyData).sort((a,b)=>a[0].localeCompare(b[0])).slice(-14);labels=entries.map(e=>e[0].slice(5));values=entries.map(e=>e[1])}
-    else{labels=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-13+i);return(d.getMonth()+1)+'/'+(d.getDate())});const base=Math.max(1,Math.floor(submit/14));values=labels.map((_,i)=>i<13?Math.max(0,base+Math.floor((Math.random()-.5)*base*.8)):0)}
+    if(hasDaily){
+      const entries=Object.entries(dailyData).sort((a,b)=>a[0].localeCompare(b[0])).slice(-14);
+      labels=entries.map(e=>e[0].slice(5));
+      values=entries.map(e=>e[1]);
+    } else {
+      labels=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-13+i);return(d.getMonth()+1)+'/'+(d.getDate())});
+      const base=Math.max(1,Math.floor(submit/14));
+      values=labels.map((_,i)=>i<13?Math.max(0,base+Math.floor((Math.random()-.5)*base*.8)):0);
+    }
     if(detailChartInstance){detailChartInstance.destroy()}
-    detailChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Jobs',data:values,backgroundColor:'rgba(0,229,176,0.5)',borderColor:'var(--accent)',borderWidth:2,borderRadius:0,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:t=>'DATE: '+t[0].label,label:t=>'JOBS: '+t.raw},titleFont:{family:'monospace'},bodyFont:{family:'monospace'}}},scales:{x:{grid:{display:false},ticks:{font:{size:9,family:'monospace'},color:'#64748b'}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{size:9,family:'monospace'},color:'#64748b',stepSize:1},beginAtZero:true}}}});
+    detailChartInstance=new Chart(ctx,{
+      type:'bar',
+      data:{labels,datasets:[{label:'Jobs',data:values,backgroundColor:'rgba(0,229,176,0.6)',borderColor:'var(--accent)',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{title:t=>'Date: '+t[0].label,label:t=>'Jobs: '+t.raw}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:10},color:'#64748b'}},
+          y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{size:10},color:'#64748b',stepSize:1},beginAtZero:true}
+        }
+      }
+    });
   },50);
 }
 
@@ -1248,18 +1085,18 @@ function closeMinerDetail(page){
   if(page==='home')renderHomeTable(homeRawData);else renderLbTable(allLbData);
 }
 
-// ─── SEARCH ───────────────────────────────────────────────────
+// ─── MINER SEARCH ─────────────────────────────────────────────
 async function searchMiner(){
   const addr=document.getElementById('minerSearchInput').value.trim();
   const res=document.getElementById('minerResult');
-  if(!addr){res.innerHTML='<div class="error-msg">ENTER A MINER ADDRESS (rai1...)</div>';return}
-  res.innerHTML='<div class="loading">SEARCHING...</div>';
+  if(!addr){res.innerHTML='<div class="error-msg">Enter a miner address (rai1...)</div>';return}
+  res.innerHTML='<div class="loading">Searching...</div>';
   try{
     const r=await fetch(API+'/api/miner/'+encodeURIComponent(addr),{signal:AbortSignal.timeout(8000)});
     if(!r.ok)throw new Error('Not found');
     const m=await r.json();
     const pct=topScore>0?Math.min(100,Math.round((m.total/topScore)*100)):0;
-    const shareText=encodeURIComponent(`🏆 My RepublicAI GPU Mining Stats:\n📊 Rank: #${m.rank}\n⛏️ ${m.moniker?'Moniker: '+m.moniker+'\n':''}Total: ${fmt(m.total)} pts\n🔗 republicstats.xyz`);
+    const shareText=encodeURIComponent(`🏆 My Republic AI Testnet Stats:\n📊 Rank: #${m.rank}\n⛏️ ${m.moniker?'Moniker: '+m.moniker+'\n':''}Total: ${fmt(m.total)} pts\n🔗 republicstats.xyz`);
     res.innerHTML=`
     <div class="miner-card">
       <div class="miner-card-header">
@@ -1267,7 +1104,7 @@ async function searchMiner(){
         <div class="miner-info">
           <div class="miner-name">${m.moniker||shortAddr(m.address)}</div>
           <div class="miner-addr"><span>${m.address}</span><button class="copy-btn" onclick="copyText('${m.address}')">⎘</button></div>
-          <div class="miner-badges">${uptimeBadgeHtml(m.uptime)}${m.moniker?`<span class="uptime-badge uptime-unknown" style="color:var(--accent2);border-color:rgba(59,130,246,.5);background:rgba(59,130,246,.08)">${m.moniker}</span>`:''}</div>
+          <div class="miner-badges">${uptimeBadgeHtml(m.uptime)}${m.moniker?`<span class="uptime-badge uptime-unknown" style="color:var(--accent2);border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.08)">${m.moniker}</span>`:''}</div>
         </div>
       </div>
       <div class="miner-stats">
@@ -1276,35 +1113,39 @@ async function searchMiner(){
         <div class="miner-stat"><div class="miner-stat-label">Total</div><div class="miner-stat-value" style="color:var(--accent)">${fmt(m.total)}</div></div>
       </div>
       <div class="progress-bar-wrap">
-        <div class="progress-bar-label"><span>VS TOP MINER</span><span>${pct}%</span></div>
+        <div class="progress-bar-label"><span>vs Top Miner</span><span>${pct}%</span></div>
         <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
       </div>
-      <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${shareText}','_blank')">𝕏 SHARE ON X</button>
-      <button class="share-btn" style="margin-top:3px;border-color:rgba(0,229,176,.4);color:var(--accent);background:rgba(0,229,176,.08)" onclick="downloadJobsCsv('${m.address}','${m.moniker||m.address}')">⬇️ DOWNLOAD ALL JOBS (CSV)</button>
+      <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${shareText}','_blank')">𝕏 Share on X</button>
+      <button class="share-btn" style="margin-top:8px;border-color:rgba(0,229,176,.3);color:var(--accent);background:rgba(0,229,176,.08)" onclick="downloadJobsCsv('${m.address}','${m.moniker||m.address}')">⬇️ Download All My Jobs (CSV)</button>
     </div>`;
-  }catch{res.innerHTML='<div class="error-msg">MINER NOT FOUND. CHECK ADDRESS AND TRY AGAIN.</div>'}
+  }catch{
+    res.innerHTML='<div class="error-msg">Miner not found. Check address and try again.</div>';
+  }
 }
-document.addEventListener('DOMContentLoaded',()=>{
-  const si=document.getElementById('minerSearchInput');
-  if(si)si.addEventListener('keypress',e=>{if(e.key==='Enter')searchMiner()});
-});
+document.getElementById('minerSearchInput').addEventListener('keypress',e=>{if(e.key==='Enter')searchMiner()});
 
 // ─── LEADERBOARD ──────────────────────────────────────────────
 async function loadLeaderboard(){
-  document.getElementById('podiumWrap').innerHTML='<div class="loading">LOADING PODIUM...</div>';
-  document.getElementById('lbBody').innerHTML='<tr><td colspan="7" class="loading">LOADING...</td></tr>';
+  document.getElementById('podiumWrap').innerHTML='<div class="loading">Loading podium...</div>';
+  document.getElementById('lbBody').innerHTML='<tr><td colspan="7" class="loading">Loading...</td></tr>';
   try{
     const r=await fetch(API+'/api/leaderboard?limit=100',{signal:AbortSignal.timeout(10000)});
-    const d=await r.json();allLbData=d.data||d;
-    renderPodium(allLbData.slice(0,3));renderLbTable(allLbData);
-    document.getElementById('lbCount').textContent=`🏆 FULL LEADERBOARD · ${allLbData.length} MINERS`;
-  }catch{document.getElementById('lbBody').innerHTML='<tr><td colspan="7" class="error-msg">FAILED TO LOAD LEADERBOARD</td></tr>'}
+    const d=await r.json();
+    allLbData=d.data||d;
+    renderPodium(allLbData.slice(0,3));
+    renderLbTable(allLbData);
+    document.getElementById('lbCount').textContent=`🏆 Full Leaderboard · ${allLbData.length} miners`;
+  }catch{
+    document.getElementById('lbBody').innerHTML='<tr><td colspan="7" class="error-msg">Failed to load leaderboard</td></tr>';
+  }
 }
 
 function renderPodium(top){
-  const medals=['🥇','🥈','🥉'],order=[1,0,2];
+  const medals=['🥇','🥈','🥉'];
+  const order=[1,0,2];
   const wrap=document.getElementById('podiumWrap');
-  if(!top||!top.length){wrap.innerHTML='<div class="empty-state">NO DATA</div>';return}
+  if(!top||!top.length){wrap.innerHTML='<div class="empty-state">No data</div>';return}
   wrap.innerHTML=order.map(i=>{
     const m=top[i];if(!m)return'';
     return`<div class="podium-item p${i+1}" onclick="openMinerDetail('${m.address}','leaderboard')">
@@ -1313,7 +1154,7 @@ function renderPodium(top){
       <div class="podium-moniker">${m.moniker||shortAddr(m.address)}</div>
       ${m.moniker?`<div class="podium-addr">${shortAddr(m.address)}</div>`:''}
       <div class="podium-score">${fmt(m.total)}</div>
-      <div>${uptimeBadgeHtml(m.uptime)}</div>
+      <div class="podium-uptime">${uptimeBadgeHtml(m.uptime)}</div>
     </div>`;
   }).join('');
 }
@@ -1321,7 +1162,7 @@ function renderPodium(top){
 function renderLbTable(data){
   const sorted=[...data].sort((a,b)=>getSortVal(b,lbSortKey)-getSortVal(a,lbSortKey));
   const tbody=document.getElementById('lbBody');
-  if(!sorted.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">NO DATA</td></tr>';return}
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">No data</td></tr>';return}
   tbody.innerHTML=sorted.map(m=>{
     const addr=m.address||'';
     const isSelected=addr===activeDetailAddr&&activeDetailPage==='leaderboard';
@@ -1345,10 +1186,11 @@ function filterLeaderboard(){
 
 // ─── ECOSYSTEM ────────────────────────────────────────────────
 async function loadEcosystem(){
-  document.getElementById('ecoGrid').innerHTML='<div class="loading">LOADING PROJECTS...</div>';
+  document.getElementById('ecoGrid').innerHTML='<div class="loading">Loading projects...</div>';
   try{
     const r=await fetch(API+'/api/ecosystem',{signal:AbortSignal.timeout(8000)});
-    const d=await r.json();ecoData=d.data||d||[];renderEco(ecoData);
+    const d=await r.json();
+    ecoData=d.data||d||[];renderEco(ecoData);
   }catch{
     ecoData=[
       {name:'Republic Stats',description:'GPU Miner Tracker, Leaderboard & Ecosystem Dashboard',category:'Tool',icon:'📊',url:'https://republicstats.xyz'},
@@ -1360,7 +1202,7 @@ async function loadEcosystem(){
 function renderEco(data){
   const grid=document.getElementById('ecoGrid');
   const filtered=currentEcoFilter==='All'?data:data.filter(p=>p.category===currentEcoFilter);
-  if(!filtered.length){grid.innerHTML='<div class="empty-state">NO PROJECTS IN THIS CATEGORY YET.</div>';return}
+  if(!filtered.length){grid.innerHTML='<div class="empty-state">No projects in this category yet.</div>';return}
   grid.innerHTML=filtered.map(p=>`
     <div class="eco-card" onclick="${p.url?`window.open('${p.url}','_blank')`:''}">
       <div class="eco-card-header">
@@ -1369,60 +1211,90 @@ function renderEco(data){
       </div>
       <div class="eco-card-name">${p.name}</div>
       <div class="eco-card-desc">${p.description||''}</div>
-      ${p.url?`<span class="eco-card-link">→ VISIT</span>`:''}
+      ${p.url?`<span class="eco-card-link">→ Visit</span>`:''}
     </div>`).join('');
 }
 
-function filterEco(cat,btn){currentEcoFilter=cat;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderEco(ecoData)}
+function filterEco(cat,btn){
+  currentEcoFilter=cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderEco(ecoData);
+}
 
 // ─── SUBMIT PROJECT ───────────────────────────────────────────
 async function submitProject(){
-  const name=document.getElementById('f-name').value.trim(),desc=document.getElementById('f-desc').value.trim(),cat=document.getElementById('f-cat').value;
-  const url=document.getElementById('f-url').value.trim(),github=document.getElementById('f-github').value.trim(),icon=document.getElementById('f-icon').value.trim();
+  const name=document.getElementById('f-name').value.trim();
+  const desc=document.getElementById('f-desc').value.trim();
+  const cat=document.getElementById('f-cat').value;
+  const url=document.getElementById('f-url').value.trim();
+  const github=document.getElementById('f-github').value.trim();
+  const icon=document.getElementById('f-icon').value.trim();
   const msg=document.getElementById('submitMsg');
-  if(!name||!desc||!cat){msg.innerHTML='<div class="error-msg">PLEASE FILL ALL REQUIRED FIELDS (*)</div>';return}
-  msg.innerHTML='<div class="loading">SUBMITTING...</div>';
+  if(!name||!desc||!cat){msg.innerHTML='<div class="error-msg">Please fill all required fields (*)</div>';return}
+  msg.innerHTML='<div class="loading">Submitting...</div>';
   try{
     const r=await fetch(API+'/api/ecosystem/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description:desc,category:cat,url,github,icon})});
-    if(r.ok){msg.innerHTML='<div style="color:var(--green);font-family:var(--pixel);font-size:8px;padding:12px;background:rgba(16,185,129,.07);border:2px solid rgba(16,185,129,.3)">✓ PROJECT SUBMITTED! APPEARS AFTER REVIEW.</div>';['f-name','f-desc','f-cat','f-url','f-github','f-icon'].forEach(id=>document.getElementById(id).value='')}
-    else throw new Error();
-  }catch{msg.innerHTML='<div class="error-msg">SUBMISSION FAILED. TRY AGAIN OR DM ON TELEGRAM.</div>'}
+    if(r.ok){
+      msg.innerHTML='<div style="color:var(--green);font-size:13px;padding:12px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:8px">✓ Project submitted! It will appear after review.</div>';
+      ['f-name','f-desc','f-cat','f-url','f-github','f-icon'].forEach(id=>document.getElementById(id).value='');
+    }else throw new Error();
+  }catch{msg.innerHTML='<div class="error-msg">Submission failed. Try again or DM on Telegram.</div>'}
 }
 
 // ─── GUIDES ───────────────────────────────────────────────────
-function showGuide(id,btn){document.querySelectorAll('.guide-content').forEach(g=>g.classList.remove('active'));document.querySelectorAll('.guide-tab').forEach(b=>b.classList.remove('active'));document.getElementById('guide-'+id).classList.add('active');btn.classList.add('active')}
+function showGuide(id,btn){
+  document.querySelectorAll('.guide-content').forEach(g=>g.classList.remove('active'));
+  document.querySelectorAll('.guide-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('guide-'+id).classList.add('active');
+  btn.classList.add('active');
+}
 
 // ─── REFRESH ──────────────────────────────────────────────────
 async function triggerRefresh(){
-  const btn=document.getElementById('mainRefreshBtn');btn.disabled=true;btn.textContent='⏳ SCANNING...';
-  showToast('🔄 CHAIN SCAN TRIGGERED...');
+  const btn=document.getElementById('mainRefreshBtn');
+  btn.disabled=true;btn.textContent='⏳ Scanning...';
+  showToast('🔄 Chain scan triggered...');
   try{
-    const r=await fetch(`${API}/api/refresh`,{method:'POST'});const d=await r.json();
-    if(d.status==='ok'||d.status==='scanning'){showToast('✅ SCAN STARTED! UPDATING IN ~30S');setTimeout(()=>{loadTopMiners();loadStats();checkChain();btn.disabled=false;btn.textContent='↻ REFRESH';showToast('✅ DATA UPDATED!')},30000)}
-    else{showToast('⚠️ '+(d.message||'REFRESH QUEUED'));btn.disabled=false;btn.textContent='↻ REFRESH'}
-  }catch(e){showToast('❌ REFRESH FAILED');btn.disabled=false;btn.textContent='↻ REFRESH'}
+    const r=await fetch(`${API}/api/refresh`,{method:'POST'});
+    const d=await r.json();
+    if(d.status==='ok'||d.status==='scanning'){
+      showToast('✅ Scan started! Updating in ~30s');
+      setTimeout(()=>{loadTopMiners();loadStats();checkChain();btn.disabled=false;btn.textContent='↻ Refresh';showToast('✅ Data updated!')},30000);
+    }else{showToast('⚠️ '+(d.message||'Refresh queued'));btn.disabled=false;btn.textContent='↻ Refresh'}
+  }catch(e){showToast('❌ Refresh failed');btn.disabled=false;btn.textContent='↻ Refresh'}
 }
 
-// ─── CSV DOWNLOAD ─────────────────────────────────────────────
+// ─── DOWNLOAD CSV ─────────────────────────────────────────────
 async function downloadJobsCsv(address,moniker){
-  showToast('⏳ FETCHING YOUR JOBS...');
+  showToast('⏳ Fetching your jobs...');
   try{
-    const btn=event.target;btn.disabled=true;btn.textContent='⏳ FETCHING...';
+    const btn=event.target;btn.disabled=true;btn.textContent='⏳ Fetching...';
     const r=await fetch(`${API}/api/miner/${encodeURIComponent(address)}/jobs.csv`);
     if(!r.ok)throw new Error('Failed');
-    const blob=await r.blob();const url=URL.createObjectURL(blob);
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;a.download=`jobs_${address.slice(0,10)}.csv`;a.click();
-    URL.revokeObjectURL(url);btn.disabled=false;btn.textContent='⬇️ DOWNLOAD ALL JOBS (CSV)';showToast('✅ CSV DOWNLOADED!');
-  }catch(e){showToast('❌ DOWNLOAD FAILED');event.target.disabled=false;event.target.textContent='⬇️ DOWNLOAD ALL JOBS (CSV)'}
+    URL.revokeObjectURL(url);
+    btn.disabled=false;btn.textContent='⬇️ Download All My Jobs (CSV)';
+    showToast('✅ CSV downloaded!');
+  }catch(e){showToast('❌ Download failed');event.target.disabled=false;event.target.textContent='⬇️ Download All My Jobs (CSV)'}
 }
 
-// ─── POINTS FORM ──────────────────────────────────────────────
-let jobEntries=[],hwFile=null;
-function addJobEntry(){const id=Date.now();jobEntries.push(id);updateJobEntries()}
-function removeJobEntry(id){if(jobEntries.length<=1){showToast('MINIMUM 1 JOB REQUIRED');return}jobEntries=jobEntries.filter(j=>j!==id);updateJobEntries()}
+// ─── POINTS FORM ─────────────────────────────────────────────
+let jobEntries=[];let hwFile=null;
+
+function addJobEntry(){
+  const id=Date.now();jobEntries.push(id);updateJobEntries();
+}
+function removeJobEntry(id){
+  if(jobEntries.length<=1){showToast('Minimum 1 job required');return}
+  jobEntries=jobEntries.filter(j=>j!==id);updateJobEntries();
+}
 function updateJobEntries(){
-  const wrap=document.getElementById('jobEntriesWrap'),badge=document.getElementById('jobCountBadge');
-  badge.textContent=`(${jobEntries.length} JOB${jobEntries.length>1?'S':''})`;
+  const wrap=document.getElementById('jobEntriesWrap');
+  const badge=document.getElementById('jobCountBadge');
+  badge.textContent=`(${jobEntries.length} job${jobEntries.length>1?'s':''})`;
   wrap.innerHTML=jobEntries.map((id,i)=>`
     <div class="job-entry" id="job-${id}">
       <div class="job-entry-header">
@@ -1430,61 +1302,95 @@ function updateJobEntries(){
         ${jobEntries.length>1?`<button class="job-remove" onclick="removeJobEntry(${id})">✕</button>`:''}
       </div>
       <div class="job-grid">
-        <div><label class="form-label">Job ID *</label><input class="form-input" id="job-id-${id}" placeholder="job_12345..." style="font-family:var(--silk);font-size:12px"/></div>
-        <div><label class="form-label">TX Hash *</label><input class="form-input" id="job-tx-${id}" placeholder="0xABCD..." style="font-family:var(--silk);font-size:12px"/></div>
+        <div><label class="form-label">Job ID *</label><input class="form-input" id="job-id-${id}" placeholder="job_12345..." style="font-family:var(--font-mono);font-size:12px"/></div>
+        <div><label class="form-label">TX Hash *</label><input class="form-input" id="job-tx-${id}" placeholder="0xABCD..." style="font-family:var(--font-mono);font-size:12px"/></div>
       </div>
     </div>`).join('');
 }
+
 function handleHwUpload(input){
   const file=input.files[0];if(!file)return;
-  if(file.size>10*1024*1024){showToast('FILE TOO LARGE! MAX 10MB');return}
-  hwFile=file;const reader=new FileReader();
+  if(file.size>10*1024*1024){showToast('File too large! Max 10MB');return}
+  hwFile=file;
+  const reader=new FileReader();
   reader.onload=e=>{
-    document.getElementById('hwPreview').innerHTML=`<div style="position:relative;display:inline-block"><img src="${e.target.result}" style="max-width:100%;max-height:200px;border:2px solid var(--border)"/><button onclick="removeHwFile()" style="position:absolute;top:5px;right:5px;background:rgba(0,0,0,.8);border:none;color:#fff;width:22px;height:22px;cursor:pointer;font-size:12px">✕</button></div>`;
+    document.getElementById('hwPreview').innerHTML=`<div style="position:relative;display:inline-block"><img src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border)"/><button onclick="removeHwFile()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:12px">✕</button></div>`;
     document.getElementById('hwUploadLabel').style.display='none';
-  };reader.readAsDataURL(file);
+  };
+  reader.readAsDataURL(file);
 }
-function removeHwFile(){hwFile=null;document.getElementById('pf-hw').value='';document.getElementById('hwPreview').innerHTML='';document.getElementById('hwUploadLabel').style.display='flex'}
+
+function removeHwFile(){
+  hwFile=null;document.getElementById('pf-hw').value='';
+  document.getElementById('hwPreview').innerHTML='';
+  document.getElementById('hwUploadLabel').style.display='block';
+}
+
 async function submitPointsForm(){
-  const username=document.getElementById('pf-username').value.trim(),discord=document.getElementById('pf-discord').value.trim();
-  const moniker=document.getElementById('pf-moniker').value.trim(),wallet=document.getElementById('pf-wallet').value.trim(),raivaloper=document.getElementById('pf-raivaloper').value.trim();
+  const username=document.getElementById('pf-username').value.trim();
+  const discord=document.getElementById('pf-discord').value.trim();
+  const moniker=document.getElementById('pf-moniker').value.trim();
+  const wallet=document.getElementById('pf-wallet').value.trim();
+  const raivaloper=document.getElementById('pf-raivaloper').value.trim();
   const pfMsg=document.getElementById('pfMsg');
-  if(!username||!discord||!moniker||!wallet||!raivaloper){pfMsg.innerHTML='<div class="error-msg">⚠ PLEASE FILL ALL REQUIRED FIELDS.</div>';return}
+  if(!username||!discord||!moniker||!wallet||!raivaloper){pfMsg.innerHTML='<div class="error-msg">⚠ Please fill all required fields.</div>';return}
   const jobs=[];
   for(const id of jobEntries){
-    const jobId=document.getElementById(`job-id-${id}`)?.value.trim(),txHash=document.getElementById(`job-tx-${id}`)?.value.trim();
-    if(!jobId||!txHash){pfMsg.innerHTML='<div class="error-msg">⚠ PLEASE FILL JOB ID AND TX HASH FOR ALL JOBS.</div>';return}
+    const jobId=document.getElementById(`job-id-${id}`)?.value.trim();
+    const txHash=document.getElementById(`job-tx-${id}`)?.value.trim();
+    if(!jobId||!txHash){pfMsg.innerHTML='<div class="error-msg">⚠ Please fill Job ID and TX Hash for all jobs.</div>';return}
     jobs.push({jobId,txHash});
   }
-  if(!hwFile){pfMsg.innerHTML='<div class="error-msg">⚠ PLEASE UPLOAD NVIDIA-SMI HARDWARE PROOF.</div>';return}
-  const btn=document.getElementById('pointsSubmitBtn');btn.disabled=true;btn.textContent='⏳ SUBMITTING...';pfMsg.innerHTML='';
+  if(!hwFile){pfMsg.innerHTML='<div class="error-msg">⚠ Please upload nvidia-smi hardware proof.</div>';return}
+  const btn=document.getElementById('pointsSubmitBtn');
+  btn.disabled=true;btn.textContent='⏳ Submitting...';pfMsg.innerHTML='';
   try{
     const formData=new FormData();
-    formData.append('username',username);formData.append('discord',discord);formData.append('moniker',moniker);formData.append('wallet',wallet);formData.append('raivaloper',raivaloper);formData.append('jobs',JSON.stringify(jobs));formData.append('hw_proof',hwFile,hwFile.name);
+    formData.append('username',username);formData.append('discord',discord);
+    formData.append('moniker',moniker);formData.append('wallet',wallet);
+    formData.append('raivaloper',raivaloper);formData.append('jobs',JSON.stringify(jobs));
+    formData.append('hw_proof',hwFile,hwFile.name);
     const r=await fetch(API+'/api/points/submit',{method:'POST',body:formData,signal:AbortSignal.timeout(30000)});
-    if(r.ok){document.getElementById('pointsFormWrap').style.display='none';document.getElementById('pointsSuccess').style.display='block';document.getElementById('pointsSuccessMsg').textContent=`SUCCESSFULLY SUBMITTED ${jobs.length} JOB${jobs.length>1?'S':''} FOR ${username}.`}
-    else{const err=await r.json().catch(()=>({}));throw new Error(err.detail||'Submission failed')}
-  }catch(e){pfMsg.innerHTML=`<div class="error-msg">❌ ${(e.message||'SUBMISSION FAILED. TRY AGAIN.').toUpperCase()}</div>`;btn.disabled=false;btn.textContent='🚀 SUBMIT ALL JOBS'}
+    if(r.ok){
+      document.getElementById('pointsFormWrap').style.display='none';
+      document.getElementById('pointsSuccess').style.display='block';
+      document.getElementById('pointsSuccessMsg').textContent=`Successfully submitted ${jobs.length} job${jobs.length>1?'s':''} for ${username}.`;
+    }else{const err=await r.json().catch(()=>({}));throw new Error(err.detail||'Submission failed')}
+  }catch(e){
+    pfMsg.innerHTML=`<div class="error-msg">❌ ${e.message||'Submission failed. Try again.'}</div>`;
+    btn.disabled=false;btn.textContent='🚀 Submit All Jobs';
+  }
 }
+
 function resetPointsForm(){
-  document.getElementById('pointsFormWrap').style.display='block';document.getElementById('pointsSuccess').style.display='none';
+  document.getElementById('pointsFormWrap').style.display='block';
+  document.getElementById('pointsSuccess').style.display='none';
   ['pf-username','pf-discord','pf-moniker','pf-wallet','pf-raivaloper'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('pfMsg').innerHTML='';removeHwFile();jobEntries=[];addJobEntry();
-  document.getElementById('pointsSubmitBtn').disabled=false;document.getElementById('pointsSubmitBtn').textContent='🚀 SUBMIT ALL JOBS';
+  document.getElementById('pfMsg').innerHTML='';
+  removeHwFile();jobEntries=[];addJobEntry();
+  document.getElementById('pointsSubmitBtn').disabled=false;
+  document.getElementById('pointsSubmitBtn').textContent='🚀 Submit All Jobs';
 }
+
 function initPointsForm(){jobEntries=[];addJobEntry()}
+
 function prefillPointsForm(address,moniker){
   showPage('points',document.querySelector('.nav-link[onclick*="points"]'));
-  setTimeout(()=>{if(address)document.getElementById('pf-wallet').value=address;if(moniker)document.getElementById('pf-moniker').value=moniker;document.getElementById('pf-wallet').scrollIntoView({behavior:'smooth',block:'center'})},100);
+  setTimeout(()=>{
+    if(address)document.getElementById('pf-wallet').value=address;
+    if(moniker)document.getElementById('pf-moniker').value=moniker;
+    document.getElementById('pf-wallet').scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
-buildSplash();
-
 async function init(){
   await Promise.allSettled([checkChain(),loadStats(),loadTopMiners()]);
-  setInterval(checkChain,30000);setInterval(loadStats,60000);setInterval(loadTopMiners,60000);
+  setInterval(checkChain,30000);
+  setInterval(loadStats,60000);
+  setInterval(loadTopMiners,60000);
 }
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
