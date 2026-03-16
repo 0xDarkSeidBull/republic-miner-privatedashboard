@@ -9,6 +9,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// Load CosmJS Stargate for wallet transactions
+(function(){
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@cosmjs/stargate@0.32.4/build/stargate.js';
+  s.onload=()=>{window.stargate=window.cosmjsStargate||window.stargate;};
+  document.head.appendChild(s);
+})();
+</script>
 <style>
 :root{
   --bg:#07090f;--bg2:#0e1117;--bg3:#141a24;--bg4:#1a2233;
@@ -373,6 +382,7 @@ footer{border-top:1px solid var(--border);padding:28px 24px;background:var(--bg2
     <button class="nav-link" onclick="showPage('guides',this)"><span class="nav-icon">📚</span>Guides</button>
     <button class="nav-link" onclick="showPage('points',this)"><span class="nav-icon">🎁</span>Points Form</button>
     <button class="nav-btn submit" onclick="showPage('submit',this)">+ Submit Project</button>
+    <button class="nav-btn" id="keplrNavBtn" onclick="connectKeplr()" style="border-color:rgba(59,130,246,.3);color:var(--accent2)">🔗 Keplr</button>
   </div>
   <button class="hamburger" id="hamburgerBtn" onclick="toggleMenu()" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -956,9 +966,9 @@ async function openMinerDetail(addr,page){
   if(detailChartInstance){detailChartInstance.destroy();detailChartInstance=null}
 
   try{
-    const [minerRes,jobsRes]=await Promise.allSettled([
+    const [minerRes,txRes]=await Promise.allSettled([
       fetch(`${API}/api/miner/${encodeURIComponent(addr)}`,{signal:AbortSignal.timeout(8000)}),
-      fetch(`${API}/api/miner/${encodeURIComponent(addr)}/jobs?limit=15`,{signal:AbortSignal.timeout(8000)})
+      fetch(`${API}/api/miner/${encodeURIComponent(addr)}/txns?limit=20`,{signal:AbortSignal.timeout(15000)})
     ]);
 
     let miner={address:addr};
@@ -966,25 +976,24 @@ async function openMinerDetail(addr,page){
       const d=await minerRes.value.json();
       miner={...miner,...d};
     } else {
-      // fallback from cached leaderboard data
       const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{};
       miner={...miner,...cached};
     }
 
-    let jobs=[];
-    if(jobsRes.status==='fulfilled'&&jobsRes.value.ok){
-      const jd=await jobsRes.value.json();
-      jobs=Array.isArray(jd)?jd:(jd.jobs||jd.data||[]);
+    let txns=[];
+    if(txRes.status==='fulfilled'&&txRes.value.ok){
+      const td=await txRes.value.json();
+      txns=td.txns||[];
     }
 
-    renderDetailPanel(panel,miner,jobs,addr,page);
+    renderDetailPanel(panel,miner,txns,'—',addr,page);
   }catch(e){
     const cached=(page==='home'?homeRawData:allLbData).find(m=>m.address===addr)||{address:addr};
-    renderDetailPanel(panel,cached,[],addr,page);
+    renderDetailPanel(panel,cached,[],'—',addr,page);
   }
 }
 
-function renderDetailPanel(panel,miner,jobs,addr,page){
+function renderDetailPanel(panel,miner,txns,balance,addr,page){
   const moniker=miner.moniker||miner.name||'Unknown';
   const initials=moniker.replace(/[^a-zA-Z0-9]/g,'').slice(0,2).toUpperCase()||'??';
   const submit=miner.submit_job||0;
@@ -998,20 +1007,51 @@ function renderDetailPanel(panel,miner,jobs,addr,page){
   const dailyData=miner.daily_jobs||miner.daily||null;
   const hasDaily=dailyData&&Object.keys(dailyData).length>0;
 
+  const isConnectedAddr=walletAddress&&walletAddress.toLowerCase()===addr.toLowerCase();
+
   panel.innerHTML=`
   <div class="miner-detail-panel">
     <button class="detail-close" onclick="closeMinerDetail('${page}')">✕</button>
     <div class="detail-top">
       <div class="detail-avatar">${initials}</div>
-      <div>
+      <div style="flex:1">
         <div class="detail-name">${moniker}</div>
         <div class="detail-status-row">
           ${statusBadgeHtml(miner)}
           ${uptimeBadgeHtml(miner.uptime)}
           <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Rank #${rank}</span>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--accent3)">Balance: ${balance}</span>
         </div>
       </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+        ${walletAddress?`<span style="font-family:var(--font-mono);font-size:11px;background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);color:var(--accent);padding:4px 10px;border-radius:6px">${walletAddress.slice(0,8)}...${walletAddress.slice(-4)} ✓</span>`
+        :`<button onclick="connectKeplr()" style="font-family:var(--font-mono);font-size:11px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:var(--accent2);padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600">🔗 Connect Keplr</button>`}
+      </div>
     </div>
+
+    ${isConnectedAddr?`
+    <div id="delegatePanel" style="background:var(--bg3);border:1px solid rgba(0,229,176,.15);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-weight:700">⚡ Wallet Actions</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">
+        <div>
+          <label style="font-size:10px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Amount (RAI)</label>
+          <input id="delegateAmt" type="number" step="0.001" placeholder="0.1" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none"/>
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Validator (raivaloper1...)</label>
+          <input id="delegateVal" type="text" placeholder="raivaloper1..." value="${miner.valoper||miner.validator_address||''}" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="keplrDelegate()" style="flex:1;padding:8px;border-radius:6px;border:1px solid rgba(0,229,176,.3);background:rgba(0,229,176,.08);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-mono)">⬆ Delegate</button>
+        <button onclick="keplrUndelegate()" style="flex:1;padding:8px;border-radius:6px;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.06);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-mono)">⬇ Undelegate</button>
+        <button onclick="keplrWithdraw('${addr}')" style="flex:1;padding:8px;border-radius:6px;border:1px solid rgba(59,130,246,.3);background:rgba(59,130,246,.06);color:var(--accent2);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-mono)">💰 Withdraw</button>
+      </div>
+      <div id="txStatus" style="margin-top:8px;font-size:11px;font-family:var(--font-mono);color:var(--muted);min-height:16px"></div>
+    </div>`:`
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--muted);font-family:var(--font-mono);display:flex;align-items:center;gap:8px">
+      🔗 Connect Keplr wallet (top-right) to delegate/undelegate/withdraw on this validator
+    </div>`}
 
     <div class="detail-addr-grid">
       <div class="detail-addr-item" style="grid-column:1/-1">
@@ -1049,24 +1089,31 @@ function renderDetailPanel(panel,miner,jobs,addr,page){
     <div class="detail-chart-title">Estimated daily job distribution</div>
     <div class="detail-chart-wrap"><canvas id="detailChartCanvas"></canvas></div>
 
-    ${jobs.length?`
-    <div class="detail-jobs-title">Recent jobs</div>
+    <div class="detail-jobs-title">Transaction History (on-chain)</div>
+    ${txns.length?`
     <div class="detail-jobs-table-wrap">
       <table class="detail-jobs-table">
-        <thead><tr><th>Job ID</th><th>Type</th><th>TX Hash</th><th>Time</th></tr></thead>
+        <thead><tr><th>TX Hash</th><th>Type</th><th>Height</th><th>Gas</th><th>Status</th><th>Time</th></tr></thead>
         <tbody>
-          ${jobs.map(j=>`
-            <tr>
-              <td>${j.job_id||j.id||'—'}</td>
-              <td>${j.type||j.action||j.msg_type||'—'}</td>
-              <td><a class="tx-link" href="https://explorer.republic.ai/tx/${j.tx_hash||j.txhash||''}" target="_blank">${shortAddr(j.tx_hash||j.txhash||'—')}</a> <button class="copy-btn" onclick="copyText('${j.tx_hash||j.txhash||''}')">⎘</button></td>
-              <td>${(j.time||j.timestamp)?new Date((j.time||j.timestamp)*1000).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}):'—'}</td>
-            </tr>`).join('')}
+          ${txns.map(tx=>{
+            const hash=tx.txhash||'';
+            const status=tx.code===0?'<span style="color:var(--green);font-weight:700">✓ OK</span>':'<span style="color:var(--red);font-weight:700">✗ Fail</span>';
+            const ts=tx.timestamp?new Date(tx.timestamp).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}):'—';
+            const typeColor=tx.msg_type==='JobValidation'?'var(--accent)':tx.msg_type==='Delegate'||tx.msg_type==='Undelegate'?'var(--accent3)':tx.msg_type==='Unjail'?'var(--red)':'var(--accent2)';
+            return\`<tr>
+              <td><a class="tx-link" href="https://explorer.republic.ai/tx/\${hash}" target="_blank">\${hash.slice(0,10)}...</a> <button class="copy-btn" onclick="copyText('\${hash}')">⎘</button></td>
+              <td style="color:\${typeColor};font-weight:600">\${tx.msg_type||'—'}</td>
+              <td style="color:var(--muted)">\${tx.height||'—'}</td>
+              <td style="color:var(--muted)">\${tx.gas_used?Number(tx.gas_used).toLocaleString():'—'}</td>
+              <td>\${status}</td>
+              <td style="color:var(--muted)">\${ts}</td>
+            </tr>\`;
+          }).join('')}
         </tbody>
       </table>
     </div>`:`
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:12px;color:var(--muted);font-family:var(--font-mono);text-align:center">
-      ℹ️ Detailed job history not available yet — add <code style="color:var(--accent)">/api/miner/{address}/jobs</code> endpoint to your backend to enable this
+      No transactions found
     </div>`}
   </div>`;
 
@@ -1405,6 +1452,102 @@ function prefillPointsForm(address,moniker){
     document.getElementById('pf-wallet').scrollIntoView({behavior:'smooth',block:'center'});
   },100);
 }
+
+// ─── KEPLR WALLET ─────────────────────────────────────────────
+const CHAIN_ID='raitestnet_77701-1';
+const CHAIN_REST='https://api-t.republic.vinjan-inc.com';
+const CHAIN_RPC='https://rpc-t.republic.vinjan-inc.com';
+let walletAddress=null;
+
+async function connectKeplr(){
+  if(!window.keplr){showToast('❌ Keplr extension not found! Install from keplr.app');return}
+  try{
+    // Try suggest chain
+    try{
+      await window.keplr.experimentalSuggestChain({
+        chainId:CHAIN_ID,
+        chainName:'Republic AI Testnet',
+        rpc:CHAIN_RPC,
+        rest:CHAIN_REST,
+        bip44:{coinType:60},
+        bech32Config:{bech32PrefixAccAddr:'rai',bech32PrefixAccPub:'raipub',bech32PrefixValAddr:'raivaloper',bech32PrefixValPub:'raivaloperpub',bech32PrefixConsAddr:'raivalcons',bech32PrefixConsPub:'raivalconspub'},
+        currencies:[{coinDenom:'RAI',coinMinimalDenom:'arai',coinDecimals:18}],
+        feeCurrencies:[{coinDenom:'RAI',coinMinimalDenom:'arai',coinDecimals:18,gasPriceStep:{low:1000000000,average:2000000000,high:4000000000}}],
+        stakeCurrency:{coinDenom:'RAI',coinMinimalDenom:'arai',coinDecimals:18},
+      });
+    }catch(e){}
+    await window.keplr.enable(CHAIN_ID);
+    const offlineSigner=window.keplr.getOfflineSigner(CHAIN_ID);
+    const accounts=await offlineSigner.getAccounts();
+    walletAddress=accounts[0].address;
+    showToast('✅ Keplr connected: '+walletAddress.slice(0,10)+'...');
+    // Re-render current detail panel if open
+    if(activeDetailAddr&&activeDetailPage){
+      openMinerDetail(activeDetailAddr,activeDetailPage);
+    }
+    // Update nav button
+    const navBtn=document.getElementById('keplrNavBtn');
+    if(navBtn)navBtn.textContent='🔗 '+walletAddress.slice(0,8)+'...';
+  }catch(e){showToast('❌ Keplr error: '+(e.message||'Failed to connect'))}
+}
+
+async function keplrDelegate(){
+  const amt=document.getElementById('delegateAmt')?.value;
+  const valAddr=document.getElementById('delegateVal')?.value.trim();
+  if(!amt||!valAddr||!walletAddress){showToast('⚠ Fill amount and validator address');return}
+  setTxStatus('⏳ Broadcasting delegate...');
+  try{
+    const {SigningStargateClient}=window.stargate||{};
+    if(!SigningStargateClient){setTxStatus('❌ Stargate library not loaded');return}
+    const signer=window.keplr.getOfflineSigner(CHAIN_ID);
+    const client=await SigningStargateClient.connectWithSigner(CHAIN_RPC,signer);
+    const amtArai=String(Math.floor(parseFloat(amt)*1e18));
+    const msg={typeUrl:'/cosmos.staking.v1beta1.MsgDelegate',value:{delegatorAddress:walletAddress,validatorAddress:valAddr,amount:{denom:'arai',amount:amtArai}}};
+    const fee={amount:[{denom:'arai',amount:'200000000000000'}],gas:'200000'};
+    const result=await client.signAndBroadcast(walletAddress,[msg],fee,'Delegate via republicstats.xyz');
+    setTxStatus('✅ TX: '+result.transactionHash.slice(0,16)+'...');
+    showToast('✅ Delegated '+amt+' RAI!');
+  }catch(e){setTxStatus('❌ '+( e.message||'Failed'));showToast('❌ Delegate failed')}
+}
+
+async function keplrUndelegate(){
+  const amt=document.getElementById('delegateAmt')?.value;
+  const valAddr=document.getElementById('delegateVal')?.value.trim();
+  if(!amt||!valAddr||!walletAddress){showToast('⚠ Fill amount and validator address');return}
+  setTxStatus('⏳ Broadcasting undelegate...');
+  try{
+    const {SigningStargateClient}=window.stargate||{};
+    if(!SigningStargateClient){setTxStatus('❌ Stargate library not loaded');return}
+    const signer=window.keplr.getOfflineSigner(CHAIN_ID);
+    const client=await SigningStargateClient.connectWithSigner(CHAIN_RPC,signer);
+    const amtArai=String(Math.floor(parseFloat(amt)*1e18));
+    const msg={typeUrl:'/cosmos.staking.v1beta1.MsgUndelegate',value:{delegatorAddress:walletAddress,validatorAddress:valAddr,amount:{denom:'arai',amount:amtArai}}};
+    const fee={amount:[{denom:'arai',amount:'200000000000000'}],gas:'200000'};
+    const result=await client.signAndBroadcast(walletAddress,[msg],fee,'Undelegate via republicstats.xyz');
+    setTxStatus('✅ TX: '+result.transactionHash.slice(0,16)+'...');
+    showToast('✅ Undelegated '+amt+' RAI!');
+  }catch(e){setTxStatus('❌ '+(e.message||'Failed'));showToast('❌ Undelegate failed')}
+}
+
+async function keplrWithdraw(delegatorAddr){
+  if(!walletAddress){showToast('⚠ Connect Keplr first');return}
+  const valAddr=document.getElementById('delegateVal')?.value.trim();
+  if(!valAddr){showToast('⚠ Enter validator address');return}
+  setTxStatus('⏳ Broadcasting withdraw...');
+  try{
+    const {SigningStargateClient}=window.stargate||{};
+    if(!SigningStargateClient){setTxStatus('❌ Stargate library not loaded');return}
+    const signer=window.keplr.getOfflineSigner(CHAIN_ID);
+    const client=await SigningStargateClient.connectWithSigner(CHAIN_RPC,signer);
+    const msg={typeUrl:'/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',value:{delegatorAddress:walletAddress,validatorAddress:valAddr}};
+    const fee={amount:[{denom:'arai',amount:'200000000000000'}],gas:'200000'};
+    const result=await client.signAndBroadcast(walletAddress,[msg],fee,'Withdraw rewards via republicstats.xyz');
+    setTxStatus('✅ TX: '+result.transactionHash.slice(0,16)+'...');
+    showToast('✅ Rewards withdrawn!');
+  }catch(e){setTxStatus('❌ '+(e.message||'Failed'));showToast('❌ Withdraw failed')}
+}
+
+function setTxStatus(msg){const el=document.getElementById('txStatus');if(el)el.textContent=msg}
 
 // ─── INIT ─────────────────────────────────────────────────────
 async function init(){
