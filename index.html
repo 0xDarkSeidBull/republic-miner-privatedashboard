@@ -1100,14 +1100,14 @@ function renderDetailPanel(panel,miner,txns,balance,addr,page){
             const status=tx.code===0?'<span style="color:var(--green);font-weight:700">✓ OK</span>':'<span style="color:var(--red);font-weight:700">✗ Fail</span>';
             const ts=tx.timestamp?new Date(tx.timestamp).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}):'—';
             const typeColor=tx.msg_type==='JobValidation'?'var(--accent)':tx.msg_type==='Delegate'||tx.msg_type==='Undelegate'?'var(--accent3)':tx.msg_type==='Unjail'?'var(--red)':'var(--accent2)';
-            return\`<tr>
-              <td><a class="tx-link" href="https://explorer.republic.ai/tx/\${hash}" target="_blank">\${hash.slice(0,10)}...</a> <button class="copy-btn" onclick="copyText('\${hash}')">⎘</button></td>
-              <td style="color:\${typeColor};font-weight:600">\${tx.msg_type||'—'}</td>
-              <td style="color:var(--muted)">\${tx.height||'—'}</td>
-              <td style="color:var(--muted)">\${tx.gas_used?Number(tx.gas_used).toLocaleString():'—'}</td>
-              <td>\${status}</td>
-              <td style="color:var(--muted)">\${ts}</td>
-            </tr>\`;
+            return '<tr>'
+              +'<td><a class="tx-link" href="https://explorer.republic.ai/tx/'+hash+'" target="_blank">'+hash.slice(0,10)+'...</a> <button class="copy-btn" onclick="copyText(''+hash+'')">⎘</button></td>'
+              +'<td style="color:'+typeColor+';font-weight:600">'+(tx.msg_type||'—')+'</td>'
+              +'<td style="color:var(--muted)">'+(tx.height||'—')+'</td>'
+              +'<td style="color:var(--muted)">'+(tx.gas_used?Number(tx.gas_used).toLocaleString():'—')+'</td>'
+              +'<td>'+status+'</td>'
+              +'<td style="color:var(--muted)">'+ts+'</td>'
+              +'</tr>';
           }).join('')}
         </tbody>
       </table>
