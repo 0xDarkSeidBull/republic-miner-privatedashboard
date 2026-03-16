@@ -41,14 +41,22 @@ body{
   min-height:100vh;overflow-x:hidden;
   cursor:default;
 }
+
+/* ── NOISE TEXTURE OVERLAY ── */
 body::before{
   content:'';position:fixed;inset:0;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
   pointer-events:none;z-index:0;opacity:.4;
 }
+
+/* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--accent);border-radius:0}
+
+/* ═══════════════════════════════════
+   SPLASH
+═══════════════════════════════════ */
 #splash{
   position:fixed;inset:0;z-index:9999;
   background:var(--bg);
@@ -56,6 +64,8 @@ body::before{
   align-items:center;justify-content:center;
   overflow:hidden;cursor:pointer;
 }
+
+/* Grid BG */
 .splash-grid{
   position:absolute;inset:0;
   background-image:
@@ -65,6 +75,8 @@ body::before{
   animation:grid-pan 20s linear infinite;
 }
 @keyframes grid-pan{from{background-position:0 0}to{background-position:60px 60px}}
+
+/* Radial glow */
 .splash-glow{
   position:absolute;
   width:800px;height:800px;
@@ -73,18 +85,24 @@ body::before{
   animation:glow-pulse 3s ease-in-out infinite;
 }
 @keyframes glow-pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.1);opacity:1}}
+
+/* Corner brackets */
 .splash-bracket{position:absolute;width:60px;height:60px;border-color:var(--accent);border-style:solid;opacity:.6}
 .splash-bracket.tl{top:40px;left:40px;border-width:3px 0 0 3px}
 .splash-bracket.tr{top:40px;right:40px;border-width:3px 3px 0 0}
 .splash-bracket.bl{bottom:40px;left:40px;border-width:0 0 3px 3px}
 .splash-bracket.br{bottom:40px;right:40px;border-width:0 3px 3px 0}
+
+/* Scan line */
 .splash-scan{
   position:absolute;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--accent),transparent);
   animation:scan 4s linear infinite;top:0;
 }
 @keyframes scan{from{top:0}to{top:100%}}
+
 .splash-content{position:relative;z-index:2;text-align:center;padding:0 20px}
+
 .splash-eyebrow{
   font-family:var(--font-mono);font-size:12px;
   color:var(--accent);letter-spacing:.3em;
@@ -93,6 +111,7 @@ body::before{
 }
 .splash-eyebrow::before,.splash-eyebrow::after{content:'';flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--accent))}
 .splash-eyebrow::after{background:linear-gradient(90deg,var(--accent),transparent)}
+
 .splash-title{
   font-family:var(--font-display);
   font-size:clamp(64px,10vw,140px);
@@ -110,6 +129,8 @@ body::before{
   filter:drop-shadow(0 0 20px rgba(0,204,255,.5));
   margin-bottom:40px;
 }
+
+/* Terminal block */
 .splash-terminal{
   background:rgba(8,9,15,.9);
   border:1px solid rgba(255,60,0,.3);
@@ -138,13 +159,20 @@ body::before{
 @keyframes type{to{width:100%}}
 .term-cursor{display:inline-block;width:8px;height:14px;background:var(--accent);animation:blink .8s step-end infinite;vertical-align:middle;margin-left:2px}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
 .splash-cta{
   font-family:var(--font-display);font-size:18px;letter-spacing:.2em;
   color:rgba(255,255,255,.4);
   animation:fade-cta 1.5s ease-in-out infinite alternate;
 }
 @keyframes fade-cta{from{opacity:.3;transform:translateY(2px)}to{opacity:.8;transform:translateY(-2px)}}
+
+/* ═══════════════════════════════════
+   MAIN APP
+═══════════════════════════════════ */
 #app{display:none;position:relative;z-index:1}
+
+/* ── CHAIN BANNER ── */
 #chainBanner{
   width:100%;padding:7px 20px;text-align:center;
   font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;
@@ -162,6 +190,8 @@ body::before{
 .chain-dot.checking{background:var(--muted);animation:dot-blink 1s infinite}
 @keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
 @keyframes dot-blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ── NAV ── */
 nav{
   display:flex;align-items:center;justify-content:space-between;
   padding:0 28px;height:62px;
@@ -214,6 +244,8 @@ nav{
   transition:all .2s;margin-left:10px;
 }
 .nav-btn-submit:hover{filter:brightness(1.2);transform:translateY(-1px)}
+
+/* ── MOBILE ── */
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border:none;background:none}
 .hamburger span{display:block;width:24px;height:2px;background:var(--text);transition:all .3s}
 .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
@@ -232,8 +264,12 @@ nav{
   transition:all .2s;
 }
 .mobile-nav-link:hover,.mobile-nav-link.active{color:var(--text);border-color:var(--accent);background:rgba(255,60,0,.06)}
+
+/* ── PAGES ── */
 .page{display:none}
 .page.active{display:block}
+
+/* ── HERO ── */
 .hero{
   position:relative;overflow:hidden;
   padding:80px 28px 60px;text-align:center;
@@ -273,6 +309,8 @@ nav{
   font-family:var(--font-body);font-size:18px;font-weight:400;
   color:var(--muted);max-width:520px;margin:0 auto 0;line-height:1.5;
 }
+
+/* ── STATS GRID ── */
 .stats-grid{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
   gap:1px;padding:0 0 1px;
@@ -308,6 +346,8 @@ nav{
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
 .stat-sub{font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:5px;letter-spacing:.05em}
+
+/* ── SEARCH ── */
 .search-section{padding:0 28px 40px;max-width:720px;margin:0 auto}
 .search-label{
   font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;
@@ -332,6 +372,8 @@ nav{
 }
 .btn-search:hover{filter:brightness(1.15);transform:translateY(-1px)}
 .btn-search:active{transform:translateY(0)}
+
+/* Miner result card */
 .miner-card{
   background:var(--surface);border:1px solid var(--border2);
   border-left:3px solid var(--accent);
@@ -373,6 +415,8 @@ nav{
 .share-btn:hover{background:rgba(0,204,255,.12);border-color:var(--blue)}
 .share-btn.fire{border-color:rgba(255,60,0,.3);background:rgba(255,60,0,.05);color:var(--accent);margin-top:4px}
 .share-btn.fire:hover{background:rgba(255,60,0,.1);border-color:var(--accent)}
+
+/* ── SECTION ── */
 .section{padding:0 28px 48px;max-width:1280px;margin:0 auto}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
 .section-title{
@@ -386,6 +430,8 @@ nav{
   padding:6px 14px;cursor:pointer;transition:all .2s;
 }
 .refresh-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+/* Sort bar */
 .sort-bar{display:flex;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1px;width:fit-content}
 .sort-btn{
   font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
@@ -394,6 +440,8 @@ nav{
 }
 .sort-btn:hover{color:var(--text);background:var(--surface2)}
 .sort-btn.active{background:rgba(255,60,0,.1);color:var(--accent)}
+
+/* Table */
 .table-wrap{overflow-x:auto;border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead tr{background:var(--bg3)}
@@ -417,6 +465,8 @@ tbody tr.row-selected{background:rgba(255,60,0,.04);border-left:2px solid var(--
 .num-cell{font-family:var(--font-mono);font-size:12px;font-weight:600;text-align:right;white-space:nowrap;letter-spacing:.05em}
 .moniker-cell{font-family:var(--font-body);font-size:14px;font-weight:700;letter-spacing:.05em;color:var(--text)}
 .moniker-cell.empty{color:var(--muted);font-style:italic;font-weight:400}
+
+/* ── DETAIL PANEL ── */
 .miner-detail-panel{
   background:var(--surface);border:1px solid var(--border2);
   border-left:3px solid var(--accent);
@@ -462,6 +512,8 @@ tbody tr.row-selected{background:rgba(255,60,0,.04);border-left:2px solid var(--
 .detail-chart-title{font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
 .detail-chart-wrap{position:relative;height:140px;margin-bottom:20px}
 .detail-loading{text-align:center;padding:32px;color:var(--muted);font-family:var(--font-mono);font-size:12px;letter-spacing:.1em}
+
+/* ── LEADERBOARD PAGE ── */
 .lb-hero{
   padding:60px 28px 32px;text-align:center;
   background:linear-gradient(180deg,rgba(255,60,0,.04) 0%,transparent 100%);
@@ -476,6 +528,8 @@ tbody tr.row-selected{background:rgba(255,60,0,.04);border-left:2px solid var(--
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
 .lb-hero p{font-family:var(--font-body);font-size:16px;color:var(--muted);letter-spacing:.05em}
+
+/* Podium */
 .podium-wrap{
   display:flex;align-items:flex-end;justify-content:center;
   gap:4px;padding:0 28px 40px;max-width:680px;margin:0 auto;
@@ -504,6 +558,8 @@ tbody tr.row-selected{background:rgba(255,60,0,.04);border-left:2px solid var(--
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   margin:8px 0 4px;
 }
+
+/* LB search */
 .lb-search-wrap{padding:0 28px 16px;max-width:1280px;margin:0 auto}
 .lb-search-input{
   width:100%;background:var(--surface);border:1px solid var(--border2);
@@ -512,6 +568,8 @@ tbody tr.row-selected{background:rgba(255,60,0,.04);border-left:2px solid var(--
 }
 .lb-search-input:focus{border-color:var(--accent)}
 .lb-search-input::placeholder{color:var(--muted)}
+
+/* ── ECOSYSTEM ── */
 .eco-hero{padding:60px 28px 32px;text-align:center}
 .eco-hero h2{font-family:var(--font-display);font-size:clamp(40px,6vw,72px);letter-spacing:.05em;line-height:.9;margin-bottom:10px}
 .eco-hero p{font-family:var(--font-body);font-size:16px;color:var(--muted);max-width:500px;margin:0 auto}
@@ -543,6 +601,8 @@ tbody tr.row-selected{background:rgba(255,60,0,.04);border-left:2px solid var(--
 .eco-card-name{font-family:var(--font-display);font-size:18px;letter-spacing:.04em;margin-bottom:6px}
 .eco-card-desc{font-family:var(--font-body);font-size:14px;color:var(--muted);line-height:1.5}
 .eco-card-link{font-family:var(--font-mono);font-size:11px;color:var(--accent);margin-top:12px;display:block;letter-spacing:.08em}
+
+/* ── SUBMIT ── */
 .submit-wrap{padding:60px 28px 60px;max-width:620px;margin:0 auto}
 .page-title{font-family:var(--font-display);font-size:clamp(36px,5vw,56px);letter-spacing:.05em;line-height:.9;margin-bottom:10px}
 .page-sub{font-family:var(--font-body);font-size:16px;color:var(--muted);margin-bottom:32px;letter-spacing:.02em}
@@ -564,6 +624,8 @@ tbody tr.row-selected{background:rgba(255,60,0,.04);border-left:2px solid var(--
 }
 .btn-primary:hover{filter:brightness(1.15);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,60,0,.3)}
 .btn-primary:active{transform:translateY(0)}
+
+/* ── GUIDES ── */
 .guides-wrap{padding:60px 28px 60px;max-width:980px;margin:0 auto}
 .guide-section-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
 .guide-links{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:32px}
@@ -606,6 +668,8 @@ tbody tr.row-selected{background:rgba(255,60,0,.04);border-left:2px solid var(--
 .code-copy:hover{color:var(--accent);border-color:var(--accent)}
 .guide-note{background:rgba(0,204,255,.04);border:1px solid rgba(0,204,255,.2);padding:12px 16px;font-family:var(--font-mono);font-size:11px;color:rgba(0,204,255,.8);margin-bottom:14px;line-height:1.7;letter-spacing:.04em}
 .guide-warn{background:rgba(255,170,0,.04);border:1px solid rgba(255,170,0,.25);padding:12px 16px;font-family:var(--font-mono);font-size:11px;color:rgba(255,170,0,.9);margin-bottom:14px;line-height:1.7;letter-spacing:.04em}
+
+/* ── POINTS ── */
 .points-wrap{padding:60px 28px 60px;max-width:700px;margin:0 auto}
 .points-card{background:var(--surface);border:1px solid var(--border2);padding:24px;margin-bottom:4px}
 .points-card-title{font-family:var(--font-display);font-size:18px;letter-spacing:.06em;color:var(--accent);margin-bottom:18px;display:flex;align-items:center;gap:8px}
@@ -641,9 +705,13 @@ tbody tr.row-selected{background:rgba(255,60,0,.04);border-left:2px solid var(--
 .points-success h3{font-family:var(--font-display);font-size:32px;letter-spacing:.06em;margin-bottom:8px;color:var(--accent)}
 .points-success p{font-family:var(--font-body);font-size:16px;color:var(--muted);margin-bottom:20px}
 .points-note{background:rgba(0,204,255,.04);border:1px solid rgba(0,204,255,.15);padding:12px 16px;font-family:var(--font-mono);font-size:11px;color:rgba(0,204,255,.7);line-height:1.7;margin-bottom:20px;letter-spacing:.04em}
+
+/* ── MISC ── */
 .loading{color:var(--muted);font-family:var(--font-mono);font-size:12px;padding:24px;text-align:center;letter-spacing:.1em}
 .error-msg{color:var(--red);font-family:var(--font-mono);font-size:11px;padding:12px 16px;background:rgba(255,34,68,.05);border:1px solid rgba(255,34,68,.2);margin-top:10px;letter-spacing:.05em}
 .empty-state{padding:40px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:12px;letter-spacing:.1em}
+
+/* ── FOOTER ── */
 footer{
   border-top:1px solid var(--border);
   padding:32px 28px;background:var(--bg2);text-align:center;
@@ -664,6 +732,8 @@ footer{
 .footer-link:hover{color:var(--accent);border-color:rgba(255,60,0,.4)}
 .footer-link svg{width:13px;height:13px;flex-shrink:0}
 .footer-copy{font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:.1em}
+
+/* ── THEME TOGGLE ── */
 .theme-toggle{
   position:fixed;bottom:24px;left:24px;z-index:500;
   background:var(--surface);border:1px solid var(--border2);
@@ -671,6 +741,7 @@ footer{
   cursor:pointer;font-size:18px;transition:all .2s;
 }
 .theme-toggle:hover{border-color:var(--accent);box-shadow:0 0 16px rgba(255,60,0,.25)}
+
 body.light-mode{
   --bg:#f5f5f7;--bg2:#ffffff;--bg3:#ebebf0;--bg4:#e0e0ea;
   --surface:#ffffff;--surface2:#f5f5f7;
@@ -678,6 +749,8 @@ body.light-mode{
 }
 body.light-mode .stat-value:not(.fire){color:var(--text)}
 body.light-mode .hero-bg{opacity:.4}
+
+/* ── TOAST ── */
 #toast{
   position:fixed;bottom:24px;right:24px;
   padding:10px 18px;font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;
@@ -686,6 +759,7 @@ body.light-mode .hero-bg{opacity:.4}
   pointer-events:none;z-index:999;
 }
 #toast.show{opacity:1;transform:none}
+
 @media(max-width:768px){
   nav{padding:0 16px;height:56px}
   .nav-links{display:none}
@@ -1036,16 +1110,14 @@ curl https://api.republicstats.xyz/api/stats | jq</pre></div></div>
 
 <script>
 // ============================================
-// FIXED: MONIKER ISSUE - SAB VALIDATORS KA MONIKER DIKHEGA
+// FIXED: API endpoint - directly using the working API
 // ============================================
 const API = 'https://api.republicstats.xyz';
-const STAKING_API = 'https://republic-testnet-api.oshvank.xyz';
 
 let allLbData = [], ecoData = [], currentEcoFilter = 'All', topScore = 0;
 let homeRawData = [], homeSortKey = 'total', lbSortKey = 'total';
 let activeDetailAddr = null, activeDetailPage = null, detailChartInstance = null;
 let isLightMode = false;
-let validatorMonikerMap = new Map(); // ✅ Store all monikers here
 
 // ── SPLASH ──────────────────────────────────────────────────
 function enterApp() {
@@ -1166,25 +1238,6 @@ async function checkChain() {
   }
 }
 
-// ── FETCH ALL VALIDATOR MONIKERS ────────────────────────────
-async function fetchAllMonikers() {
-  try {
-    const response = await fetch(`${STAKING_API}/cosmos/staking/v1beta1/validators?pagination.limit=1000`);
-    const data = await response.json();
-    
-    // Create map of address -> moniker for ALL validators
-    data.validators.forEach(v => {
-      validatorMonikerMap.set(v.operator_address, v.description.moniker || '—');
-    });
-    
-    console.log(`✅ Loaded ${validatorMonikerMap.size} validator monikers`);
-    return true;
-  } catch (error) {
-    console.error('Failed to fetch monikers:', error);
-    return false;
-  }
-}
-
 // ── STATS ────────────────────────────────────────────────────
 async function loadStats() {
   try {
@@ -1235,42 +1288,20 @@ function lbSetSort(key, btn) {
 async function loadTopMiners() {
   const tbody = document.getElementById('topMinersBody');
   tbody.innerHTML = '<tr><td colspan="7" class="loading">Loading...</td></tr>';
-  
   try {
-    // First fetch all monikers if not already loaded
-    if (validatorMonikerMap.size === 0) {
-      await fetchAllMonikers();
-    }
-    
-    // Then fetch leaderboard data
-    const r = await fetch(API + '/api/leaderboard?limit=100', {
+    const r = await fetch(API + '/api/leaderboard?limit=10', {
       signal: AbortSignal.timeout(8000)
     });
     const d = await r.json();
-    let data = d.data || d;
-    
-    // ✅ FIX: Add moniker from map for ALL entries (including inactive)
-    homeRawData = data.map(item => {
-      const moniker = validatorMonikerMap.get(item.address) || item.moniker || '—';
-      return {
-        ...item,
-        moniker: moniker  // Override with moniker from staking API
-      };
-    });
-    
-    // Sort by total points for top 10
-    homeRawData.sort((a, b) => (b.total || 0) - (a.total || 0));
-    
+    homeRawData = d.data || d;
     if (!homeRawData?.length) {
       tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No data available</td></tr>';
       return;
     }
-    
     topScore = homeRawData[0].total || 0;
     const top = homeRawData[0];
     document.getElementById('statTopMiner').textContent = top.moniker || shortAddr(top.address);
     document.getElementById('statTopScore').textContent = fmt(top.total) + ' pts';
-    
     const se = document.getElementById('statSubmit'),
       re = document.getElementById('statResult');
     if (se.textContent === '—') {
@@ -1281,10 +1312,8 @@ async function loadTopMiners() {
       const tr = homeRawData.reduce((s, m) => s + (m.submit_job_result || 0), 0);
       if (tr > 0) re.textContent = fmt(tr);
     }
-    
-    renderHomeTable(homeRawData.slice(0, 10));
-  } catch (error) {
-    console.error(error);
+    renderHomeTable(homeRawData);
+  } catch {
     tbody.innerHTML = `<tr><td colspan="7" class="error-msg">Failed to load. Retrying...</td></tr>`;
   }
 }
@@ -1294,14 +1323,10 @@ function renderHomeTable(data) {
   document.getElementById('topMinersBody').innerHTML = sorted.map((m, i) => {
     const addr = m.address || '';
     const sel = addr === activeDetailAddr && activeDetailPage === 'home';
-    
-    // ✅ MONIKER FIX: Use m.moniker (already set from map)
-    const monikerDisplay = m.moniker && m.moniker !== '—' ? m.moniker : '—';
-    
     return `<tr class="clickable-row${sel ? ' row-selected' : ''}" onclick="openMinerDetail('${addr}','home')">
       <td class="rank-cell ${rankClass(m.rank)}">#${m.rank || i + 1}</td>
       <td>
-        <div class="moniker-cell${monikerDisplay === '—' ? ' empty' : ''}">${monikerDisplay}</div>
+        <div class="moniker-cell${!m.moniker ? ' empty' : ''}">${m.moniker || '—'}</div>
         <div class="addr-cell" style="margin-top:3px"><span class="addr-text">${addr}</span></div>
       </td>
       <td class="num-cell">${fmt(m.submit_job)}</td>
@@ -1309,7 +1334,7 @@ function renderHomeTable(data) {
       <td class="num-cell">${uptimeBadgeHtml(m.uptime)}</td>
       <td class="num-cell" style="color:var(--accent);font-size:14px">${fmt(m.total)}</td>
       <td style="text-align:center">
-        <button onclick="event.stopPropagation();prefillPointsForm('${addr}','${monikerDisplay}')"
+        <button onclick="event.stopPropagation();prefillPointsForm('${addr}','${m.moniker || ''}')"
           style="background:rgba(255,60,0,.1);border:1px solid rgba(255,60,0,.3);color:var(--accent);padding:5px 12px;cursor:pointer;font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;transition:all .2s"
           onmouseover="this.style.background='rgba(255,60,0,.2)'" onmouseout="this.style.background='rgba(255,60,0,.1)'">
           Submit
@@ -1332,13 +1357,13 @@ async function openMinerDetail(addr, page) {
       detailChartInstance.destroy();
       detailChartInstance = null;
     }
-    if (page === 'home') renderHomeTable(homeRawData.slice(0, 10));
+    if (page === 'home') renderHomeTable(homeRawData);
     else renderLbTable(allLbData);
     return;
   }
   activeDetailAddr = addr;
   activeDetailPage = page;
-  if (page === 'home') renderHomeTable(homeRawData.slice(0, 10));
+  if (page === 'home') renderHomeTable(homeRawData);
   else renderLbTable(allLbData);
   panel.style.display = 'block';
   panel.innerHTML = `<div class="miner-detail-panel"><div class="detail-loading">Loading miner data...</div></div>`;
@@ -1370,16 +1395,11 @@ async function openMinerDetail(addr, page) {
         ...c
       };
     }
-    // ✅ Add moniker from map if missing
-    if (!miner.moniker || miner.moniker === '—') {
-      miner.moniker = validatorMonikerMap.get(addr) || 'Unknown';
-    }
     renderDetailPanel(panel, miner, addr, page);
   } catch {
     const c = (page === 'home' ? homeRawData : allLbData).find(m => m.address === addr) || {
       address: addr
     };
-    c.moniker = validatorMonikerMap.get(addr) || 'Unknown';
     renderDetailPanel(panel, c, addr, page);
   }
 }
@@ -1520,7 +1540,7 @@ function closeMinerDetail(page) {
     detailChartInstance.destroy();
     detailChartInstance = null;
   }
-  if (page === 'home') renderHomeTable(homeRawData.slice(0, 10));
+  if (page === 'home') renderHomeTable(homeRawData);
   else renderLbTable(allLbData);
 }
 
@@ -1539,12 +1559,6 @@ async function searchMiner() {
     });
     if (!r.ok) throw new Error('Not found');
     const m = await r.json();
-    
-    // ✅ Add moniker from map if missing
-    if (!m.moniker || m.moniker === '—') {
-      m.moniker = validatorMonikerMap.get(addr) || shortAddr(addr);
-    }
-    
     const pct = topScore > 0 ? Math.min(100, Math.round((m.total / topScore) * 100)) : 0;
     const shareText = encodeURIComponent(`🏆 My RepublicAI GPU Mining Stats:\n📊 Rank: #${m.rank}\n⛏️ ${m.moniker ? 'Moniker: ' + m.moniker + '\n' : ''}Total: ${fmt(m.total)} pts\n🔗 republicstats.xyz`);
     res.innerHTML = `
@@ -1552,7 +1566,7 @@ async function searchMiner() {
       <div class="miner-card-header">
         <div class="miner-rank-badge">#${m.rank || '—'}</div>
         <div>
-          <div class="miner-name">${m.moniker}</div>
+          <div class="miner-name">${m.moniker || shortAddr(m.address)}</div>
           <div class="miner-addr"><span>${m.address}</span><button class="copy-btn" onclick="copyText('${m.address}')">⎘</button></div>
           <div class="miner-badges" style="margin-top:6px">${uptimeBadgeHtml(m.uptime)}${m.moniker ? `<span class="uptime-badge uptime-unknown" style="color:var(--blue);border-color:rgba(0,204,255,.3)">${m.moniker}</span>` : ''}</div>
         </div>
@@ -1567,7 +1581,7 @@ async function searchMiner() {
         <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
       </div>
       <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${shareText}','_blank')">𝕏 Share on X</button>
-      <button class="share-btn fire" onclick="downloadJobsCsv('${m.address}','${m.moniker}')">⬇️ Download All Jobs (CSV)</button>
+      <button class="share-btn fire" onclick="downloadJobsCsv('${m.address}','${m.moniker || m.address}')">⬇️ Download All Jobs (CSV)</button>
     </div>`;
   } catch {
     res.innerHTML = '<div class="error-msg">Miner not found. Check address and try again.</div>';
@@ -1585,23 +1599,11 @@ async function loadLeaderboard() {
   document.getElementById('podiumWrap').innerHTML = '<div class="loading">Loading podium...</div>';
   document.getElementById('lbBody').innerHTML = '<tr><td colspan="7" class="loading">Loading...</td></tr>';
   try {
-    // Fetch monikers if needed
-    if (validatorMonikerMap.size === 0) {
-      await fetchAllMonikers();
-    }
-    
     const r = await fetch(API + '/api/leaderboard?limit=100', {
       signal: AbortSignal.timeout(10000)
     });
     const d = await r.json();
-    let data = d.data || d;
-    
-    // ✅ Add monikers from map
-    allLbData = data.map(item => ({
-      ...item,
-      moniker: validatorMonikerMap.get(item.address) || item.moniker || '—'
-    }));
-    
+    allLbData = d.data || d;
     renderPodium(allLbData.slice(0, 3));
     renderLbTable(allLbData);
     document.getElementById('lbCount').textContent = `Full Leaderboard · ${allLbData.length} miners`;
@@ -1644,7 +1646,7 @@ function renderLbTable(data) {
     const sel = addr === activeDetailAddr && activeDetailPage === 'leaderboard';
     return `<tr class="clickable-row${sel ? ' row-selected' : ''}" onclick="openMinerDetail('${addr}','leaderboard')">
       <td class="rank-cell ${rankClass(m.rank)}">#${m.rank}</td>
-      <td class="moniker-cell${!m.moniker || m.moniker === '—' ? ' empty' : ''}">${m.moniker || '—'}</td>
+      <td class="moniker-cell${!m.moniker ? ' empty' : ''}">${m.moniker || '—'}</td>
       <td class="addr-cell"><span class="addr-text">${addr}</span><button class="copy-btn" onclick="event.stopPropagation();copyText('${addr}')">⎘</button></td>
       <td class="num-cell">${fmt(m.submit_job)}</td>
       <td class="num-cell">${fmt(m.submit_job_result)}</td>
@@ -1968,12 +1970,7 @@ function prefillPointsForm(address, moniker) {
 
 // ── INIT ─────────────────────────────────────────────────────
 async function init() {
-  // First fetch all monikers
-  await fetchAllMonikers();
-  
-  // Then load everything else
   await Promise.allSettled([checkChain(), loadStats(), loadTopMiners()]);
-  
   setInterval(checkChain, 30000);
   setInterval(loadStats, 60000);
   setInterval(loadTopMiners, 60000);
