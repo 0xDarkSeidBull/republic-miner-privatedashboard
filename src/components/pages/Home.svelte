@@ -103,8 +103,8 @@
 
   $: statMiners = fmt(statsData.total_miners || statsData.miners || statsData.miner_count);
   $: statJobs = fmt(statsData.total_jobs || statsData.jobs);
-  $: statSubmit = fmt(statsData.submit_job || statsData.total_submit || statsData.submit_jobs || statsData.totalSubmitJob);
-  $: statResult = fmt(statsData.submit_job_result || statsData.total_result || statsData.submit_results || statsData.totalSubmitResult);
+  $: statSubmit = fmt(statsData.total_submit_job);
+  $: statResult = fmt(statsData.total_submit_result);
   $: statBlock = fmt(statsData.last_scanned_height || statsData.height || statsData.block_height || statsData.latest_height);
   $: statScanTime = statsData.last_scan_time || statsData.scan_time || statsData.updated_at || '';
   $: topMiner = $homeRawData[0];
