@@ -1,5 +1,4 @@
-Republic AI — GPU Miner Dashboard
-
+# Republic AI — GPU Miner Dashboard
 > GPU Miner Tracker & Ecosystem Dashboard for Republic AI Testnet
 
 **Live Dashboard → [republicstats.xyz](https://republicstats.xyz)**  
@@ -13,13 +12,12 @@ Republic AI — GPU Miner Dashboard
 |------|-------------|
 | `republic_bot.py` | Telegram bot — scans chain, tracks miners |
 | `api.py` | FastAPI backend — serves data to dashboard |
-| `index.html` | Frontend dashboard — hosted on Netlify |
+| `src/` | Astro + Svelte frontend |
 | `requirements.txt` | Python dependencies |
 
 ---
 
 ## 🤖 Telegram Bot (`republic_bot.py`)
-
 Tracks `SubmitJob` & `SubmitJobResult` transactions per address on Republic AI Testnet.
 
 ### Commands
@@ -42,19 +40,19 @@ Tracks `SubmitJob` & `SubmitJobResult` transactions per address on Republic AI T
 
 ---
 
-## 🌐 Web Dashboard (`index.html`)
+## 🌐 Web Dashboard (`src/`)
+Live at **[republicstats.xyz](https://republicstats.xyz)** — hosted on Vercel
 
-Live at **[republicstats.xyz](https://republicstats.xyz)** — hosted on Netlify
+Built with **Astro + Svelte** — component-based architecture.
 
 ### Features
-- ⛓️ Real-time chain status — Live vs Halted + countdown timer
+- ⛓️ Real-time chain status — Live vs Halted
 - 📊 Network stats — miners, jobs, last block
-- 🏆 Leaderboard — Top 25 with podium (🥇🥈🥉)
+- 🏆 Leaderboard — Top miners with podium (🥇🥈🥉)
 - 🔍 Miner search — rank, stats, progress bar vs top miner
 - 📋 One-click address copy
 - 𝕏 Share your rank on Twitter
-- 🤖 Track on Telegram Bot button
-- 📚 Guides page — CPU node + GPU miner + Snapshot + Commands
+- 📚 Guides — CPU node + GPU miner + Snapshot + Commands
 - 🌍 Ecosystem directory — submit & discover projects
 - 📱 Mobile friendly — hamburger menu
 - 🔄 Auto refresh every 60 seconds
@@ -62,7 +60,6 @@ Live at **[republicstats.xyz](https://republicstats.xyz)** — hosted on Netlify
 ---
 
 ## ⚡ API (`api.py`)
-
 Permanent HTTPS endpoint: **[api.republicstats.xyz](https://api.republicstats.xyz)**
 
 | Endpoint | Description |
@@ -73,6 +70,7 @@ Permanent HTTPS endpoint: **[api.republicstats.xyz](https://api.republicstats.xy
 | `GET /api/chain_status` | Live/Halted chain detection |
 | `GET /api/ecosystem` | Project directory |
 | `POST /api/ecosystem/submit` | Submit new project |
+| `GET /api/validators/refresh` | Refresh validator monikers |
 | `GET /api/health` | Health check |
 
 ---
@@ -83,10 +81,10 @@ Permanent HTTPS endpoint: **[api.republicstats.xyz](https://api.republicstats.xy
 |-------|------|
 | Bot | Python, python-telegram-bot, aiohttp |
 | API | FastAPI, Uvicorn |
+| Frontend | Astro + Svelte |
 | Web Server | Nginx + Let's Encrypt SSL |
-| Frontend | Vanilla HTML/CSS/JS |
-| Hosting | Netlify (frontend), Hetzner VPS (API + Bot) |
-| Domain | republicstats.xyz (GoDaddy) |
+| Hosting | Vercel (frontend), Hetzner VPS (API + Bot) |
+| Domain | republicstats.xyz |
 
 ---
 
@@ -95,31 +93,18 @@ Permanent HTTPS endpoint: **[api.republicstats.xyz](https://api.republicstats.xy
 ### Bot + API
 ```bash
 pip install -r requirements.txt
-
-# Run bot
 python3 republic_bot.py
-
-# Run API
 uvicorn api:app --host 0.0.0.0 --port 8000
 ```
 
-### Nginx Config (api.republicstats.xyz)
-```nginx
-server {
-    listen 80;
-    server_name api.republicstats.xyz;
-    location / {
-        proxy_pass http://localhost:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
+### Frontend (Local Dev)
+```bash
+npm install
+npm run dev
 ```
 
-### SSL
-```bash
-certbot --nginx -d api.republicstats.xyz
-```
+### Frontend (Deploy)
+Push to `main` branch — Vercel auto-deploys!
 
 ---
 
@@ -130,14 +115,11 @@ certbot --nginx -d api.republicstats.xyz
 | Chain ID | `raitestnet_77701-1` |
 | RPC | `https://rpc.republicai.io` |
 | Explorer | `https://explorer.republicai.io` |
-| Points Portal | `https://points.republicai.io` |
 
 ---
 
 ## 👤 Built by
-
 **0xDarkSeidBull** — Republic AI Testnet Validator
-
 - GitHub: [@0xDarkSeidBull](https://github.com/0xDarkSeidBull)
 - Twitter: [@cryptobhartiyax](https://x.com/cryptobhartiyax)
 - Telegram: [@DarkSeidBull](https://t.me/DarkSeidBull)
