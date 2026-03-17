@@ -1,5 +1,5 @@
 <script>
-  import { toastMsg } from '../stores/app.js';
+  import { toastMsg } from '$lib/stores/app.js';
 </script>
 
 <div id="toast" class={$toastMsg ? 'show' : ''}>{$toastMsg}</div>

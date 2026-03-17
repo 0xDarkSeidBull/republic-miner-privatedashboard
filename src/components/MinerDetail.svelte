@@ -1,6 +1,6 @@
 <script>
   import { onMount, afterUpdate } from 'svelte';
-  import { API, fmt, shortAddr, uptimeBadgeHtml, statusBadgeHtml, copyText } from '../stores/app.js';
+  import { API, fmt, shortAddr, uptimeBadgeHtml, statusBadgeHtml, copyText } from '$lib/stores/app.js';
 
   export let addr = '';
   export let page = 'home';

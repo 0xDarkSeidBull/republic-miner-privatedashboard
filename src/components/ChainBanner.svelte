@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { API } from '../stores/app.js';
+  import { API } from '$lib/stores/app.js';
 
   let status = 'checking';
   let text = 'Checking chain status...';

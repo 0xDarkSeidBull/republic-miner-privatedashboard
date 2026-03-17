@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
-  import { API, fmt, shortAddr, rankClass, uptimeBadgeHtml, getSortVal, copyText } from '../../stores/app.js';
-  import { allLbData } from '../../stores/app.js';
+  import { API, fmt, shortAddr, rankClass, uptimeBadgeHtml, getSortVal, copyText } from '$lib/stores/app.js';
+  import { allLbData } from '$lib/stores/app.js';
   import MinerDetail from '../MinerDetail.svelte';
 
   let lbSortKey = 'total';

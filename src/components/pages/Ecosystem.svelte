@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { API } from '../../stores/app.js';
+  import { API } from '$lib/stores/app.js';
 
   let projects = [];
   let filter = 'All';

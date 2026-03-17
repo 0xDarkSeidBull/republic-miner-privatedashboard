@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { API, fmt, shortAddr, rankClass, uptimeBadgeHtml, getSortVal, showToast, copyText, topScore, homeRawData, currentPage } from '../stores/app.js';
+  import { API, fmt, shortAddr, rankClass, uptimeBadgeHtml, getSortVal, showToast, copyText, topScore, homeRawData, currentPage } from '$lib/stores/app.js';
   import MinerDetail from '../components/MinerDetail.svelte';
 
   let statsData = {};

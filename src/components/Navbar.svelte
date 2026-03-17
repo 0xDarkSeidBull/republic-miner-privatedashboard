@@ -1,5 +1,5 @@
 <script>
-  import { currentPage, isLightMode, showToast } from '../stores/app.js';
+  import { currentPage, isLightMode, showToast } from '$lib/stores/app.js';
 
   let menuOpen = false;
 
