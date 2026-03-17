@@ -2,8 +2,7 @@
   import { API, showToast } from '../../stores/app.js';
 
   let username = '', discord = '', moniker = '', wallet = '', raivaloper = '';
-  let jobEntries = [Date.now()];
-  let jobData = {};
+  let jobEntries = [{ id: Date.now(), jobId: '', txHash: '' }];
   let hwFile = null;
   let hwPreview = null;
   let submitting = false;
@@ -12,14 +11,12 @@
   let errorMsg = '';
 
   function addJob() {
-    jobEntries = [...jobEntries, Date.now()];
+    jobEntries = [...jobEntries, { id: Date.now(), jobId: '', txHash: '' }];
   }
 
   function removeJob(id) {
     if (jobEntries.length <= 1) { showToast('Minimum 1 job required'); return; }
-    jobEntries = jobEntries.filter(j => j !== id);
-    const { [id]: _, ...rest } = jobData;
-    jobData = rest;
+    jobEntries = jobEntries.filter(j => j.id !== id);
   }
 
   function handleHwUpload(e) {
@@ -39,12 +36,10 @@
     if (!username || !discord || !moniker || !wallet || !raivaloper) {
       errorMsg = '⚠ Please fill all required fields.'; return;
     }
-    const jobs = [];
-    for (const id of jobEntries) {
-      const jobId = (jobData[id]?.jobId || '').trim();
-      const txHash = (jobData[id]?.txHash || '').trim();
-      if (!jobId || !txHash) { errorMsg = '⚠ Please fill Job ID and TX Hash for all jobs.'; return; }
-      jobs.push({ jobId, txHash });
+    for (const j of jobEntries) {
+      if (!j.jobId.trim() || !j.txHash.trim()) {
+        errorMsg = '⚠ Please fill Job ID and TX Hash for all jobs.'; return;
+      }
     }
     if (!hwFile) { errorMsg = '⚠ Please upload nvidia-smi hardware proof.'; return; }
     submitting = true;
@@ -52,12 +47,13 @@
       const fd = new FormData();
       fd.append('username', username); fd.append('discord', discord);
       fd.append('moniker', moniker); fd.append('wallet', wallet);
-      fd.append('raivaloper', raivaloper); fd.append('jobs', JSON.stringify(jobs));
+      fd.append('raivaloper', raivaloper);
+      fd.append('jobs', JSON.stringify(jobEntries.map(j => ({ jobId: j.jobId, txHash: j.txHash }))));
       fd.append('hw_proof', hwFile, hwFile.name);
       const r = await fetch(API + '/api/points/submit', { method: 'POST', body: fd, signal: AbortSignal.timeout(30000) });
       if (r.ok) {
         success = true;
-        successMsg = `Successfully submitted ${jobs.length} job${jobs.length > 1 ? 's' : ''} for ${username}.`;
+        successMsg = `Successfully submitted ${jobEntries.length} job${jobEntries.length > 1 ? 's' : ''} for ${username}.`;
       } else {
         const err = await r.json().catch(() => ({}));
         throw new Error(err.detail || 'Submission failed');
@@ -70,7 +66,7 @@
 
   function reset() {
     username = discord = moniker = wallet = raivaloper = '';
-    jobEntries = [Date.now()]; jobData = {};
+    jobEntries = [{ id: Date.now(), jobId: '', txHash: '' }];
     hwFile = null; hwPreview = null;
     success = false; successMsg = ''; errorMsg = '';
   }
@@ -90,7 +86,6 @@
   {:else}
     <div class="points-note">ℹ️ Fill your details once, then add as many Job ID + TX Hash pairs as you completed.</div>
 
-    <!-- YOUR DETAILS -->
     <div class="points-card">
       <div class="points-card-title">👤 Your Details</div>
       <div class="points-row">
@@ -106,33 +101,25 @@
       </div>
     </div>
 
-    <!-- JOBS -->
     <div class="points-card">
       <div class="points-card-title">⛏️ Completed Jobs <span style="color:var(--muted);font-size:13px;font-weight:400">({jobEntries.length} job{jobEntries.length > 1 ? 's' : ''})</span></div>
-      {#each jobEntries as id, i}
+      {#each jobEntries as job, i}
         <div class="job-entry">
           <div class="job-entry-header">
             <span class="job-entry-num">JOB #{i+1}</span>
             {#if jobEntries.length > 1}
-              <button class="job-remove" on:click={() => removeJob(id)}>✕</button>
+              <button class="job-remove" on:click={() => removeJob(job.id)}>✕</button>
             {/if}
           </div>
           <div class="job-grid">
-            <div>
-              <label class="form-label">Job ID *</label>
-              <input class="form-input" placeholder="job_12345..." bind:value={jobData[id] = jobData[id] || {}} on:input={e => jobData[id] = {...(jobData[id]||{}), jobId: e.target.value}}/>
-            </div>
-            <div>
-              <label class="form-label">TX Hash *</label>
-              <input class="form-input" placeholder="0xABCD..." on:input={e => jobData[id] = {...(jobData[id]||{}), txHash: e.target.value}}/>
-            </div>
+            <div><label class="form-label">Job ID *</label><input class="form-input" placeholder="job_12345..." bind:value={job.jobId}/></div>
+            <div><label class="form-label">TX Hash *</label><input class="form-input" placeholder="0xABCD..." bind:value={job.txHash}/></div>
           </div>
         </div>
       {/each}
       <button class="add-job-btn" on:click={addJob}>+ Add Another Job</button>
     </div>
 
-    <!-- HW PROOF -->
     <div class="points-card">
       <div class="points-card-title">🖥️ Hardware Proof</div>
       <label class="form-label">nvidia-smi Screenshot *</label>
