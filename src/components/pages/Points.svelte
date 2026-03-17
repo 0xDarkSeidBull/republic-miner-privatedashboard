@@ -1,5 +1,5 @@
 <script>
-  import { API, showToast } from '$lib/stores/app.js';
+  import { API, showToast } from '../../stores/app.js';
 
   let username = '', discord = '', moniker = '', wallet = '', raivaloper = '';
   let jobEntries = [{ id: Date.now(), jobId: '', txHash: '' }];

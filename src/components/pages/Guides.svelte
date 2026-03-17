@@ -1,5 +1,5 @@
 <script>
-  import { showToast } from '$lib/stores/app.js';
+  import { showToast } from '../../stores/app.js';
 
   let activeGuide = 'gpu';
 

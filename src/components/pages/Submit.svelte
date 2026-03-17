@@ -1,5 +1,5 @@
 <script>
-  import { API } from '$lib/stores/app.js';
+  import { API } from '../../stores/app.js';
 
   let name = '', desc = '', cat = '', url = '', github = '', icon = '';
   let msg = '';

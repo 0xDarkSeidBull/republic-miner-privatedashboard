@@ -1,5 +1,5 @@
 <script>
-  import { currentPage } from '$lib/stores/app.js';
+  import { currentPage } from '../stores/app.js';
   import Splash from './Splash.svelte';
   import ChainBanner from './ChainBanner.svelte';
   import Navbar from './Navbar.svelte';
