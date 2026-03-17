@@ -7,6 +7,28 @@
   let selectedWeek = '';
   let loading = true;
   let totalJobs = 0;
+  let allTimePoints = {};
+let allTimeLoading = false;
+
+async function loadAllTimePoints() {
+  allTimeLoading = true;
+  const totals = {};
+  for (const week of availableWeeks) {
+    try {
+      const r = await fetch(`${API}/api/weekly?week=${week}`, { signal: AbortSignal.timeout(8000) });
+      const d = await r.json();
+      for (const m of (d.data || [])) {
+        if (!totals[m.address]) totals[m.address] = { points: 0, weeks: 0 };
+        totals[m.address].points += m.estimated_points;
+        totals[m.address].weeks += 1;
+      }
+    } catch(e) {}
+  }
+  allTimePoints = Object.entries(totals)
+    .sort((a, b) => b[1].points - a[1].points)
+    .map(([addr, d], i) => ({ rank: i+1, address: addr, total_points: d.points, weeks: d.weeks }));
+  allTimeLoading = false;
+}
 
   async function loadWeekly(week = '') {
     loading = true;
@@ -18,11 +40,15 @@
       availableWeeks = d.available_weeks || [];
       selectedWeek = d.week || '';
       totalJobs = weeklyData.reduce((s, m) => s + m.total_jobs, 0);
+      if (availableWeeks.length > 0 && Object.keys(allTimePoints).length === 0) loadAllTimePoints();
     } catch(e) { console.warn(e); }
     loading = false;
   }
 
-  onMount(() => loadWeekly());
+  onMount(async () => { 
+  await loadWeekly(); 
+  loadAllTimePoints(); 
+});
 </script>
 
 <div class="lb-hero">
@@ -121,5 +147,35 @@
 
   <div style="margin-top:14px;font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:.08em">
     ⚠️ Estimated points based on job share. Actual distribution by Republic AI team may vary. Pool: 1.6M pts (32% of 5M weekly).
+ <!-- ALL TIME TABLE -->
+<div class="section-header" style="margin-top:32px">
+  <div class="section-title"><div class="section-title-bar"></div>All-Time Points (All Weeks)</div>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead><tr>
+      <th>Rank</th>
+      <th>Address</th>
+      <th style="text-align:right">Weeks Active</th>
+      <th style="text-align:right">Total Est. Points</th>
+    </tr></thead>
+    <tbody>
+      {#if allTimeLoading}
+        <tr><td colspan="4" class="loading">Calculating all-time points...</td></tr>
+      {:else if allTimePoints.length === 0}
+        <tr><td colspan="4" class="loading">Loading...</td></tr>
+      {:else}
+        {#each allTimePoints as m}
+          <tr>
+            <td class="rank-cell {m.rank === 1 ? 'rank-1' : m.rank === 2 ? 'rank-2' : m.rank === 3 ? 'rank-3' : ''}">#{ m.rank }</td>
+            <td class="addr-cell"><span class="addr-text">{m.address}</span></td>
+            <td class="num-cell">{m.weeks} week{m.weeks > 1 ? 's' : ''}</td>
+            <td class="num-cell" style="color:var(--accent);font-size:14px">{fmt(m.total_points)}</td>
+          </tr>
+        {/each}
+      {/if}
+    </tbody>
+  </table>
+</div>
   </div>
 </div>
