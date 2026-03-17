@@ -1,5 +1,6 @@
 ---
-// src/pages/index.astro
+import App from '../components/App.svelte';
+import '../styles/global.css';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -7,19 +8,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>RepublicAI — GPU Mining STATS</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23050508'/><text x='50%25' y='58%25' font-size='18' text-anchor='middle' dominant-baseline='middle'>⛏️</text></svg>"/>
 </head>
 <body>
-  <!-- App is fully client-side via Svelte -->
   <App client:only="svelte" />
 </body>
 </html>
-
-<script>
-  // Import the root App component
-  import App from '../components/App.svelte';
-</script>
-
-<style is:global>
-  @import '../styles/global.css';
-</style>
