@@ -48,6 +48,7 @@ async function loadMinerWeekly(address) {
     await tick();
     document.querySelector('.miner-detail-panel')?.scrollIntoView({behavior:'smooth', block:'start'});
     loading = false;
+loadMinerWeekly(addr);
   });
 
   afterUpdate(() => {
@@ -153,7 +154,7 @@ async function loadMinerWeekly(address) {
       <div class="detail-stat"><div class="detail-stat-label">Efficiency</div><div class="detail-stat-value" style="color:{effColor}">{efficiency}%</div></div>
       <div class="detail-stat">
         <div class="detail-stat-label">Est. Points (All Weeks)</div>
-        <div class="detail-stat-value" style="background:linear-gradient(135deg,var(--accent),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">{fmt(total)}</div>
+        <div class="detail-stat-value" style="background:linear-gradient(135deg,var(--accent),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">{fmt(totalEstPoints || total)}</div>
       </div>
     </div>
 
