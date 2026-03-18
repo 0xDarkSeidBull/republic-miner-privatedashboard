@@ -9,6 +9,7 @@
   let activeDetailAddr = null;
   let searchAddr = '';
   let searchResult = null;
+  let searchEstPoints = 0;
   let searchLoading = false;
   let searchError = '';
   let interval;
@@ -52,6 +53,38 @@
       const r = await fetch(API + '/api/miner/' + encodeURIComponent(searchAddr.trim()), { signal: AbortSignal.timeout(8000) });
       if (!r.ok) throw new Error('Not found');
       searchResult = await r.json();
+    // Fetch estimated points
+try {
+  const wr = await fetch(`${API}/api/weekly`, { signal: AbortSignal.timeout(8000) });
+  const wc = await wr.json();
+  const weeks = wc.available_weeks || [];
+  let total = 0;
+  for (const week of weeks) {
+    const weekR = await fetch(`${API}/api/weekly?week=${week}`, { signal: AbortSignal.timeout(8000) });
+    const weekD = await weekR.json();
+    const miner = (weekD.data || []).find(m => m.address === searchResult.address);
+    if (miner) total += miner.estimated_points;
+  }
+  searchEstPoints = total;
+} catch(e) { searchEstPoints = 0; }
+```
+
+HTML mein search card find karo:
+```
+<div class="miner-stat-label">Total</div>
+```
+Replace karo:
+```
+<div class="miner-stat-label">Est. Points</div>
+```
+
+Aur neeche value find karo:
+```
+{fmt(m.total)}
+```
+Replace karo:
+```
+{fmt(searchEstPoints)}
     } catch {
       searchError = 'Miner not found. Check address and try again.';
     }
