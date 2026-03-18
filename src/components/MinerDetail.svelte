@@ -10,6 +10,28 @@
   let miner = { address: addr };
   let loading = true;
   let chartInstance = null;
+let weeklyPoints = [];
+let weeklyLoading = false;
+let totalEstPoints = 0;
+
+async function loadMinerWeekly(address) {
+  weeklyLoading = true;
+  try {
+    const r = await fetch(`${API}/api/weekly`, { signal: AbortSignal.timeout(8000) });
+    const current = await r.json();
+    const weeks = current.available_weeks || [];
+    const allData = {};
+    for (const week of weeks) {
+      const wr = await fetch(`${API}/api/weekly?week=${week}`, { signal: AbortSignal.timeout(8000) });
+      const wd = await wr.json();
+      const miner = (wd.data || []).find(m => m.address === address);
+      if (miner) allData[week] = miner;
+    }
+    weeklyPoints = Object.entries(allData).sort((a,b) => b[0].localeCompare(a[0]));
+    totalEstPoints = weeklyPoints.reduce((s, [,m]) => s + m.estimated_points, 0);
+  } catch(e) { console.warn(e); }
+  weeklyLoading = false;
+}
 
   onMount(async () => {
     try {
