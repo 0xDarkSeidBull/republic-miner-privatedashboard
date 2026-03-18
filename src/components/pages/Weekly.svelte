@@ -24,7 +24,8 @@ let allTimeLoading = false;
 async function loadAllTimePoints() {
   allTimeLoading = true;
   const totals = {};
-  for (const week of availableWeeks) {
+  const weeksToLoad = availableWeeks.length > 0 ? availableWeeks : [];
+  for (const week of weeksToLoad) {
     try {
       const r = await fetch(`${API}/api/weekly?week=${week}`, { signal: AbortSignal.timeout(8000) });
       const d = await r.json();
@@ -49,6 +50,7 @@ async function loadAllTimePoints() {
       const d = await r.json();
       weeklyData = d.data || [];
       availableWeeks = d.available_weeks || [];
+      if (availableWeeks.length > 0) loadAllTimePoints();
       selectedWeek = d.week || '';
       totalJobs = weeklyData.reduce((s, m) => s + m.total_jobs, 0);
       if (availableWeeks.length > 0 && Object.keys(allTimePoints).length === 0) loadAllTimePoints();
