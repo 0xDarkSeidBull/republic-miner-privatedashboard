@@ -13,6 +13,24 @@
   let searchLoading = false;
   let searchError = '';
   let interval;
+  let allTimePointsMap = {};
+
+async function loadAllTimeMap() {
+  try {
+    const r = await fetch(`${API}/api/weekly`, { signal: AbortSignal.timeout(8000) });
+    const wc = await r.json();
+    const weeks = wc.available_weeks || [];
+    const totals = {};
+    for (const week of weeks) {
+      const wr = await fetch(`${API}/api/weekly?week=${week}`, { signal: AbortSignal.timeout(8000) });
+      const wd = await wr.json();
+      for (const m of (wd.data || [])) {
+        totals[m.address] = (totals[m.address] || 0) + m.estimated_points;
+      }
+    }
+    allTimePointsMap = totals;
+  } catch(e) {}
+}
 
   async function loadStats() {
     try {
@@ -111,6 +129,7 @@ searchEstPoints = total;
   onMount(() => {
     loadStats();
     loadTopMiners();
+    loadAllTimeMap();
     interval = setInterval(loadStats, 60000);
   });
 
@@ -225,7 +244,7 @@ searchEstPoints = total;
               <td class="num-cell">{fmt(m.submit_job_result)}</td>
               <td class="num-cell">{@html uptimeBadgeHtml(m.uptime)}</td>
               <td class="num-cell" style="color:var(--accent);font-size:14px">{fmt(m.total)}</td>
-              <td class="num-cell" style="color:var(--accent3)">{fmt(Math.round((m.submit_job_result / ($topScore || 1)) * 1600000))}</td>
+              <td class="num-cell" style="color:var(--accent3)">{fmt(allTimePointsMap[m.address] || 0)}</td>
             </tr>
           {/each}
         {/if}
