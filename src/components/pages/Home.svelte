@@ -179,7 +179,7 @@ searchEstPoints = total;
       <div class="miner-stats">
         <div class="miner-stat"><div class="miner-stat-label">Submit</div><div class="miner-stat-value">{fmt(m.submit_job)}</div></div>
         <div class="miner-stat"><div class="miner-stat-label">Result</div><div class="miner-stat-value">{fmt(m.submit_job_result)}</div></div>
-        <div class="miner-stat"><div class="miner-stat-label">Total</div><div class="miner-stat-value" style="background:linear-gradient(135deg,var(--accent),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">{fmt(m.total)}</div></div>
+        <div class="miner-stat"><div class="miner-stat-label">Est. Points</div><div class="miner-stat-value" style="background:linear-gradient(135deg,var(--accent),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">{fmt(searchEstPoints)}</div>
       </div>
       <div class="progress-bar-wrap">
         <div class="progress-bar-label"><span>VS TOP MINER</span><span>{searchPct}%</span></div>
