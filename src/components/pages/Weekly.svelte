@@ -7,6 +7,17 @@
   let selectedWeek = '';
   let loading = true;
   let totalJobs = 0;
+  let monikerMap = {};
+
+async function loadMonikers() {
+  try {
+    const r = await fetch(`${API}/api/leaderboard?limit=100`);
+    const d = await r.json();
+    const data = d.data || d;
+    data.forEach(m => { if(m.moniker) monikerMap[m.address] = m.moniker; });
+    monikerMap = monikerMap;
+  } catch(e) {}
+}
   let allTimePoints = {};
 let allTimeLoading = false;
 
@@ -46,8 +57,9 @@ async function loadAllTimePoints() {
   }
 
   onMount(async () => { 
-  await loadWeekly(); 
-  loadAllTimePoints(); 
+  await loadWeekly();
+  loadAllTimePoints();
+  loadMonikers();
 });
 </script>
 
@@ -132,7 +144,12 @@ async function loadAllTimePoints() {
           {#each weeklyData as m}
             <tr>
               <td class="rank-cell {m.rank === 1 ? 'rank-1' : m.rank === 2 ? 'rank-2' : m.rank === 3 ? 'rank-3' : ''}">#{ m.rank }</td>
-              <td class="addr-cell"><span class="addr-text">{m.address}</span></td>
+              <td>
+  {#if monikerMap[m.address]}
+    <div class="moniker-cell">{monikerMap[m.address]}</div>
+  {/if}
+  <div class="addr-cell"><span class="addr-text">{m.address}</span></div>
+</td>
               <td class="num-cell">{fmt(m.submit_job)}</td>
               <td class="num-cell">{fmt(m.submit_job_result)}</td>
               <td class="num-cell">{fmt(m.total_jobs)}</td>

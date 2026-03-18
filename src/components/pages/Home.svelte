@@ -193,7 +193,7 @@
         <th>Rank</th><th>Moniker / Address</th>
         <th style="text-align:right">Submit</th><th style="text-align:right">Result</th>
         <th style="text-align:right">Uptime</th><th style="text-align:right">Total</th>
-        <th style="text-align:center">Action</th>
+        <th style="text-align:right">Est. Points</th>
       </tr></thead>
       <tbody>
         {#if sortedData.length === 0}
@@ -210,7 +210,7 @@
               <td class="num-cell">{fmt(m.submit_job_result)}</td>
               <td class="num-cell">{@html uptimeBadgeHtml(m.uptime)}</td>
               <td class="num-cell" style="color:var(--accent);font-size:14px">{fmt(m.total)}</td>
-              <td style="text-align:center">
+              <td class="num-cell" style="color:var(--accent3)">{fmt(Math.round((m.submit_job_result / ($topScore || 1)) * 1600000))}</td>
                 <button
                   on:click|stopPropagation={() => prefillPoints(m.address, m.moniker || '')}
                   style="background:rgba(255,60,0,.1);border:1px solid rgba(255,60,0,.3);color:var(--accent);padding:5px 12px;cursor:pointer;font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;transition:all .2s">

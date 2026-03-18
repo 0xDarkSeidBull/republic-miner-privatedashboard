@@ -1,5 +1,5 @@
 <script>
-  import { onMount, afterUpdate } from 'svelte';
+  import { onMount, afterUpdate, tick } from 'svelte';
   import { API, fmt, shortAddr, uptimeBadgeHtml, statusBadgeHtml, copyText } from '../stores/app.js';
 
   export let addr = '';
@@ -23,6 +23,8 @@
     } catch {
       miner = { address: addr, ...cachedData };
     }
+    await tick();
+    document.querySelector('.miner-detail-panel')?.scrollIntoView({behavior:'smooth', block:'start'});
     loading = false;
   });
 
