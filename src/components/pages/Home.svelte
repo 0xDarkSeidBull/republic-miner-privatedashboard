@@ -65,27 +65,9 @@ try {
     const miner = (weekD.data || []).find(m => m.address === searchResult.address);
     if (miner) total += miner.estimated_points;
   }
-  searchEstPoints = total;
-} catch(e) { searchEstPoints = 0; }
-```
-
-HTML mein search card find karo:
-```
-<div class="miner-stat-label">Total</div>
-```
-Replace karo:
-```
-<div class="miner-stat-label">Est. Points</div>
-```
-
-Aur neeche value find karo:
-```
-{fmt(m.total)}
-```
-Replace karo:
-```
-{fmt(searchEstPoints)}
-    } catch {
+searchEstPoints = total;
+  } catch(e) { searchEstPoints = 0; }
+  } catch {
       searchError = 'Miner not found. Check address and try again.';
     }
     searchLoading = false;
