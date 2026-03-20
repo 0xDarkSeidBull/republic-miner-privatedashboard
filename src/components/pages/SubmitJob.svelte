@@ -39,7 +39,7 @@ function saveJob(jobId, minerAddress) {
 async function refreshJobStatuses() {
   for (let job of jobHistory) {
     try {
-      const res = await fetch(`${API}/api/jobs/${job.id}/status`);
+      const res = await fetch(`${API}/api/jobs/${job.tracking_id}/status`);
       const data = await res.json();
       if (data.chain_job_id) {
         // Check chain status
@@ -255,7 +255,7 @@ onMount(async () => {
       <div class="card-label">JOBS SENT TO THIS MINER</div>
       {#each minerJobs.slice(0, 5) as job}
         <div class="history-row">
-          <span class="history-id">Job #{job.id}</span>
+          <span class="history-id">Job #{job.chain_job_id || job.id}</span>
           <span class="history-status 
             {job.chainStatus === 'completed' ? 'done' : 
              job.chainStatus === 'waiting_result' ? 'mining' : 'pending'}">
