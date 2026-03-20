@@ -256,7 +256,11 @@ onMount(async () => {
       {#each minerJobs.slice(0, 5) as job}
         <div class="history-row">
           <span class="history-id">Job #{job.chain_job_id || job.id}</span>
-          <span class="history-status 
+{#if job.txhash}
+  <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{job.txhash}" 
+     target="_blank" class="explorer-link">🔍</a>
+{/if}
+<span class="history-status 
             {job.chainStatus === 'completed' ? 'done' : 
              job.chainStatus === 'waiting_result' ? 'mining' : 'pending'}">
             {job.chainStatus === 'completed' ? '✅ Complete' :
@@ -900,5 +904,11 @@ republicd tx computevalidation submit-job-result {jobStatus?.chain_job_id} http:
   margin-top: 0.5rem;
   text-align: right;
 }
+.explorer-link {
+  color: var(--accent, #f97316);
+  font-size: 0.7rem;
+  text-decoration: none;
+}
+.explorer-link:hover { text-decoration: underline; }
 </style>
 
