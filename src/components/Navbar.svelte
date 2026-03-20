@@ -32,9 +32,9 @@
     <div class="nav-logo-text">REPUBLIC<span>/STATS</span></div>
   </div>
   <div class="nav-links">
-    {#each ['home','leaderboard','weekly','ecosystem','guides','points'] as page}
+    {#each ['home','leaderboard','weekly','ecosystem','guides','submitjob'] as page}
       <button class="nav-link {$currentPage === page ? 'active' : ''}" on:click={() => navigate(page)}>
-        {page === 'home' ? 'Home' : page === 'leaderboard' ? 'Leaderboard' : page === 'ecosystem' ? 'Ecosystem' : page === 'weekly' ? 'Weekly Points' : page === 'guides' ? 'Guides' : 'Points Form'}
+        {page === 'home' ? 'Home' : page === 'leaderboard' ? 'Leaderboard' : page === 'ecosystem' ? 'Ecosystem' : page === 'weekly' ? 'Weekly Points' : page === 'guides' ? 'Guides' : '⚡ Submit Job'}
       </button>
     {/each}
     <button class="nav-btn-submit" on:click={() => navigate('submit')}>+ Submit</button>
@@ -54,7 +54,7 @@
     <button class="mobile-close" on:click={toggleMenu}>✕</button>
   </div>
   <div class="mobile-nav-links">
-    {#each [['home','🏠 Home'],['leaderboard','🏆 Leaderboard'],['weekly','🏆 Weekly Points'],['ecosystem','🌐 Ecosystem'],['guides','📚 Guides'],['points','🎁 Points Form'],['submit','+ Submit Project']] as [page, label]}
+    {#each [['home','🏠 Home'],['leaderboard','🏆 Leaderboard'],['weekly','🏆 Weekly Points'],['ecosystem','🌐 Ecosystem'],['guides','📚 Guides'],['submitjob','⚡ Submit Job'],['submit','+ Submit Project']] as [page, label]}
       <button class="mobile-nav-link {$currentPage === page ? 'active' : ''}" on:click={() => navigate(page)}>
         {label}
       </button>

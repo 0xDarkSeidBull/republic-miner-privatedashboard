@@ -12,6 +12,7 @@
   import Points from './pages/Points.svelte';
   import Submit from './pages/Submit.svelte';
   import Weekly from './pages/Weekly.svelte';
+  import SubmitJob from './pages/SubmitJob.svelte';
 
   let showSplash = true;
   let appVisible = false;
@@ -43,6 +44,8 @@
       <Points />
     {:else if $currentPage === 'submit'}
       <Submit />
+    {:else if $currentPage === 'submitjob'}
+      <SubmitJob />
     {:else if $currentPage === 'weekly'}
       <Weekly />
     {/if}
