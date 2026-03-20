@@ -249,7 +249,7 @@ onMount(async () => {
           </div>
         {/if}
         {#if selectedMiner}
-  {@const minerJobs = jobHistory.filter(j => j.miner === selectedMiner.address)}
+  {@const minerJobs = jobHistory.filter(j => j.miner_address === selectedMiner.address)}
   {#if minerJobs.length > 0}
     <div class="miner-history">
       <div class="card-label">JOBS SENT TO THIS MINER</div>
