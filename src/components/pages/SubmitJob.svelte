@@ -12,6 +12,48 @@
   let jobStatus = null;
   let pollInterval = null;
   let step = 'input'; // input | submitting | polling | done | error
+  // Job history
+let jobHistory = [];
+
+function loadJobHistory() {
+  try {
+    const saved = localStorage.getItem('republic_jobs');
+    jobHistory = saved ? JSON.parse(saved) : [];
+  } catch(e) {
+    jobHistory = [];
+  }
+}
+
+function saveJob(jobId, minerAddress) {
+  const job = {
+    id: jobId,
+    miner: minerAddress,
+    status: 'PendingExecution',
+    time: new Date().toISOString()
+  };
+  jobHistory = [job, ...jobHistory].slice(0, 50);
+  localStorage.setItem('republic_jobs', JSON.stringify(jobHistory));
+}
+
+async function refreshJobStatuses() {
+  for (let job of jobHistory) {
+    try {
+      const res = await fetch(`${API}/api/jobs/${job.id}/status`);
+      const data = await res.json();
+      if (data.chain_job_id) {
+        // Check chain status
+        job.chainStatus = data.status;
+      }
+    } catch(e) {}
+  }
+  jobHistory = [...jobHistory];
+}
+
+onMount(async () => {
+  await loadMiners();
+  loadJobHistory();
+  await refreshJobStatuses();
+});
 
   // Status steps for progress bar
   const STATUS_STEPS = {
@@ -82,6 +124,7 @@
       trackingId = data.tracking_id;
       step = 'polling';
       startPolling();
+      saveJob(data.tracking_id, selectedMiner.address);
     } catch (e) {
       step = 'error';
       jobStatus = { error: e.message, status: 'failed' };
@@ -203,6 +246,31 @@
             <span class="selected-name">{selectedMiner.moniker || shortAddr(selectedMiner.address)}</span>
           </div>
         {/if}
+        {#if selectedMiner}
+  {@const minerJobs = jobHistory.filter(j => j.miner === selectedMiner.address)}
+  {#if minerJobs.length > 0}
+    <div class="miner-history">
+      <div class="card-label">JOBS SENT TO THIS MINER</div>
+      {#each minerJobs.slice(0, 5) as job}
+        <div class="history-row">
+          <span class="history-id">Job #{job.id}</span>
+          <span class="history-status 
+            {job.chainStatus === 'completed' ? 'done' : 
+             job.chainStatus === 'waiting_result' ? 'mining' : 'pending'}">
+            {job.chainStatus === 'completed' ? '✅ Complete' :
+             job.chainStatus === 'waiting_result' ? '⚙️ Mining' :
+             job.chainStatus === 'submitting' ? '📡 Submitting' :
+             '⏳ Pending'}
+          </span>
+          <span class="history-time">
+            {new Date(job.time).toLocaleTimeString()}
+          </span>
+        </div>
+      {/each}
+      <div class="history-total">Total: {minerJobs.length} jobs sent</div>
+    </div>
+  {/if}
+{/if}
       </div>
     </div>
 
@@ -786,4 +854,49 @@ republicd tx computevalidation submit-job-result {jobStatus?.chain_job_id} http:
     color: var(--text-muted, #94a3b8);
     flex-wrap: wrap;
   }
+  .miner-history {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border, #1e293b);
+  padding-top: 1rem;
+}
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 0.78rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.history-id {
+  color: var(--accent, #f97316);
+  font-weight: 600;
+}
+.history-status {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+.history-status.done { 
+  background: rgba(34,197,94,0.1); 
+  color: #22c55e; 
+}
+.history-status.mining { 
+  background: rgba(249,115,22,0.1); 
+  color: #f97316; 
+}
+.history-status.pending { 
+  background: rgba(148,163,184,0.1); 
+  color: #94a3b8; 
+}
+.history-time {
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.7rem;
+}
+.history-total {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  margin-top: 0.5rem;
+  text-align: right;
+}
 </style>
+
