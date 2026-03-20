@@ -65,7 +65,7 @@ async function refreshJobStatuses() {
 
 onMount(async () => {
   await loadMiners();
-    await loadJobHistory();
+  await loadJobHistory();
   await refreshJobStatuses();
 });
 
