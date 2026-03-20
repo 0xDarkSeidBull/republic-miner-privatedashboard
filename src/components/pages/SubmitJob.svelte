@@ -316,7 +316,7 @@
   <code>echo "{jobStatus?.chain_job_id}" > /root/job_1.txt</code>
   <br/><br/>
   <p><strong>Step 2 — Submit result:</strong></p>
-  <code>SHA=$(sha256sum /root/result_{jobStatus?.chain_job_id}.json | awk '{{print $1}}')<br/>
+  <code>SHA=$(sha256sum /root/result_{jobStatus?.chain_job_id}.json | awk '&#123;print $1&#125;')<br/>
 republicd tx computevalidation submit-job-result {jobStatus?.chain_job_id} http://YOUR_IP:8080/result_{jobStatus?.chain_job_id}.json example-verification:latest $SHA --from YOUR_WALLET --chain-id raitestnet_77701-1 --fees 200000000000000arai --node tcp://localhost:26657 -y</code>
   <br/><br/>
   <p><strong>Step 3 — Verify:</strong></p>
