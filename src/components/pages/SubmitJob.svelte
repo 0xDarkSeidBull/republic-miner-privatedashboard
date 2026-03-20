@@ -39,6 +39,19 @@ function saveJob(jobId, minerAddress) {
 async function refreshJobStatuses() {
   for (let job of jobHistory) {
     try {
+      if (job.chain_job_id) {
+        const res = await fetch(`${API}/api/jobs/${job.chain_job_id}/chain_status`);
+        const data = await res.json();
+        job.chainStatus = data.chain_status === 'PendingValidation' ? 'pending_validation' :
+                         data.chain_status === 'Completed' ? 'completed' : 
+                         job.status;
+      }
+    } catch(e) {}
+  }
+  jobHistory = [...jobHistory];
+}
+  for (let job of jobHistory) {
+    try {
       const res = await fetch(`${API}/api/jobs/${job.tracking_id}/status`);
       const data = await res.json();
       if (data.chain_job_id) {
