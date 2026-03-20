@@ -265,7 +265,8 @@ onMount(async () => {
 {/if}
 <span class="history-status 
             {job.chainStatus === 'completed' ? 'done' : 
-             job.chainStatus === 'waiting_result' ? 'mining' : 'pending'}">
+ job.chainStatus === 'pending_validation' ? 'done' :
+ job.chainStatus === 'waiting_result' ? 'mining' : 'pending'}">
             {job.chainStatus === 'pending_validation' ? '✅ PendingValidation' :
 job.chainStatus === 'completed' ? '✅ Complete' :
              job.chainStatus === 'waiting_result' ? '⚙️ Mining' :
@@ -273,7 +274,7 @@ job.chainStatus === 'completed' ? '✅ Complete' :
              '⏳ Pending'}
           </span>
           <span class="history-time">
-            {new Date(job.time).toLocaleTimeString()}
+            {job.submitted_at ? new Date(job.submitted_at).toLocaleTimeString() : ''}
           </span>
         </div>
       {/each}
