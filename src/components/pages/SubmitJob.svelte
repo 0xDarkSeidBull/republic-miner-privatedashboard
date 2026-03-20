@@ -256,14 +256,18 @@ onMount(async () => {
       {#each minerJobs.slice(0, 5) as job}
         <div class="history-row">
           <span class="history-id">Job #{job.chain_job_id || job.id}</span>
-{#if job.txhash}
+{#if job.result_txhash}
+  <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{job.result_txhash}" 
+     target="_blank" class="explorer-link">🔍</a>
+{:else if job.txhash}
   <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{job.txhash}" 
      target="_blank" class="explorer-link">🔍</a>
 {/if}
 <span class="history-status 
             {job.chainStatus === 'completed' ? 'done' : 
              job.chainStatus === 'waiting_result' ? 'mining' : 'pending'}">
-            {job.chainStatus === 'completed' ? '✅ Complete' :
+            {job.chainStatus === 'pending_validation' ? '✅ PendingValidation' :
+job.chainStatus === 'completed' ? '✅ Complete' :
              job.chainStatus === 'waiting_result' ? '⚙️ Mining' :
              job.chainStatus === 'submitting' ? '📡 Submitting' :
              '⏳ Pending'}
