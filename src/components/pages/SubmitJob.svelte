@@ -50,19 +50,6 @@ async function refreshJobStatuses() {
   }
   jobHistory = [...jobHistory];
 }
-  for (let job of jobHistory) {
-    try {
-      const res = await fetch(`${API}/api/jobs/${job.tracking_id}/status`);
-      const data = await res.json();
-      if (data.chain_job_id) {
-        // Check chain status
-        job.chainStatus = data.status;
-      }
-    } catch(e) {}
-  }
-  jobHistory = [...jobHistory];
-}
-
 onMount(async () => {
   await loadMiners();
   await loadJobHistory();
