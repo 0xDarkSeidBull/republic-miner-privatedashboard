@@ -306,23 +306,26 @@
         <!-- RESULT -->
         {#if isSuccess && jobStatus?.result}
           <div class="result-box">
-            <div class="result-label">✅ JOB SUCCESSFULLY SENT!</div>
-            <div class="result-content">
-  Job <strong>{jobStatus?.chain_job_id}</strong> has been sent to the miner successfully!
-  <br/><br/>
-  The miner needs to run:
+           <div class="result-label">✅ JOB SUCCESSFULLY SENT!</div>
+<div class="result-content">
+  <p>Job <strong>{jobStatus?.chain_job_id}</strong> sent to <strong>{selectedMiner?.moniker || shortAddr(selectedMiner?.address)}</strong>!</p>
   <br/>
+  <p>📋 <strong>Miner needs to run these commands:</strong></p>
+  <br/>
+  <p><strong>Step 1 — Pick up job:</strong></p>
   <code>echo "{jobStatus?.chain_job_id}" > /root/job_1.txt</code>
   <br/><br/>
-  Result will be available at:<br/>
-  <code>{jobStatus?.result_url}</code>
+  <p><strong>Step 2 — Submit result:</strong></p>
+  <code>SHA=$(sha256sum /root/result_{jobStatus?.chain_job_id}.json | awk '{{print $1}}')<br/>
+republicd tx computevalidation submit-job-result {jobStatus?.chain_job_id} http://YOUR_IP:8080/result_{jobStatus?.chain_job_id}.json example-verification:latest $SHA --from YOUR_WALLET --chain-id raitestnet_77701-1 --fees 200000000000000arai --node tcp://localhost:26657 -y</code>
+  <br/><br/>
+  <p><strong>Step 3 — Verify:</strong></p>
+  <code>republicd query computevalidation job {jobStatus?.chain_job_id} --node tcp://localhost:26657 -o json | jq '.job.status'</code>
 </div>
-            <button class="copy-btn" on:click={() => {
-              const text = typeof jobStatus.result === 'object'
-                ? (jobStatus.result.output || jobStatus.result.result || JSON.stringify(jobStatus.result))
-                : jobStatus.result;
-              navigator.clipboard.writeText(text);
-            }}>📋 Copy Result</button>
+<button class="copy-btn" on:click={() => {
+  const text = `Job ID: ${jobStatus?.chain_job_id}\necho "${jobStatus?.chain_job_id}" > /root/job_1.txt`;
+  navigator.clipboard.writeText(text);
+}}>📋 Copy Commands</button>
           </div>
         {/if}
 
