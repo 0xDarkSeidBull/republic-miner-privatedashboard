@@ -15,10 +15,11 @@
   // Job history
 let jobHistory = [];
 
-function loadJobHistory() {
+async function loadJobHistory() {
   try {
-    const saved = localStorage.getItem('republic_jobs');
-    jobHistory = saved ? JSON.parse(saved) : [];
+    const res = await fetch(`${API}/api/jobs/history`);
+    const data = await res.json();
+    jobHistory = data.jobs || [];
   } catch(e) {
     jobHistory = [];
   }
@@ -52,6 +53,7 @@ async function refreshJobStatuses() {
 onMount(async () => {
   await loadMiners();
   loadJobHistory();
+    await loadJobHistory();
   await refreshJobStatuses();
 });
 
