@@ -30,7 +30,7 @@
     tx_submitted:        '📡 Transaction broadcast...',
     waiting_result:      '⚙️ Miner processing...',
     fetching_result:     '📥 Fetching result...',
-    completed:           '✅ Complete!',
+    completed:           '✅ Job sent to miner!',
     failed:              '❌ Failed',
     timeout:             '⏱️ Timed out',
     result_fetch_failed: '⚠️ Result unavailable',
@@ -306,22 +306,17 @@
         <!-- RESULT -->
         {#if isSuccess && jobStatus?.result}
           <div class="result-box">
-            <div class="result-label">🤖 AI RESULT</div>
+            <div class="result-label">✅ JOB SUCCESSFULLY SENT!</div>
             <div class="result-content">
-              {#if typeof jobStatus.result === 'object'}
-                {#if jobStatus.result.output}
-                  {jobStatus.result.output}
-                {:else if jobStatus.result.result}
-                  {jobStatus.result.result}
-                {:else if jobStatus.result.raw}
-                  {jobStatus.result.raw}
-                {:else}
-                  <pre>{JSON.stringify(jobStatus.result, null, 2)}</pre>
-                {/if}
-              {:else}
-                {jobStatus.result}
-              {/if}
-            </div>
+  Job <strong>{jobStatus?.chain_job_id}</strong> has been sent to the miner successfully!
+  <br/><br/>
+  The miner needs to run:
+  <br/>
+  <code>echo "{jobStatus?.chain_job_id}" > /root/job_1.txt</code>
+  <br/><br/>
+  Result will be available at:<br/>
+  <code>{jobStatus?.result_url}</code>
+</div>
             <button class="copy-btn" on:click={() => {
               const text = typeof jobStatus.result === 'object'
                 ? (jobStatus.result.output || jobStatus.result.result || JSON.stringify(jobStatus.result))
