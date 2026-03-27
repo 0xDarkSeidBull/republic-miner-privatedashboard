@@ -54,9 +54,9 @@
     jobDetailLoading = false;
   }
 
-  $: pendingExec = jobsData?.PendingExecution || [];
-  $: pendingVal = jobsData?.PendingValidation || [];
-  $: totalJobs = pendingExec.length + pendingVal.length;
+  $: pendingExec = jobsData?.pending_execution || [];
+  $: pendingVal = jobsData?.pending_validation || [];
+  $: totalJobs = jobsData?.total_jobs || 0;
 </script>
 
 <!-- HERO -->
