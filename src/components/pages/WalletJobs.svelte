@@ -65,7 +65,7 @@
   <div style="position:relative;z-index:1">
     <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Republic AI · Wallet Jobs</div>
     <h1><span class="line1">WALLET</span><span class="line2">JOB TRACKER</span></h1>
-    <p class="hero-sub">Search any wallet address to see pending execution & validation jobs.</p>
+    <p class="hero-sub">Search any wallet address to see pending execution &amp; validation jobs.</p>
   </div>
 </div>
 
@@ -142,7 +142,7 @@
               </td>
               <td>
                 <div class="addr-cell">
-                  <span class="addr-text">{shortAddr(job.creator || '—')}</span>
+                  <span class="addr-text">{shortAddr(job.creator || '---')}</span>
                 </div>
               </td>
               <td>
@@ -152,9 +152,9 @@
                      rel="noopener"
                      style="color:var(--blue);font-size:12px;word-break:break-all"
                      on:click|stopPropagation={() => {}}
-                    >{job.result_url.slice(0,40)}</a>
+                  >{job.result_url.slice(0, 40)}</a>
                 {:else}
-                  <span style="opacity:0.4">—</span>
+                  <span style="opacity:0.4">---</span>
                 {/if}
               </td>
               <td class="num-cell">
@@ -162,7 +162,6 @@
               </td>
             </tr>
 
-            <!-- INLINE DETAIL ROW -->
             {#if activeJob === job.job_id}
               <tr>
                 <td colspan="4" style="padding:0;background:var(--bg2)">
@@ -178,7 +177,7 @@
                             <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">{k}</div>
                             <div style="font-size:12px;color:var(--text);word-break:break-all;opacity:.9">
                               {#if typeof v === 'string' && v.startsWith('http')}
-                                <a href={v} target="_blank" rel="noopener" style="color:var(--blue)">{v.length > 50 ? v.slice(0,50)+'…' : v}</a>
+                                <a href={v} target="_blank" rel="noopener" style="color:var(--blue)">{v.slice(0, 50)}</a>
                               {:else}
                                 {JSON.stringify(v)}
                               {/if}
@@ -234,20 +233,19 @@
               </td>
               <td>
                 <div class="addr-cell">
-                  <span class="addr-text">{shortAddr(job.creator || '—')}</span>
+                  <span class="addr-text">{shortAddr(job.creator || '---')}</span>
                 </div>
               </td>
               <td>
                 {#if job.result_url}
-                  
-                    href={job.result_url}
-                    target="_blank"
-                    rel="noopener"
-                    style="color:var(--blue);font-size:12px;word-break:break-all"
-                    on:click|stopPropagation
-                  >{job.result_url.length > 40 ? job.result_url.slice(0,40)+'…' : job.result_url}</a>
+                  <a href={job.result_url}
+                     target="_blank"
+                     rel="noopener"
+                     style="color:var(--blue);font-size:12px;word-break:break-all"
+                     on:click|stopPropagation={() => {}}
+                  >{job.result_url.slice(0, 40)}</a>
                 {:else}
-                  <span style="opacity:0.4">—</span>
+                  <span style="opacity:0.4">---</span>
                 {/if}
               </td>
               <td class="num-cell">
@@ -255,7 +253,6 @@
               </td>
             </tr>
 
-            <!-- INLINE DETAIL ROW -->
             {#if activeJob === job.job_id}
               <tr>
                 <td colspan="4" style="padding:0;background:var(--bg2)">
@@ -271,7 +268,7 @@
                             <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">{k}</div>
                             <div style="font-size:12px;color:var(--text);word-break:break-all;opacity:.9">
                               {#if typeof v === 'string' && v.startsWith('http')}
-                                <a href={v} target="_blank" rel="noopener" style="color:var(--blue)">{v.length > 50 ? v.slice(0,50)+'…' : v}</a>
+                                <a href={v} target="_blank" rel="noopener" style="color:var(--blue)">{v.slice(0, 50)}</a>
                               {:else}
                                 {JSON.stringify(v)}
                               {/if}
