@@ -13,6 +13,8 @@
   import Submit from './pages/Submit.svelte';
   import Weekly from './pages/Weekly.svelte';
   import SubmitJob from './pages/SubmitJob.svelte';
+  import WalletJobs from './pages/WalletJobs.svelte';
+
 
   let showSplash = true;
   let appVisible = false;
@@ -48,6 +50,8 @@
       <SubmitJob />
     {:else if $currentPage === 'weekly'}
       <Weekly />
+    {:else if $currentPage === 'walletjobs'}
+      <WalletJobs />
     {/if}
 
     <Footer />
