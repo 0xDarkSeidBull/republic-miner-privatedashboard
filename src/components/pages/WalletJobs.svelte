@@ -153,7 +153,7 @@
                     rel="noopener"
                     style="color:var(--blue);font-size:12px;word-break:break-all"
                     on:click|stopPropagation={() => {}}
-                  >{job.result_url.length > 40 ? job.result_url.slice(0,40)+'…' : job.result_url}</a>
+                  >{job.result_url.length > 40 ? job.result_url.slice(0,40)+'...' : job.result_url}</a>
                 {:else}
                   <span style="opacity:0.4">—</span>
                 {/if}
