@@ -105,7 +105,7 @@
   <div class="section-header">
     <div class="section-title">
       <div class="section-title-bar"></div>
-      Live Geo Scores
+      Live Scores
     </div>
     <button class="refresh-btn" on:click={loadGeo}>↻ Refresh</button>
   </div>
@@ -129,7 +129,7 @@
             <th style="text-align:right" title="Helpfulness Score">Help</th>
             <th style="text-align:right" title="Builder Bonus">Build</th>
             <th style="text-align:right" title="Final Score">Final</th>
-            <th style="text-align:right" title="Estimated RAI">Est. RAI</th>
+            <th style="text-align:right" title="Estimated Points">Est. POINTS</th>
           </tr>
         </thead>
         <tbody>
