@@ -240,7 +240,7 @@
   on:click={openGeoPopup}
   style="position:fixed;bottom:28px;right:28px;z-index:999;background:linear-gradient(135deg,var(--accent),var(--accent3));border:none;border-radius:50px;padding:12px 20px;color:#000;font-weight:800;font-size:12px;letter-spacing:.08em;cursor:pointer;box-shadow:0 4px 24px rgba(255,170,0,.4);display:flex;align-items:center;gap:8px"
 >
-  🎯 My Geo Score
+  🎯 Check Your GPU Score
 </button>
 
 <!-- GEO POPUP MODAL -->
@@ -262,7 +262,7 @@
     <!-- Header -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
       <div>
-        <div style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.1em;text-transform:uppercase">Weekly Geo Points</div>
+        <div style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.1em;text-transform:uppercase">Weekly GPU Points</div>
         <div style="font-size:18px;font-weight:800;color:var(--text);margin-top:2px">🎯 Your Score & 240K Tracker</div>
       </div>
       <button
