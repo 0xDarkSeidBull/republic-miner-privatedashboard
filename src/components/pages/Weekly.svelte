@@ -14,7 +14,11 @@
     geoLoading = true;
     geoError = '';
     try {
-      const r = await fetch(`${API}/api/weekly/geo`, { signal: AbortSignal.timeout(120000) });
+      // Trigger background scan
+      fetch(`${API}/api/weekly/geo/refresh`, { method: 'POST' }).catch(() => {});
+      // 30 sec wait for scan to complete
+      await new Promise(r => setTimeout(r, 30000));
+      const r = await fetch(`${API}/api/weekly/geo`, { signal: AbortSignal.timeout(15000) });
       if (!r.ok) throw new Error('Failed');
       const d = await r.json();
       geoData = d.data || [];
@@ -107,7 +111,9 @@
       <div class="section-title-bar"></div>
       Live Scores
     </div>
-    <button class="refresh-btn" on:click={loadGeo}>↻ Refresh</button>
+    <button class="refresh-btn" on:click={loadGeo} disabled={geoLoading}>
+  {geoLoading ? '⏳ Scanning... (~30s)' : '↻ Refresh'}
+</button>
   </div>
 
   {#if geoLoading && geoData.length === 0}
