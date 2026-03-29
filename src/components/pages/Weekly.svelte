@@ -46,7 +46,7 @@
   <div class="hero-bg"></div>
   <div style="position:relative;z-index:1">
     <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Republic AI · Weekly Points</div>
-    <h1><span class="line1">WEEKLY</span><span class="line2">GEO POINTS</span></h1>
+    <h1><span class="line1">WEEKLY GPU</span><span class="line2">MINER POINTS</span></h1>
     <p class="hero-sub">Live GPU miner scores — Sunday 00:00 UTC to Saturday 23:59 UTC</p>
   </div>
 </div>
