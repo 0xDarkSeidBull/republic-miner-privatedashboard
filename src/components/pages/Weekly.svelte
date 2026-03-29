@@ -56,7 +56,7 @@
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:13px;color:var(--muted)">
-        📅 {geoMeta.week || 'Current Week'} &nbsp;·&nbsp; Pool: <span style="color:var(--accent)">1,600,000 RAI</span>
+        📅 {geoMeta.week || 'Current Week'} &nbsp;·&nbsp; Pool: <span style="color:var(--accent)">1,600,000 POINTS</span>
       </div>
       <div style="font-size:12px;color:var(--muted)">Week Progress: <span style="color:var(--accent3)">{weekProgress}%</span></div>
     </div>
@@ -82,11 +82,11 @@
   </div>
   <div class="stat-card">
     <div class="stat-label">Reward Pool</div>
-    <div class="stat-value" style="color:var(--accent)">1.6M RAI</div>
+    <div class="stat-value" style="color:var(--accent)">1.6M POINTS</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Max Per Wallet</div>
-    <div class="stat-value" style="color:var(--accent3)">240K RAI</div>
+    <div class="stat-value" style="color:var(--accent3)">240K POINTS</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Last Updated</div>
@@ -96,7 +96,7 @@
   <div class="stat-card">
     <div class="stat-label">Capped Wallets</div>
     <div class="stat-value fire">{geoData.filter(m => m.capped).length}</div>
-    <div class="stat-sub">240K RAI max hit</div>
+    <div class="stat-sub">240K POINTS max hit</div>
   </div>
 </div>
 
