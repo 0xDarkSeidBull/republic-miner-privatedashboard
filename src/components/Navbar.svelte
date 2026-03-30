@@ -31,21 +31,23 @@
     <div class="nav-logo-icon">⛏</div>
     <div class="nav-logo-text">REPUBLIC<span>/STATS</span></div>
   </div>
+
   <div class="nav-links">
-    {#each ['home','leaderboard','weekly','fastgpu','ecosystem','guides','submitjob','walletjobs'] as page}
+    {#each ['home','leaderboard','weekly','fastgeo','ecosystem','guides','submitjob','walletjobs'] as page}
       <button class="nav-link {$currentPage === page ? 'active' : ''}" on:click={() => navigate(page)}>
-        {page === 'home' ? 'Home' 
-        : page === 'leaderboard' ? 'Leaderboard' 
-        : page === 'weekly' ? 'Weekly Points' 
-        : page === 'fastgpu' ? '⚡ Fast GPU' 
-        : page === 'ecosystem' ? 'Ecosystem' 
-        : page === 'guides' ? 'Guides' 
-        : page === 'walletjobs' ? 'Wallet Jobs' 
+        {page === 'home' ? 'Home'
+        : page === 'leaderboard' ? 'Leaderboard'
+        : page === 'weekly' ? 'Weekly Points'
+        : page === 'fastgeo' ? '⚡ Fast GPU'
+        : page === 'ecosystem' ? 'Ecosystem'
+        : page === 'guides' ? 'Guides'
+        : page === 'walletjobs' ? 'Wallet Jobs'
         : '⚡ Submit Job'}
       </button>
     {/each}
     <button class="nav-btn-submit" on:click={() => navigate('submit')}>+ Submit</button>
   </div>
+
   <button class="hamburger {menuOpen ? 'open' : ''}" on:click={toggleMenu}>
     <span></span><span></span><span></span>
   </button>
@@ -65,7 +67,7 @@
       ['home','🏠 Home'],
       ['leaderboard','🏆 Leaderboard'],
       ['weekly','🏆 Weekly Points'],
-      ['fastgpu','⚡ Fast GPU'],
+      ['fastgeo','⚡ Fast GPU'],
       ['ecosystem','🌐 Ecosystem'],
       ['guides','📚 Guides'],
       ['submitjob','⚡ Submit Job'],
