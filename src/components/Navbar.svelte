@@ -32,9 +32,9 @@
     <div class="nav-logo-text">REPUBLIC<span>/STATS</span></div>
   </div>
   <div class="nav-links">
-    {#each ['home','leaderboard','weekly','ecosystem','guides','submitjob','walletjobs'] as page}
+    {#each ['home','leaderboard','weekly','fastgeo','ecosystem','guides','submitjob','walletjobs'] as page}
       <button class="nav-link {$currentPage === page ? 'active' : ''}" on:click={() => navigate(page)}>
-        {page === 'home' ? 'Home' : page === 'leaderboard' ? 'Leaderboard' : page === 'ecosystem' ? 'Ecosystem' : page === 'weekly' ? 'Weekly Points' : page === 'guides' ? 'Guides' : page === 'walletjobs' ? 'Wallet Jobs' : '⚡ Submit Job'}
+        {page === 'home' ? 'Home' : page === 'leaderboard' ? 'Leaderboard' : page === 'ecosystem' ? 'Ecosystem' : page === 'weekly' ? 'Weekly Points' : page === 'guides' ? 'Guides' : page === 'walletjobs' ? 'Wallet Jobs' : page === 'fastgeo' ? '⚡ Fast Geo' : '⚡ Submit Job'}
       </button>
     {/each}
     <button class="nav-btn-submit" on:click={() => navigate('submit')}>+ Submit</button>
