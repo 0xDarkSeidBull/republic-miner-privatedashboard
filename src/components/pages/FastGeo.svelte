@@ -54,9 +54,9 @@
 <div class="hero">
   <div class="hero-bg"></div>
   <div style="position:relative;z-index:1">
-    <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Republic AI · Fast Geo Scanner</div>
-    <h1><span class="line1">FAST GEO</span><span class="line2">POINT CHECKER</span></h1>
-    <p class="hero-sub">Same Geo model data — fetched fast via per-validator API calls ⚡</p>
+    <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Republic AI · FAST FETCH Scanner</div>
+    <h1><span class="line1">FAST GPU</span><span class="line2">POINT CHECKER</span></h1>
+    <p class="hero-sub">Same GPU model data — fetched fast via per-validator API calls ⚡</p>
   </div>
 </div>
 
