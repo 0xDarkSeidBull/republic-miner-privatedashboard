@@ -32,9 +32,16 @@
     <div class="nav-logo-text">REPUBLIC<span>/STATS</span></div>
   </div>
   <div class="nav-links">
-    {#each ['home','leaderboard','weekly','fastgeo','ecosystem','guides','submitjob','walletjobs'] as page}
+    {#each ['home','leaderboard','weekly','fastgpu','ecosystem','guides','submitjob','walletjobs'] as page}
       <button class="nav-link {$currentPage === page ? 'active' : ''}" on:click={() => navigate(page)}>
-        {page === 'home' ? 'Home' : page === 'leaderboard' ? 'Leaderboard' : page === 'ecosystem' ? 'Ecosystem' : page === 'weekly' ? 'Weekly Points' : page === 'guides' ? 'Guides' : page === 'walletjobs' ? 'Wallet Jobs' : page === 'fastgeo' ? '⚡ Fast GPU' : '⚡ Submit Job'}
+        {page === 'home' ? 'Home' 
+        : page === 'leaderboard' ? 'Leaderboard' 
+        : page === 'weekly' ? 'Weekly Points' 
+        : page === 'fastgpu' ? '⚡ Fast GPU' 
+        : page === 'ecosystem' ? 'Ecosystem' 
+        : page === 'guides' ? 'Guides' 
+        : page === 'walletjobs' ? 'Wallet Jobs' 
+        : '⚡ Submit Job'}
       </button>
     {/each}
     <button class="nav-btn-submit" on:click={() => navigate('submit')}>+ Submit</button>
@@ -54,7 +61,17 @@
     <button class="mobile-close" on:click={toggleMenu}>✕</button>
   </div>
   <div class="mobile-nav-links">
-    {#each [['home','🏠 Home'],['leaderboard','🏆 Leaderboard'],['weekly','🏆 Weekly Points'],['ecosystem','🌐 Ecosystem'],['guides','📚 Guides'],['submitjob','⚡ Submit Job'],['walletjobs','💼 Wallet Jobs'],['submit','+ Submit Project']] as [page, label]}
+    {#each [
+      ['home','🏠 Home'],
+      ['leaderboard','🏆 Leaderboard'],
+      ['weekly','🏆 Weekly Points'],
+      ['fastgpu','⚡ Fast GPU'],
+      ['ecosystem','🌐 Ecosystem'],
+      ['guides','📚 Guides'],
+      ['submitjob','⚡ Submit Job'],
+      ['walletjobs','💼 Wallet Jobs'],
+      ['submit','+ Submit Project']
+    ] as [page, label]}
       <button class="mobile-nav-link {$currentPage === page ? 'active' : ''}" on:click={() => navigate(page)}>
         {label}
       </button>
