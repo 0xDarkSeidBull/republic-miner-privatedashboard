@@ -59,15 +59,20 @@
       const AMOUNT = '10000000000000000000';
 
       await window.keplr.enable(CHAIN_ID);
-      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
-      const accounts = await offlineSigner.getAccounts();
+      const key = await window.keplr.getKey(CHAIN_ID);
+      const sender = key.bech32Address;
 
-      // Use keplr sendTx directly
-      const txMsg = {
-        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+      // Get account info
+      const accountRes = await fetch(`https://api-test.republic.vinjan-inc.com/cosmos/auth/v1beta1/accounts/${sender}`);
+      const accountData = await accountRes.json();
+      const accountNumber = accountData.account?.account_number || accountData.account?.base_account?.account_number || '0';
+      const sequence = accountData.account?.sequence || accountData.account?.base_account?.sequence || '0';
+
+      const aminoMsg = {
+        type: 'cosmos-sdk/MsgSend',
         value: {
-          fromAddress: accounts[0].address,
-          toAddress: TREASURY,
+          from_address: sender,
+          to_address: TREASURY,
           amount: [{ denom: 'arai', amount: AMOUNT }]
         }
       };
@@ -77,20 +82,49 @@
         gas: '200000'
       };
 
-      const { SigningStargateClient } = await import('https://esm.sh/@cosmjs/stargate@0.32.3');
+      const signDoc = {
+        chain_id: CHAIN_ID,
+        account_number: String(accountNumber),
+        sequence: String(sequence),
+        fee,
+        msgs: [aminoMsg],
+        memo: 'Republic AI GPU Miner Badge Mint'
+      };
 
-      const rpcEndpoint = 'https://rpc-test.republic.vinjan-inc.com';
-      const client = await SigningStargateClient.connectWithSigner(rpcEndpoint, offlineSigner);
+      const signed = await window.keplr.signAmino(CHAIN_ID, sender, signDoc);
 
-      const result = await client.signAndBroadcast(accounts[0].address, [txMsg], fee, 'Republic AI GPU Miner Badge Mint');
+      // Broadcast via REST
+      const broadcastBody = {
+        tx: {
+          msg: signed.signed.msgs,
+          fee: signed.signed.fee,
+          signatures: [signed.signature],
+          memo: signed.signed.memo
+        },
+        mode: 'sync'
+      };
 
-      if (result.code !== 0) throw new Error('TX failed: ' + result.rawLog);
+      const broadcastRes = await fetch('https://api-test.republic.vinjan-inc.com/cosmos/tx/v1beta1/txs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tx_bytes: btoa(JSON.stringify(broadcastBody)),
+          mode: 'BROADCAST_MODE_SYNC'
+        })
+      });
+
+      const broadcastData = await broadcastRes.json();
+      const txHash = broadcastData?.tx_response?.txhash;
+
+      if (!txHash) throw new Error('Broadcast failed: ' + JSON.stringify(broadcastData));
+      if (broadcastData?.tx_response?.code !== 0) throw new Error('TX failed: ' + broadcastData?.tx_response?.raw_log);
 
       // Verify with backend
+      await new Promise(r => setTimeout(r, 3000));
       const verifyRes = await fetch(`${API}/api/badge/verify-mint`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: walletAddress, tx_hash: result.transactionHash })
+        body: JSON.stringify({ address: walletAddress, tx_hash: txHash })
       });
       const verifyData = await verifyRes.json();
 
