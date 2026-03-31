@@ -56,29 +56,33 @@
 
       const CHAIN_ID = 'raitestnet_77701-1';
       const TREASURY = badgeStatus.treasury;
-      const AMOUNT = '10000000000000000000'; // 10 RAI
+      const AMOUNT = '10000000000000000000';
 
       await window.keplr.enable(CHAIN_ID);
       const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
       const accounts = await offlineSigner.getAccounts();
 
-      // Use keplr to send TX
-      const { SigningStargateClient } = await import('https://cdn.jsdelivr.net/npm/@cosmjs/stargate@0.32.4/+esm');
-      const { GasPrice } = await import('https://cdn.jsdelivr.net/npm/@cosmjs/stargate@0.32.4/+esm');
+      // Use keplr sendTx directly
+      const txMsg = {
+        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+        value: {
+          fromAddress: accounts[0].address,
+          toAddress: TREASURY,
+          amount: [{ denom: 'arai', amount: AMOUNT }]
+        }
+      };
 
-      const client = await SigningStargateClient.connectWithSigner(
-        'https://rpc-test.republic.vinjan-inc.com',
-        offlineSigner,
-        { gasPrice: GasPrice.fromString('25000000000arai') }
-      );
+      const fee = {
+        amount: [{ denom: 'arai', amount: '25000000000000000' }],
+        gas: '200000'
+      };
 
-      const result = await client.sendTokens(
-        accounts[0].address,
-        TREASURY,
-        [{ denom: 'arai', amount: AMOUNT }],
-        'auto',
-        'Republic AI GPU Miner Badge Mint'
-      );
+      const { SigningStargateClient } = await import('https://esm.sh/@cosmjs/stargate@0.32.3');
+
+      const rpcEndpoint = 'https://rpc-test.republic.vinjan-inc.com';
+      const client = await SigningStargateClient.connectWithSigner(rpcEndpoint, offlineSigner);
+
+      const result = await client.signAndBroadcast(accounts[0].address, [txMsg], fee, 'Republic AI GPU Miner Badge Mint');
 
       if (result.code !== 0) throw new Error('TX failed: ' + result.rawLog);
 
