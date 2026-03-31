@@ -21,8 +21,8 @@
         connecting = false;
         return;
       }
-      await window.keplr.enable('rai_77701-1');
-      const offlineSigner = window.keplr.getOfflineSigner('rai_77701-1');
+      await window.keplr.enable('raitestnet_77701-1');
+      const offlineSigner = window.keplr.getOfflineSigner('raitestnet_77701-1');
       const accounts = await offlineSigner.getAccounts();
       walletAddress = accounts[0].address;
       keplrConnected = true;
@@ -54,7 +54,7 @@
     try {
       if (!window.keplr) throw new Error('Keplr not found');
 
-      const CHAIN_ID = 'rai_77701-1';
+      const CHAIN_ID = 'raitestnet_77701-1';
       const TREASURY = badgeStatus.treasury;
       const AMOUNT = '10000000000000000000'; // 10 RAI
 
