@@ -33,12 +33,12 @@
   </div>
 
   <div class="nav-links">
-    {#each ['home','leaderboard','weekly','fastgeo','ecosystem','guides','submitjob','walletjobs'] as page}
+    {#each ['home','leaderboard','weekly','fastgeo','userdashboard','ecosystem','guides','submitjob','walletjobs'] as page}
       <button class="nav-link {$currentPage === page ? 'active' : ''}" on:click={() => navigate(page)}>
         {page === 'home' ? 'Home'
         : page === 'leaderboard' ? 'Leaderboard'
         : page === 'weekly' ? 'Weekly Points'
-        : page === 'fastgeo' ? '⚡ Fast GPU'
+        : page === 'fastgeo' ? '⚡ Fast GPU' : page === 'userdashboard' ? '👤 Dashboard'
         : page === 'ecosystem' ? 'Ecosystem'
         : page === 'guides' ? 'Guides'
         : page === 'walletjobs' ? 'Wallet Jobs'
@@ -67,7 +67,7 @@
       ['home','🏠 Home'],
       ['leaderboard','🏆 Leaderboard'],
       ['weekly','🏆 Weekly Points'],
-      ['fastgeo','⚡ Fast GPU'],
+      ['fastgeo','⚡ Fast GPU'],['userdashboard','👤 Dashboard'],
       ['ecosystem','🌐 Ecosystem'],
       ['guides','📚 Guides'],
       ['submitjob','⚡ Submit Job'],

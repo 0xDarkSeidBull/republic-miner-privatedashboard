@@ -15,6 +15,7 @@
   import SubmitJob from './pages/SubmitJob.svelte';
   import WalletJobs from './pages/WalletJobs.svelte';
   import FastGeo from './pages/FastGeo.svelte';
+  import UserDashboard from './pages/UserDashboard.svelte';
 
 
   let showSplash = true;
@@ -51,6 +52,8 @@
       <SubmitJob />
     {:else if $currentPage === 'weekly'}
       <Weekly />
+    {:else if $currentPage === 'userdashboard'}
+      <UserDashboard />
     {:else if $currentPage === 'fastgeo'}
       <FastGeo />
     {:else if $currentPage === 'walletjobs'}
