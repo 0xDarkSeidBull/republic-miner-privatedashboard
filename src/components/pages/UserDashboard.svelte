@@ -196,7 +196,7 @@
           <div style="background:var(--bg1);border-radius:8px;padding:12px;font-size:11px;font-family:monospace;color:var(--accent3);word-break:break-all;margin-bottom:12px">
             TX: {badgeStatus.badge.tx_hash}
           </div>
-          <a href="https://explorer.republic.vinjan-inc.com/republic/tx/{badgeStatus.badge.tx_hash}"
+          <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{badgeStatus.badge.tx_hash}"
             target="_blank" rel="noopener"
             style="color:var(--blue);font-size:12px">
             View on Explorer ↗
@@ -222,7 +222,7 @@
               <div style="font-size:11px;font-family:monospace;color:var(--accent3);word-break:break-all;margin-bottom:8px">
                 TX: {mintSuccess.tx_hash}
               </div>
-              <a href="https://explorer.republic.vinjan-inc.com/republic/tx/{mintSuccess.tx_hash}"
+              <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{mintSuccess.tx_hash}"
                 target="_blank" rel="noopener"
                 style="color:var(--blue);font-size:12px">
                 View on Explorer ↗
