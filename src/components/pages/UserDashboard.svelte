@@ -109,7 +109,7 @@
             }],
             memo: signed.signed.memo
           },
-          mode: 'async'
+          mode: 'BROADCAST_MODE_SYNC'
         })
       });
 
