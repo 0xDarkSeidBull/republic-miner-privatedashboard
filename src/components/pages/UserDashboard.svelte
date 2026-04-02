@@ -93,28 +93,30 @@
       const signed = await window.keplr.signAmino(CHAIN_ID, sender, signDoc);
 
       // Broadcast via backend proxy
-      const broadcastRes = await fetch(`${API}/api/proxy/broadcast`, {
+      // Encode tx for RPC broadcast
+      const txObj = {
+        msg: signed.signed.msgs,
+        fee: signed.signed.fee,
+        signatures: [{
+          pub_key: {
+            type: 'tendermint/PubKeySecp256k1',
+            value: btoa(String.fromCharCode(...key.pubKey))
+          },
+          signature: signed.signature.signature
+        }],
+        memo: signed.signed.memo
+      };
+
+      const broadcastRes = await fetch(`${API}/api/proxy/broadcast/amino`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tx: {
-            msg: signed.signed.msgs,
-            fee: signed.signed.fee,
-            signatures: [{
-              pub_key: {
-                type: 'tendermint/PubKeySecp256k1',
-                value: btoa(String.fromCharCode(...key.pubKey))
-              },
-              signature: signed.signature.signature
-            }],
-            memo: signed.signed.memo
-          },
-          mode: 'BROADCAST_MODE_SYNC'
+          tx_bytes: btoa(JSON.stringify(txObj))
         })
       });
 
       const broadcastData = await broadcastRes.json();
-      const txHash = broadcastData?.result?.hash || broadcastData?.tx_response?.txhash;
+      const txHash = broadcastData?.result?.hash || broadcastData?.result?.data;
 
       if (!txHash) throw new Error('Broadcast failed: ' + JSON.stringify(broadcastData));
 
