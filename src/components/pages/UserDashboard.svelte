@@ -47,93 +47,28 @@
     statsLoading = false;
   }
 
- async function mintBadge() {
+  async function mintBadge() {
     mintLoading = true;
     mintError = '';
     mintSuccess = null;
     try {
       if (!window.keplr) throw new Error('Keplr not found');
-
-      const CHAIN_ID = 'raitestnet_77701-1';
-      const TREASURY = badgeStatus.treasury;
-      const AMOUNT = '10000000000000000000';
-
-      await window.keplr.enable(CHAIN_ID);
-      const key = await window.keplr.getKey(CHAIN_ID);
+      await window.keplr.enable('raitestnet_77701-1');
+      const key = await window.keplr.getKey('raitestnet_77701-1');
       const sender = key.bech32Address;
 
-      // Get account info via our backend proxy
-      const accountRes = await fetch(`${API}/api/proxy/account/${sender}`);
-      const accountData = await accountRes.json();
-      const baseAccount = accountData.account?.base_account || accountData.account;
-      const accountNumber = baseAccount?.account_number || '0';
-      const sequence = baseAccount?.sequence || '0';
-
-      const fee = {
-        amount: [{ denom: 'arai', amount: '5000000000000000000' }],
-        gas: '200000'
-      };
-
-      const signDoc = {
-        chain_id: CHAIN_ID,
-        account_number: String(accountNumber),
-        sequence: String(sequence),
-        fee,
-        msgs: [{
-          type: 'cosmos-sdk/MsgSend',
-          value: {
-            from_address: sender,
-            to_address: TREASURY,
-            amount: [{ denom: 'arai', amount: AMOUNT }]
-          }
-        }],
-        memo: 'Republic AI GPU Miner Badge Mint'
-      };
-
-      const signed = await window.keplr.signAmino(CHAIN_ID, sender, signDoc);
-
-      // Broadcast via backend proxy
-      // Encode tx for RPC broadcast
-      const txObj = {
-        msg: signed.signed.msgs,
-        fee: signed.signed.fee,
-        signatures: [{
-          pub_key: {
-            type: 'tendermint/PubKeySecp256k1',
-            value: btoa(String.fromCharCode(...key.pubKey))
-          },
-          signature: signed.signature.signature
-        }],
-        memo: signed.signed.memo
-      };
-
-      const broadcastRes = await fetch(`${API}/api/proxy/broadcast/amino`, {
+      const res = await fetch(`${API}/api/badge/mint/onchain`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tx_bytes: btoa(JSON.stringify(txObj))
-        })
+        body: JSON.stringify({ address: sender })
       });
+      const data = await res.json();
 
-      const broadcastData = await broadcastRes.json();
-      const txHash = broadcastData?.result?.hash || broadcastData?.result?.data;
-
-      if (!txHash) throw new Error('Broadcast failed: ' + JSON.stringify(broadcastData));
-
-      // Wait then verify
-      await new Promise(r => setTimeout(r, 5000));
-      const verifyRes = await fetch(`${API}/api/badge/verify-mint`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: sender, tx_hash: txHash })
-      });
-      const verifyData = await verifyRes.json();
-
-      if (verifyData.success) {
-        mintSuccess = verifyData;
+      if (data.success) {
+        mintSuccess = data;
         await fetchBadgeStatus();
       } else {
-        mintError = verifyData.reason || 'Verification failed';
+        mintError = data.reason || 'Mint failed';
       }
     } catch(e) {
       mintError = 'Mint failed: ' + e.message;
@@ -258,9 +193,14 @@
           <p style="color:var(--muted);font-size:13px;margin-bottom:16px">
             Minted on {new Date(badgeStatus.badge.minted_at).toLocaleDateString()}
           </p>
-          <div style="background:var(--bg1);border-radius:8px;padding:12px;font-size:11px;font-family:monospace;color:var(--accent3);word-break:break-all">
+          <div style="background:var(--bg1);border-radius:8px;padding:12px;font-size:11px;font-family:monospace;color:var(--accent3);word-break:break-all;margin-bottom:12px">
             TX: {badgeStatus.badge.tx_hash}
           </div>
+          <a href="https://explorer.republic.vinjan-inc.com/republic/tx/{badgeStatus.badge.tx_hash}"
+            target="_blank" rel="noopener"
+            style="color:var(--blue);font-size:12px">
+            View on Explorer ↗
+          </a>
 
         {:else if badgeStatus.eligible}
           <!-- Eligible - Mint Now -->
@@ -272,13 +212,21 @@
             You have <span style="color:var(--accent)">{fmt(badgeStatus.submit_job_result)}</span> completed jobs — eligible for GPU Miner Badge!
           </p>
           <p style="color:var(--muted);font-size:12px;margin-bottom:24px">
-            Mint fee: <span style="color:var(--accent3)">10 RAI</span> — Non-transferable SBT Badge
+            Free mint — Badge will be recorded on-chain with your wallet address
           </p>
 
           {#if mintSuccess}
             <div style="background:rgba(0,255,100,0.1);border:1px solid rgba(0,255,100,0.3);border-radius:8px;padding:16px;margin-bottom:16px">
-              <div style="color:#00ff64;font-weight:600;margin-bottom:4px">✅ Badge Minted Successfully!</div>
-              <div style="font-size:12px;color:var(--muted)">Tier: {mintSuccess.tier} | TX: {mintSuccess.tx_hash?.slice(0,20)}...</div>
+              <div style="color:#00ff64;font-weight:600;margin-bottom:8px">✅ Badge Minted Successfully!</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Tier: {mintSuccess.tier}</div>
+              <div style="font-size:11px;font-family:monospace;color:var(--accent3);word-break:break-all;margin-bottom:8px">
+                TX: {mintSuccess.tx_hash}
+              </div>
+              <a href="https://explorer.republic.vinjan-inc.com/republic/tx/{mintSuccess.tx_hash}"
+                target="_blank" rel="noopener"
+                style="color:var(--blue);font-size:12px">
+                View on Explorer ↗
+              </a>
             </div>
           {/if}
 
@@ -290,7 +238,7 @@
             on:click={mintBadge}
             disabled={mintLoading}
             style="background:var(--accent);color:#000;border:none;padding:16px 48px;font-size:18px;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;border-radius:8px;cursor:pointer;font-weight:700;opacity:{mintLoading ? 0.7 : 1}">
-            {mintLoading ? '⏳ MINTING...' : '⚡ MINT BADGE — 10 RAI'}
+            {mintLoading ? '⏳ MINTING...' : '⚡ MINT BADGE'}
           </button>
 
         {:else}
