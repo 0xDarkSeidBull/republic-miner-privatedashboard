@@ -16,6 +16,7 @@
   import WalletJobs from './pages/WalletJobs.svelte';
   import FastGeo from './pages/FastGeo.svelte';
   import UserDashboard from './pages/UserDashboard.svelte';
+  import AIPlayground from './pages/AIPlayground.svelte';
 
 
   let showSplash = true;
@@ -52,6 +53,8 @@
       <SubmitJob />
     {:else if $currentPage === 'weekly'}
       <Weekly />
+    {:else if $currentPage === 'aiplayground'}
+      <AIPlayground />
     {:else if $currentPage === 'userdashboard'}
       <UserDashboard />
     {:else if $currentPage === 'fastgeo'}

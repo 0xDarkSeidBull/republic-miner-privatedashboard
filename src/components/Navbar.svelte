@@ -33,7 +33,7 @@
   </div>
 
   <div class="nav-links">
-    {#each ['home','leaderboard','weekly','fastgeo','userdashboard','ecosystem','guides','submitjob','walletjobs'] as page}
+    {#each ['home','leaderboard','weekly','fastgeo','aiplayground','userdashboard','ecosystem','guides','submitjob','walletjobs'] as page}
       <button class="nav-link {$currentPage === page ? 'active' : ''}" on:click={() => navigate(page)}>
         {page === 'home' ? 'Home'
         : page === 'leaderboard' ? 'Leaderboard'
