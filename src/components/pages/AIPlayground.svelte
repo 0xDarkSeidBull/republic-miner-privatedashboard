@@ -121,7 +121,7 @@
           on:click={submitJob}
           disabled={!prompt.trim()}
           style="margin-top:16px;background:var(--accent);color:#000;border:none;padding:13px 36px;font-family:var(--font-display);font-size:20px;letter-spacing:1px;border-radius:8px;cursor:pointer;opacity:{prompt.trim() ? 1 : 0.5}">
-          ⚡ SUBMIT JOB
+          ⚡ HYPERSCALE JOBS
         </button>
       {/if}
     </div>
