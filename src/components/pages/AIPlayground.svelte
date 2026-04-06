@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { API } from '../../stores/app.js';
+  import { API, fmt, shortAddr } from '../../stores/app.js';
 
   let prompt = '';
   let loading = false;
@@ -8,6 +8,16 @@
   let error = '';
   let trackingId = null;
   let pollInterval;
+  let miners = [];
+  let selectedMiner = null;
+
+  async function loadMiners() {
+    try {
+      const r = await fetch(`${API}/api/leaderboard?limit=200`);
+      const d = await r.json();
+      miners = (d.data || []).filter(m => m.submit_job_result > 0);
+    } catch(e) {}
+  }
 
   async function submitJob() {
     if (!prompt.trim()) return;
@@ -19,7 +29,10 @@
       const r = await fetch(`${API}/api/hyperscale/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: prompt.trim() })
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          miner_address: selectedMiner?.address || ''
+        })
       });
       const d = await r.json();
       if (!d.success) throw new Error(d.error || 'Failed');
@@ -50,7 +63,10 @@
     trackingId = null;
     prompt = '';
     loading = false;
+    selectedMiner = null;
   }
+
+  onMount(() => { loadMiners(); });
 </script>
 
 <div class="hero">
@@ -76,7 +92,7 @@
       <div>
         <div style="font-size:24px;margin-bottom:8px">🤖</div>
         <div style="font-size:13px;font-weight:600;margin-bottom:4px">2. AI Inference</div>
-        <div style="font-size:11px;color:var(--muted)">DeepSeek processes via Hyperscale</div>
+        <div style="font-size:11px;color:var(--muted)">DeepSeek processes via Hyperscale SDK</div>
       </div>
       <div>
         <div style="font-size:24px;margin-bottom:8px">⛓️</div>
@@ -89,6 +105,34 @@
   <!-- INPUT -->
   {#if !result}
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px">
+
+      <!-- MINER SELECT -->
+      <div style="margin-bottom:20px">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px">SELECT MINER</div>
+        {#if miners.length === 0}
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Loading miners...</div>
+        {:else}
+          <select
+            bind:value={selectedMiner}
+            style="width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
+            <option value={null}>— Auto (any available miner)</option>
+            {#each miners as miner}
+              <option value={miner}>
+                {miner.moniker || shortAddr(miner.address)} · {fmt(miner.submit_job_result)} results
+              </option>
+            {/each}
+          </select>
+          {#if selectedMiner}
+            <div style="margin-top:8px;font-family:var(--font-mono);font-size:10px;color:var(--muted)">
+              Selected: <span style="color:var(--accent)">{selectedMiner.moniker || shortAddr(selectedMiner.address)}</span>
+              &nbsp;·&nbsp; {fmt(selectedMiner.submit_job_result)} results
+              &nbsp;·&nbsp; Uptime: {selectedMiner.uptime ? selectedMiner.uptime + '%' : '—'}
+            </div>
+          {/if}
+        {/if}
+      </div>
+
+      <!-- PROMPT -->
       <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px">ENTER YOUR PROMPT</div>
       <textarea
         bind:value={prompt}
@@ -114,14 +158,16 @@
             </div>
             <div style="font-size:12px">Processing inference...</div>
           </div>
-          <div style="font-size:12px;color:var(--muted);margin-top:12px">Submitting to Republic chain after inference (~30s)</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:12px">
+            {selectedMiner ? `Sending to ${selectedMiner.moniker || shortAddr(selectedMiner.address)}...` : 'Submitting to Republic chain after inference (~30s)'}
+          </div>
         </div>
       {:else}
         <button
           on:click={submitJob}
           disabled={!prompt.trim()}
           style="margin-top:16px;background:var(--accent);color:#000;border:none;padding:13px 36px;font-family:var(--font-display);font-size:20px;letter-spacing:1px;border-radius:8px;cursor:pointer;opacity:{prompt.trim() ? 1 : 0.5}">
-          ⚡ HYPERSCALE JOBS
+          ⚡ SUBMIT JOB
         </button>
       {/if}
     </div>
@@ -159,20 +205,29 @@
       {#if result.txhash}
         <div style="padding:16px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,0.2)">
           <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:8px;letter-spacing:1px">ON-CHAIN PROOF</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
             <div>
               <div style="font-size:10px;color:var(--muted);margin-bottom:4px">TX HASH</div>
               <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent3);word-break:break-all">{result.txhash}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">HYPERSCALE JOB ID</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent3);word-break:break-all">{result.result?.hyperscale_job_id || '—'}</div>
             </div>
             <div>
               <div style="font-size:10px;color:var(--muted);margin-bottom:4px">COST</div>
               <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">{result.result?.cost?.toFixed(6)} RAI</div>
             </div>
           </div>
-          <a href={result.explorer} target="_blank" rel="noopener"
-            style="display:inline-block;margin-top:12px;color:var(--blue);font-family:var(--font-mono);font-size:11px">
-            View on Explorer ↗
-          </a>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:16px">
+            <a href={result.explorer} target="_blank" rel="noopener"
+              style="color:var(--blue);font-family:var(--font-mono);font-size:11px">
+              View on Explorer ↗
+            </a>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">
+              Verified by: {result.result?.verified_by || 'Hyperscale SDK + Republic AI Chain'}
+            </span>
+          </div>
         </div>
       {/if}
     </div>
