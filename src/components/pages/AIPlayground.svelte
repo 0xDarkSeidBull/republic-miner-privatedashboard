@@ -115,9 +115,9 @@
           <select
             bind:value={selectedMiner}
             style="width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
-            <option value={null}>— Auto (any available miner)</option>
+            <option value={null} style="background:#0D0D1A;color:#E8E8F0">— Auto (any available miner)</option>
             {#each miners as miner}
-              <option value={miner}>
+              <option value={miner} style="background:#0D0D1A;color:#E8E8F0">
                 {miner.moniker || shortAddr(miner.address)} · {fmt(miner.submit_job_result)} results
               </option>
             {/each}
