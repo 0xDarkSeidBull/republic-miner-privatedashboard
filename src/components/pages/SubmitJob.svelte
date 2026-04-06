@@ -85,7 +85,7 @@ onMount(async () => {
 
   async function loadMiners() {
     try {
-      const res = await fetch(`${API}/api/leaderboard?limit=50`);
+      const res = await fetch(`${API}/api/leaderboard?limit=200`);
       const data = await res.json();
       miners = (data.data || []).filter(m => m.submit_job_result > 0);
     } catch (e) {
@@ -214,7 +214,7 @@ onMount(async () => {
           <div class="loading-miners">Loading miners...</div>
         {:else}
           <div class="miner-list">
-            {#each miners.slice(0, 10) as miner}
+            {#each miners as miner}
               <button
                 class="miner-row"
                 class:selected={selectedMiner?.address === miner.address}

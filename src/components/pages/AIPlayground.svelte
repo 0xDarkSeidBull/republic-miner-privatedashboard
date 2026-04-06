@@ -56,8 +56,8 @@
 <div class="hero">
   <div class="hero-bg"></div>
   <div style="position:relative;z-index:1">
-    <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Republic AI · Hyperscale SDK</div>
-    <h1><span class="line1">AI</span><span class="line2">PLAYGROUND</span></h1>
+    <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Republic AI · Hyperscale Jobs</div>
+    <h1><span class="line1">HYPERSCALE</span><span class="line2">JOBS</span></h1>
     <p class="hero-sub">Submit AI inference jobs powered by Hyperscale SDK — recorded on Republic AI chain</p>
   </div>
 </div>
