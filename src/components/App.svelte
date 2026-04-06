@@ -57,7 +57,7 @@
       <AIPlayground />
     {:else if $currentPage === 'userdashboard'}
       <UserDashboard />
-    {:else if $currentPage === 'fastgeo'}
+    {:else if $currentPage === 'fastgpu'}
       <FastGeo />
     {:else if $currentPage === 'walletjobs'}
       <WalletJobs />
