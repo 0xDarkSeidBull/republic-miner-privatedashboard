@@ -175,8 +175,8 @@ onMount(async () => {
   <!-- Header -->
   <div class="page-header">
     <div class="header-badge">WORLD FIRST</div>
-    <h1 class="page-title">⚡ Hyperscale Jobs</h1>
-    <p class="page-subtitle">Send Hyperscale AI jobs to Republic miners — browser native</p>
+    <h1 class="page-title">⚡ Job Submission</h1>
+    <p class="page-subtitle">Send AI jobs directly to Republic miners — browser native</p>
   </div>
 
   {#if step === 'input'}
