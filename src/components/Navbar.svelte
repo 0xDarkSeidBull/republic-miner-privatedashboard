@@ -42,7 +42,7 @@
         : page === 'ecosystem' ? 'Ecosystem'
         : page === 'guides' ? 'Guides'
         : page === 'walletjobs' ? 'Wallet Jobs'
-        : '⚡ Submit Job'}
+        : '⚡ Hyperscale Jobs'}
       </button>
     {/each}
     <button class="nav-btn-submit" on:click={() => navigate('submit')}>+ Submit</button>
@@ -70,7 +70,7 @@
       ['fastgeo','⚡ Fast GPU'],['userdashboard','👤 Dashboard'],
       ['ecosystem','🌐 Ecosystem'],
       ['guides','📚 Guides'],
-      ['submitjob','⚡ Submit Job'],
+      ['submitjob','⚡ Hyperscale Jobs'],
       ['walletjobs','💼 Wallet Jobs'],
       ['submit','+ Submit Project']
     ] as [page, label]}
