@@ -10,6 +10,15 @@
   let pollInterval;
   let miners = [];
   let selectedMiner = null;
+  let models = [];
+  let selectedModel = 'nex-agi/deepseek-v3.1-nex-n1';
+  let modelsLoading = true;
+  let modelSearch = '';
+
+  $: filteredModels = models.filter(m =>
+    m.id.toLowerCase().includes(modelSearch.toLowerCase()) ||
+    m.name.toLowerCase().includes(modelSearch.toLowerCase())
+  );
 
   async function loadMiners() {
     try {
@@ -17,6 +26,15 @@
       const d = await r.json();
       miners = (d.data || []).filter(m => m.submit_job_result > 0);
     } catch(e) {}
+  }
+
+  async function loadModels() {
+    modelsLoading = true;
+    try {
+      const r = await fetch(`${API}/api/hyperscale/models`);
+      models = await r.json();
+    } catch(e) {}
+    modelsLoading = false;
   }
 
   async function submitJob() {
@@ -31,7 +49,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: prompt.trim(),
-          miner_address: selectedMiner?.address || ''
+          miner_address: selectedMiner?.address || '',
+          model: selectedModel
         })
       });
       const d = await r.json();
@@ -64,9 +83,12 @@
     prompt = '';
     loading = false;
     selectedMiner = null;
+    selectedModel = 'nex-agi/deepseek-v3.1-nex-n1';
   }
 
-  onMount(() => { loadMiners(); });
+  $: selectedModelInfo = models.find(m => m.id === selectedModel);
+
+  onMount(() => { loadMiners(); loadModels(); });
 </script>
 
 <div class="hero">
@@ -92,7 +114,7 @@
       <div>
         <div style="font-size:24px;margin-bottom:8px">🤖</div>
         <div style="font-size:13px;font-weight:600;margin-bottom:4px">2. AI Inference</div>
-        <div style="font-size:11px;color:var(--muted)">DeepSeek processes via Hyperscale SDK</div>
+        <div style="font-size:11px;color:var(--muted)">Model processes via Hyperscale SDK</div>
       </div>
       <div>
         <div style="font-size:24px;margin-bottom:8px">⛓️</div>
@@ -105,6 +127,51 @@
   <!-- INPUT -->
   {#if !result}
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px">
+
+      <!-- MODEL SELECT -->
+      <div style="margin-bottom:20px">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px">
+          SELECT MODEL <span style="color:var(--accent)">({models.length} available)</span>
+        </div>
+        {#if modelsLoading}
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Loading models...</div>
+        {:else}
+          <!-- Search -->
+          <input
+            bind:value={modelSearch}
+            placeholder="Search models... e.g. gpt, claude, llama"
+            style="width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px 8px 0 0;padding:8px 14px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"
+          />
+          <select
+            bind:value={selectedModel}
+            size="5"
+            style="width:100%;background:var(--bg1);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:4px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
+            {#each filteredModels as model}
+              <option value={model.id} style="background:#0D0D1A;color:#E8E8F0;padding:6px">
+                {model.name} — {model.id}
+              </option>
+            {/each}
+          </select>
+          {#if selectedModelInfo}
+            <div style="margin-top:8px;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;gap:16px;flex-wrap:wrap">
+              <div>
+                <span style="font-size:10px;color:var(--muted)">MODEL: </span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent)">{selectedModel}</span>
+              </div>
+              <div>
+                <span style="font-size:10px;color:var(--muted)">CONTEXT: </span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent3)">{selectedModelInfo.context_length?.toLocaleString() || '—'} tokens</span>
+              </div>
+              <div>
+                <span style="font-size:10px;color:var(--muted)">PRICE: </span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent3)">
+                  {selectedModelInfo.pricing?.prompt === '0' ? '🆓 Free' : `$${parseFloat(selectedModelInfo.pricing?.prompt || 0) * 1000000}/M tokens`}
+                </span>
+              </div>
+            </div>
+          {/if}
+        {/if}
+      </div>
 
       <!-- MINER SELECT -->
       <div style="margin-bottom:20px">
@@ -138,7 +205,7 @@
         bind:value={prompt}
         placeholder="Ask anything... e.g. What is Republic AI? How does GPU mining work?"
         disabled={loading}
-        style="width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--text);font-family:var(--font-mono);font-size:13px;resize:vertical;min-height:120px;outline:none;line-height:1.6"
+        style="width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--text);font-family:var(--font-mono);font-size:13px;resize:vertical;min-height:120px;outline:none;line-height:1.6;box-sizing:border-box"
       ></textarea>
 
       {#if error}
@@ -176,7 +243,6 @@
   <!-- RESULT -->
   {#if result}
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
-      <!-- Status bar -->
       <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:10px">
           <div style="width:8px;height:8px;border-radius:50%;background:{result.status === 'completed' ? '#4ADE80' : result.status === 'failed' ? '#EF4444' : 'var(--accent)'}"></div>
@@ -189,19 +255,16 @@
         </button>
       </div>
 
-      <!-- Prompt -->
       <div style="padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(255,107,0,0.03)">
         <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:6px;letter-spacing:1px">PROMPT</div>
         <div style="font-size:14px;color:var(--muted)">{result.prompt}</div>
       </div>
 
-      <!-- AI Response -->
       <div style="padding:20px">
         <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:10px;letter-spacing:1px">AI RESPONSE</div>
         <div style="font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap">{result.result?.content || result.error}</div>
       </div>
 
-      <!-- Chain Info -->
       {#if result.txhash}
         <div style="padding:16px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,0.2)">
           <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:8px;letter-spacing:1px">ON-CHAIN PROOF</div>
@@ -232,5 +295,4 @@
       {/if}
     </div>
   {/if}
-
 </div>
