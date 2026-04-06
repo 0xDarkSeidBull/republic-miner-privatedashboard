@@ -41,7 +41,7 @@
         : page === 'fastgeo' ? '⚡ Fast GPU' : page === 'userdashboard' ? '👤 Dashboard'
         : page === 'ecosystem' ? 'Ecosystem'
         : page === 'guides' ? 'Guides'
-        : page === 'walletjobs' ? 'Wallet Jobs'
+        : page === 'aiplayground' ? '🤖 Hyperscale Jobs' : page === 'walletjobs' ? 'Wallet Jobs'
         : '⚡ Submit Job'}
       </button>
     {/each}
