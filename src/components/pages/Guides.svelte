@@ -18,8 +18,8 @@
 
   <div class="guide-section-label">🔗 Official Resources</div>
   <div class="guide-links">
-    <a href="https://republic.ai" target="_blank" class="guide-link-btn official">🏛️ Republic AI</a>
-    <a href="https://docs.republic.ai" target="_blank" class="guide-link-btn official">📖 Docs</a>
+    <a href="https://republicai.io/" target="_blank" class="guide-link-btn official">🏛️ RepublicAI</a>
+    <a href="https://docs.republicai.io/docs/introduction" target="_blank" class="guide-link-btn official">📖 Docs</a>
     <a href="https://discord.gg/republicai" target="_blank" class="guide-link-btn discord">💬 Discord</a>
     <a href="https://github.com/0xDarkSeidBull/republic-miner-scripts" target="_blank" class="guide-link-btn community">🐙 GitHub</a>
   </div>
