@@ -3,164 +3,23 @@
   import { API, fmt, shortAddr } from '../../stores/app.js';
   import { marked } from 'marked';
 
-  // ── STATE ──
   let prompt = '';
   let loading = false;
   let result = null;
   let error = '';
   let trackingId = null;
   let pollInterval;
-
-  // ── MINERS ──
   let miners = [];
   let selectedMiner = null;
-
-  // ── MODELS ──
   let models = [];
   let selectedModel = 'nex-agi/deepseek-v3.1-nex-n1';
   let modelsLoading = true;
   let modelSearch = '';
+
   $: filteredModels = models.filter(m =>
     m.id.toLowerCase().includes(modelSearch.toLowerCase()) ||
     m.name.toLowerCase().includes(modelSearch.toLowerCase())
   );
-  $: selectedModelInfo = models.find(m => m.id === selectedModel);
-
-  // ── KEPLR / PAYMENT ──
-  let keplrConnected = false;
-  let userAddress = '';
-  let keplrError = '';
-  let paymentStep = 'idle'; // idle | connecting | paying | verifying | ready
-  let paymentTxHash = '';
-  let paymentError = '';
-
-  const TREASURY = 'rai1alt2884lvwzlzg6l03eaplry7a0ytx0wf3k889';
-  const RAI_FEE = 10;
-  const ARAI_FEE = (BigInt(RAI_FEE) * BigInt(10 ** 18)).toString();
-
-  const REPUBLIC_CHAIN = {
-    chainId: 'raitestnet_77701-1',
-    chainName: 'Republic AI Testnet',
-    rpc: 'https://rpc-test.republic.vinjan-inc.com',
-    rest: 'https://api-test.republic.vinjan-inc.com',
-    bip44: { coinType: 60 },
-    bech32Config: {
-      bech32PrefixAccAddr: 'rai1',
-      bech32PrefixAccPub: 'rai1pub',
-      bech32PrefixValAddr: 'raivaloper1',
-      bech32PrefixValPub: 'raivaloper1pub',
-      bech32PrefixConsAddr: 'raivalcons1',
-      bech32PrefixConsPub: 'raivalcons1pub',
-    },
-    currencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 }],
-    feeCurrencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18, gasPriceStep: { low: 0.01, average: 0.025, high: 0.04 } }],
-    stakeCurrency: { coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 },
-  };
-
-  async function connectKeplr() {
-    paymentStep = 'connecting';
-    keplrError = '';
-    try {
-      if (!window.keplr) throw new Error('Keplr not installed! Install from keplr.app');
-      await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN);
-      await window.keplr.enable(REPUBLIC_CHAIN.chainId);
-      const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
-      const accounts = await offlineSigner.getAccounts();
-      userAddress = accounts[0].address;
-      keplrConnected = true;
-      paymentStep = 'idle';
-    } catch(e) {
-      keplrError = e.message;
-      paymentStep = 'idle';
-    }
-  }
-
-  async function payAndInfer() {
-    if (!keplrConnected) { await connectKeplr(); return; }
-    if (!prompt.trim()) return;
-    paymentStep = 'paying';
-    paymentError = '';
-    loading = true;
-    try {
-      await window.keplr.enable(REPUBLIC_CHAIN.chainId);
-
-      // Get account info from backend
-      const accRes = await fetch(`${API}/api/hyperscale/account/${userAddress}`);
-      const accData = await accRes.json();
-      const accountNumber = String(accData.account_number || '0');
-      const sequence = String(accData.sequence || '0');
-
-      // Sign amino
-      const signDoc = {
-        chain_id: REPUBLIC_CHAIN.chainId,
-        account_number: accountNumber,
-        sequence: sequence,
-        fee: {
-          amount: [{ denom: 'arai', amount: '200000000000000' }],
-          gas: '200000'
-        },
-        msgs: [{
-          type: 'cosmos-sdk/MsgSend',
-          value: {
-            from_address: userAddress,
-            to_address: TREASURY,
-            amount: [{ denom: 'arai', amount: ARAI_FEE }]
-          }
-        }],
-        memo: 'Hyperscale inference fee'
-      };
-
-      const signed = await window.keplr.signAmino(
-        REPUBLIC_CHAIN.chainId,
-        userAddress,
-        signDoc
-      );
-
-      // sendTx directly via Keplr
-      const { cosmos } = await import('https://esm.sh/@keplr-wallet/cosmos@0.12.80');
-      
-      // Encode to protobuf bytes
-      const pubKeyAny = {
-        typeUrl: '/ethermint.crypto.v1.ethsecp256k1.PubKey',
-        value: signed.signature.pub_key.value
-      };
-
-      // Send via backend with amino format
-      const broadcastRes = await fetch(`${API}/api/hyperscale/broadcast-amino`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          signed: signed.signed,
-          signature: signed.signature.signature,
-          pub_key_value: signed.signature.pub_key.value,
-          pub_key_type: signed.signature.pub_key.type,
-          user_address: userAddress
-        })
-      });
-      const broadcastData = await broadcastRes.json();
-      if (!broadcastData.success) throw new Error(broadcastData.error);
-
-      paymentTxHash = broadcastData.txhash;
-      paymentStep = 'verifying';
-      await new Promise(r => setTimeout(r, 5000));
-
-      const vr = await fetch(`${API}/api/hyperscale/verify-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ txhash: paymentTxHash, user_address: userAddress })
-      });
-      const vd = await vr.json();
-      if (!vd.success) throw new Error(vd.error || 'Verification failed');
-
-      paymentStep = 'ready';
-      await submitJob();
-
-    } catch(e) {
-      paymentError = e.message;
-      paymentStep = 'idle';
-      loading = false;
-    }
-  }
 
   async function loadMiners() {
     try {
@@ -184,6 +43,7 @@
     loading = true;
     error = '';
     result = null;
+
     try {
       const r = await fetch(`${API}/api/hyperscale/submit`, {
         method: 'POST',
@@ -201,7 +61,6 @@
     } catch(e) {
       error = e.message;
       loading = false;
-      paymentStep = 'idle';
     }
   }
 
@@ -214,17 +73,21 @@
         clearInterval(pollInterval);
         result = d;
         loading = false;
-        paymentStep = 'idle';
       }
     } catch(e) {}
   }
 
   function reset() {
-    result = null; error = ''; trackingId = null;
-    prompt = ''; loading = false; selectedMiner = null;
+    result = null;
+    error = '';
+    trackingId = null;
+    prompt = '';
+    loading = false;
+    selectedMiner = null;
     selectedModel = 'nex-agi/deepseek-v3.1-nex-n1';
-    paymentStep = 'idle'; paymentTxHash = ''; paymentError = '';
   }
+
+  $: selectedModelInfo = models.find(m => m.id === selectedModel);
 
   onMount(() => { loadMiners(); loadModels(); });
 </script>
@@ -244,35 +107,25 @@
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:28px">
     <div style="font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:12px">HOW IT WORKS</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center">
-      <div><div style="font-size:24px;margin-bottom:8px">🔗</div><div style="font-size:13px;font-weight:600;margin-bottom:4px">1. Connect Keplr</div><div style="font-size:11px;color:var(--muted)">Connect your Republic AI wallet</div></div>
-      <div><div style="font-size:24px;margin-bottom:8px">💸</div><div style="font-size:13px;font-weight:600;margin-bottom:4px">2. Pay 10 RAI</div><div style="font-size:11px;color:var(--muted)">Sign payment on Republic chain</div></div>
-      <div><div style="font-size:24px;margin-bottom:8px">⛓️</div><div style="font-size:13px;font-weight:600;margin-bottom:4px">3. Get Response</div><div style="font-size:11px;color:var(--muted)">AI inference recorded on-chain</div></div>
-    </div>
-  </div>
-
-  <!-- KEPLR CONNECT -->
-  <div style="background:var(--bg2);border:1px solid {keplrConnected ? 'rgba(74,222,128,.3)' : 'var(--border)'};border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-    <div>
-      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">WALLET</div>
-      {#if keplrConnected}
-        <div style="font-family:var(--font-mono);font-size:12px;color:#4ADE80">✅ {userAddress.slice(0,16)}...{userAddress.slice(-6)}</div>
-      {:else}
-        <div style="font-size:13px;color:var(--muted)">Connect Keplr to pay with RAI</div>
-      {/if}
-      {#if keplrError}<div style="font-size:11px;color:#EF4444;margin-top:4px">{keplrError}</div>{/if}
-    </div>
-    {#if !keplrConnected}
-      <button on:click={connectKeplr}
-        style="background:var(--accent);color:#000;border:none;padding:10px 20px;font-family:var(--font-mono);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;letter-spacing:1px">
-        {paymentStep === 'connecting' ? '⏳ Connecting...' : '🔗 Connect Keplr'}
-      </button>
-    {:else}
-      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">
-        Fee: <span style="color:var(--accent);font-weight:700">{RAI_FEE} RAI</span> per inference
+      <div>
+        <div style="font-size:24px;margin-bottom:8px">⚡</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">1. Submit Prompt</div>
+        <div style="font-size:11px;color:var(--muted)">Your query sent to Hyperscale SDK</div>
       </div>
-    {/if}
+      <div>
+        <div style="font-size:24px;margin-bottom:8px">🤖</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">2. AI Inference</div>
+        <div style="font-size:11px;color:var(--muted)">Model processes via Hyperscale SDK</div>
+      </div>
+      <div>
+        <div style="font-size:24px;margin-bottom:8px">⛓️</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">3. On-Chain Record</div>
+        <div style="font-size:11px;color:var(--muted)">Result submitted to Republic chain</div>
+      </div>
+    </div>
   </div>
 
+  <!-- INPUT -->
   {#if !result}
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px">
 
@@ -284,10 +137,14 @@
         {#if modelsLoading}
           <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Loading models...</div>
         {:else}
-          <input bind:value={modelSearch}
-            placeholder="Search models... e.g. gpt, claude, llama, deepseek"
-            style="width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px 8px 0 0;padding:8px 14px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"/>
-          <select bind:value={selectedModel} size="5"
+          <input
+            bind:value={modelSearch}
+            placeholder="Search models... e.g. gpt, claude, llama"
+            style="width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px 8px 0 0;padding:8px 14px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;box-sizing:border-box"
+          />
+          <select
+            bind:value={selectedModel}
+            size="5"
             style="width:100%;background:var(--bg1);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:4px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
             {#each filteredModels as model}
               <option value={model.id} style="background:#0D0D1A;color:#E8E8F0;padding:6px">
@@ -297,9 +154,20 @@
           </select>
           {#if selectedModelInfo}
             <div style="margin-top:8px;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;gap:16px;flex-wrap:wrap">
-              <div><span style="font-size:10px;color:var(--muted)">MODEL: </span><span style="font-family:var(--font-mono);font-size:10px;color:var(--accent)">{selectedModel}</span></div>
-              <div><span style="font-size:10px;color:var(--muted)">CONTEXT: </span><span style="font-family:var(--font-mono);font-size:10px;color:var(--accent3)">{selectedModelInfo.context_length?.toLocaleString() || '—'} tokens</span></div>
-              <div><span style="font-size:10px;color:var(--muted)">PRICE: </span><span style="font-family:var(--font-mono);font-size:10px;color:var(--accent3)">{selectedModelInfo.pricing?.prompt === '0' ? '🆓 Free' : `$${parseFloat(selectedModelInfo.pricing?.prompt || 0) * 1000000}/M tokens`}</span></div>
+              <div>
+                <span style="font-size:10px;color:var(--muted)">MODEL: </span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent)">{selectedModel}</span>
+              </div>
+              <div>
+                <span style="font-size:10px;color:var(--muted)">CONTEXT: </span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent3)">{selectedModelInfo.context_length?.toLocaleString() || '—'} tokens</span>
+              </div>
+              <div>
+                <span style="font-size:10px;color:var(--muted)">PRICE: </span>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent3)">
+                  {selectedModelInfo.pricing?.prompt === '0' ? '🆓 Free' : `$${parseFloat(selectedModelInfo.pricing?.prompt || 0) * 1000000}/M tokens`}
+                </span>
+              </div>
             </div>
           {/if}
         {/if}
@@ -311,16 +179,20 @@
         {#if miners.length === 0}
           <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Loading miners...</div>
         {:else}
-          <select bind:value={selectedMiner}
+          <select
+            bind:value={selectedMiner}
             style="width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;cursor:pointer">
             <option value={null} style="background:#0D0D1A;color:#E8E8F0">— Auto (any available miner)</option>
             {#each miners as miner}
-              <option value={miner} style="background:#0D0D1A;color:#E8E8F0">{miner.moniker || shortAddr(miner.address)} · {fmt(miner.submit_job_result)} results</option>
+              <option value={miner} style="background:#0D0D1A;color:#E8E8F0">
+                {miner.moniker || shortAddr(miner.address)} · {fmt(miner.submit_job_result)} results
+              </option>
             {/each}
           </select>
           {#if selectedMiner}
             <div style="margin-top:8px;font-family:var(--font-mono);font-size:10px;color:var(--muted)">
               Selected: <span style="color:var(--accent)">{selectedMiner.moniker || shortAddr(selectedMiner.address)}</span>
+              &nbsp;·&nbsp; {fmt(selectedMiner.submit_job_result)} results
               &nbsp;·&nbsp; Uptime: {selectedMiner.uptime ? selectedMiner.uptime + '%' : '—'}
             </div>
           {/if}
@@ -329,18 +201,20 @@
 
       <!-- PROMPT -->
       <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px">ENTER YOUR PROMPT</div>
-      <textarea bind:value={prompt}
+      <textarea
+        bind:value={prompt}
         placeholder="Ask anything... e.g. What is Republic AI? How does GPU mining work?"
         disabled={loading}
         style="width:100%;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--text);font-family:var(--font-mono);font-size:13px;resize:vertical;min-height:120px;outline:none;line-height:1.6;box-sizing:border-box"
       ></textarea>
 
-      {#if error}<div class="error-msg" style="margin-top:12px">{error}</div>{/if}
-      {#if paymentError}<div class="error-msg" style="margin-top:12px">💸 {paymentError}</div>{/if}
+      {#if error}
+        <div class="error-msg" style="margin-top:12px">{error}</div>
+      {/if}
 
       {#if loading}
         <div style="margin-top:20px;text-align:center">
-          <div style="background:#0A0A12;border:1px solid #1E1E2A;color:#4ADE80;font-family:'Courier New',monospace;font-size:12px;padding:32px 16px 16px;border-radius:4px;position:relative;display:inline-block;min-width:260px">
+          <div style="background:#0A0A12;border:1px solid #1E1E2A;color:#4ADE80;font-family:'Courier New',monospace;font-size:12px;padding:32px 16px 16px;border-radius:4px;position:relative;display:inline-block;min-width:220px">
             <div style="position:absolute;top:0;left:0;right:0;height:24px;background:#141420;border-radius:4px 4px 0 0;display:flex;align-items:center;padding:0 8px">
               <span style="font-size:9px;color:#666;letter-spacing:1px">hyperscale_sdk</span>
               <div style="margin-left:auto;display:flex;gap:4px">
@@ -349,27 +223,19 @@
                 <div style="width:8px;height:8px;border-radius:50%;background:#53E3A6"></div>
               </div>
             </div>
-            <div style="font-size:12px">
-              {paymentStep === 'paying' ? '💸 Sending 10 RAI...' 
-              : paymentStep === 'verifying' ? '🔍 Verifying payment...'
-              : 'Processing inference...'}
-            </div>
+            <div style="font-size:12px">Processing inference...</div>
           </div>
           <div style="font-size:12px;color:var(--muted);margin-top:12px">
-            {paymentStep === 'paying' ? 'Sign transaction in Keplr...'
-            : paymentStep === 'verifying' ? 'Confirming on-chain payment...'
-            : selectedMiner ? `Sending to ${selectedMiner.moniker || shortAddr(selectedMiner.address)}...` : 'Submitting to Republic chain (~30s)'}
+            {selectedMiner ? `Sending to ${selectedMiner.moniker || shortAddr(selectedMiner.address)}...` : 'Submitting to Republic chain after inference (~30s)'}
           </div>
         </div>
       {:else}
-        <button on:click={payAndInfer}
+        <button
+          on:click={submitJob}
           disabled={!prompt.trim()}
-          style="margin-top:16px;background:var(--accent);color:#000;border:none;padding:13px 36px;font-family:var(--font-display);font-size:18px;letter-spacing:1px;border-radius:8px;cursor:pointer;opacity:{prompt.trim() ? 1 : 0.5};width:100%">
-          {keplrConnected ? `⚡ PAY ${RAI_FEE} RAI & SUBMIT` : '🔗 Connect Keplr & Submit'}
+          style="margin-top:16px;background:var(--accent);color:#000;border:none;padding:13px 36px;font-family:var(--font-display);font-size:20px;letter-spacing:1px;border-radius:8px;cursor:pointer;opacity:{prompt.trim() ? 1 : 0.5}">
+          ⚡ SUBMIT JOB
         </button>
-        <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">
-          {RAI_FEE} RAI will be sent to treasury · Inference recorded on-chain
-        </div>
       {/if}
     </div>
   {/if}
@@ -384,7 +250,9 @@
             {result.status === 'completed' ? '✅ Completed & On-Chain' : result.status === 'inferred_only' ? '⚡ Inferred (Chain pending)' : '❌ Failed'}
           </span>
         </div>
-        <button on:click={reset} style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer;border-radius:4px">↩ New Job</button>
+        <button on:click={reset} style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer;border-radius:4px">
+          ↩ New Job
+        </button>
       </div>
 
       <div style="padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(255,107,0,0.03)">
@@ -394,7 +262,9 @@
 
       <div style="padding:20px">
         <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:10px;letter-spacing:1px">AI RESPONSE</div>
-        <div class="markdown-body">{@html marked(result.result?.content || result.error || '')}</div>
+        <div class="markdown-body">
+          {@html marked(result.result?.content || result.error || '')}
+        </div>
       </div>
 
       {#if result.txhash}
@@ -414,12 +284,14 @@
               <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">{result.result?.cost?.toFixed(6)} RAI</div>
             </div>
           </div>
-          <div style="margin-top:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-            <a href={result.explorer} target="_blank" rel="noopener" style="color:var(--blue);font-family:var(--font-mono);font-size:11px">View on Explorer ↗</a>
-            {#if paymentTxHash}
-              <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{paymentTxHash}" target="_blank" rel="noopener" style="color:var(--accent3);font-family:var(--font-mono);font-size:11px">Payment TX ↗</a>
-            {/if}
-            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">Verified by: Hyperscale SDK + Republic AI Chain</span>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:16px">
+            <a href={result.explorer} target="_blank" rel="noopener"
+              style="color:var(--blue);font-family:var(--font-mono);font-size:11px">
+              View on Explorer ↗
+            </a>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">
+              Verified by: {result.result?.verified_by || 'Hyperscale SDK + Republic AI Chain'}
+            </span>
           </div>
         </div>
       {/if}
@@ -428,19 +300,86 @@
 </div>
 
 <style>
-  .markdown-body { font-size:14px; line-height:1.8; color:var(--text); }
-  .markdown-body :global(h1),.markdown-body :global(h2),.markdown-body :global(h3) { color:var(--accent);font-family:var(--font-display);letter-spacing:1px;margin:20px 0 10px; }
-  .markdown-body :global(h1){font-size:24px} .markdown-body :global(h2){font-size:20px} .markdown-body :global(h3){font-size:17px}
-  .markdown-body :global(p){margin-bottom:12px;color:var(--text)}
-  .markdown-body :global(ul),.markdown-body :global(ol){padding-left:20px;margin-bottom:12px}
-  .markdown-body :global(li){margin-bottom:6px;color:var(--text)}
-  .markdown-body :global(code){background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.2);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:12px;color:var(--accent)}
-  .markdown-body :global(pre){background:var(--bg1);border:1px solid var(--border);padding:16px;border-radius:8px;overflow-x:auto;margin-bottom:16px}
-  .markdown-body :global(pre code){background:none;border:none;padding:0;color:var(--text);font-size:13px}
-  .markdown-body :global(strong){color:var(--text);font-weight:700}
-  .markdown-body :global(blockquote){border-left:3px solid var(--accent);padding-left:16px;margin:12px 0;color:var(--muted);font-style:italic}
-  .markdown-body :global(table){width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px}
-  .markdown-body :global(th){background:rgba(255,107,0,0.1);border:1px solid var(--border);padding:8px 12px;color:var(--accent);font-family:var(--font-mono);font-size:11px}
-  .markdown-body :global(td){border:1px solid var(--border);padding:8px 12px;color:var(--text)}
-  .markdown-body :global(a){color:var(--blue);text-decoration:none}
+  .markdown-body {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .markdown-body :global(h1),
+  .markdown-body :global(h2),
+  .markdown-body :global(h3),
+  .markdown-body :global(h4) {
+    color: var(--accent);
+    font-family: var(--font-display);
+    letter-spacing: 1px;
+    margin: 20px 0 10px;
+    line-height: 1.2;
+  }
+  .markdown-body :global(h1) { font-size: 24px; }
+  .markdown-body :global(h2) { font-size: 20px; }
+  .markdown-body :global(h3) { font-size: 17px; }
+  .markdown-body :global(p) { margin-bottom: 12px; color: var(--text); }
+  .markdown-body :global(ul),
+  .markdown-body :global(ol) { padding-left: 20px; margin-bottom: 12px; }
+  .markdown-body :global(li) { margin-bottom: 6px; color: var(--text); }
+  .markdown-body :global(code) {
+    background: rgba(255, 107, 0, 0.1);
+    border: 1px solid rgba(255, 107, 0, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .markdown-body :global(pre) {
+    background: var(--bg1);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+  .markdown-body :global(pre code) {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--text);
+    font-size: 13px;
+  }
+  .markdown-body :global(strong) { color: var(--text); font-weight: 700; }
+  .markdown-body :global(em) { color: var(--muted); font-style: italic; }
+  .markdown-body :global(hr) { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .markdown-body :global(a) { color: var(--blue); text-decoration: none; }
+  .markdown-body :global(a:hover) { text-decoration: underline; }
+  .markdown-body :global(blockquote) {
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+    margin: 12px 0;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .markdown-body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .markdown-body :global(th) {
+    background: rgba(255, 107, 0, 0.1);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .markdown-body :global(td) {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    color: var(--text);
+  }
+  .markdown-body :global(tr:hover td) {
+    background: rgba(255, 107, 0, 0.03);
+  }
 </style>
