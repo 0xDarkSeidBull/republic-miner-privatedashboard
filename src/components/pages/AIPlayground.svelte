@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { API, fmt, shortAddr } from '../../stores/app.js';
+  import { marked } from 'marked';
 
   let prompt = '';
   let loading = false;
@@ -136,7 +137,6 @@
         {#if modelsLoading}
           <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Loading models...</div>
         {:else}
-          <!-- Search -->
           <input
             bind:value={modelSearch}
             placeholder="Search models... e.g. gpt, claude, llama"
@@ -262,7 +262,9 @@
 
       <div style="padding:20px">
         <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:10px;letter-spacing:1px">AI RESPONSE</div>
-        <div style="font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap">{result.result?.content || result.error}</div>
+        <div class="markdown-body">
+          {@html marked(result.result?.content || result.error || '')}
+        </div>
       </div>
 
       {#if result.txhash}
@@ -296,3 +298,88 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .markdown-body {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .markdown-body :global(h1),
+  .markdown-body :global(h2),
+  .markdown-body :global(h3),
+  .markdown-body :global(h4) {
+    color: var(--accent);
+    font-family: var(--font-display);
+    letter-spacing: 1px;
+    margin: 20px 0 10px;
+    line-height: 1.2;
+  }
+  .markdown-body :global(h1) { font-size: 24px; }
+  .markdown-body :global(h2) { font-size: 20px; }
+  .markdown-body :global(h3) { font-size: 17px; }
+  .markdown-body :global(p) { margin-bottom: 12px; color: var(--text); }
+  .markdown-body :global(ul),
+  .markdown-body :global(ol) { padding-left: 20px; margin-bottom: 12px; }
+  .markdown-body :global(li) { margin-bottom: 6px; color: var(--text); }
+  .markdown-body :global(code) {
+    background: rgba(255, 107, 0, 0.1);
+    border: 1px solid rgba(255, 107, 0, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .markdown-body :global(pre) {
+    background: var(--bg1);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+  .markdown-body :global(pre code) {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--text);
+    font-size: 13px;
+  }
+  .markdown-body :global(strong) { color: var(--text); font-weight: 700; }
+  .markdown-body :global(em) { color: var(--muted); font-style: italic; }
+  .markdown-body :global(hr) { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .markdown-body :global(a) { color: var(--blue); text-decoration: none; }
+  .markdown-body :global(a:hover) { text-decoration: underline; }
+  .markdown-body :global(blockquote) {
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+    margin: 12px 0;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .markdown-body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .markdown-body :global(th) {
+    background: rgba(255, 107, 0, 0.1);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .markdown-body :global(td) {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    color: var(--text);
+  }
+  .markdown-body :global(tr:hover td) {
+    background: rgba(255, 107, 0, 0.03);
+  }
+</style>
