@@ -82,7 +82,7 @@
     try {
       // Send 10 RAI to treasury
       const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
-      const { SigningStargateClient } = await import('https://esm.sh/@cosmjs/stargate@0.32.3');
+      const { SigningStargateClient } = await import('@cosmjs/stargate');
       const client = await SigningStargateClient.connectWithSigner(
         REPUBLIC_CHAIN.rpc, offlineSigner
       );
