@@ -21,7 +21,7 @@
     <a href="https://republic.ai" target="_blank" class="guide-link-btn official">🏛️ Republic AI</a>
     <a href="https://docs.republic.ai" target="_blank" class="guide-link-btn official">📖 Docs</a>
     <a href="https://discord.gg/republicai" target="_blank" class="guide-link-btn discord">💬 Discord</a>
-    <a href="https://github.com/0xDarkSeidBull/republic-miner-dashboard" target="_blank" class="guide-link-btn community">🐙 GitHub</a>
+    <a href="https://github.com/0xDarkSeidBull/republic-miner-scripts" target="_blank" class="guide-link-btn community">🐙 GitHub</a>
   </div>
 
   <div class="guide-tabs">
