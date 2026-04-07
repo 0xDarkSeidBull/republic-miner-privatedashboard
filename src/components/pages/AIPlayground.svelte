@@ -77,42 +77,110 @@
 
   async function payAndInfer() {
     if (!keplrConnected) { await connectKeplr(); return; }
+    if (!prompt.trim()) return;
     paymentStep = 'paying';
     paymentError = '';
+    loading = true;
     try {
-      // Send 10 RAI to treasury
-      const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
-      const { SigningStargateClient } = await import('@cosmjs/stargate');
-      const client = await SigningStargateClient.connectWithSigner(
-        REPUBLIC_CHAIN.rpc, offlineSigner
-      );
-      const tx = await client.sendTokens(
-        userAddress,
-        TREASURY,
-        [{ denom: 'arai', amount: ARAI_FEE }],
-        { amount: [{ denom: 'arai', amount: '200000000000000' }], gas: '200000' },
-        `Hyperscale inference fee - ${selectedModel}`
-      );
-      if (tx.code !== 0) throw new Error(`TX failed: ${tx.rawLog}`);
-      paymentTxHash = tx.transactionHash;
-      paymentStep = 'verifying';
+      await window.keplr.enable(REPUBLIC_CHAIN.chainId);
+      
+      // Get account info from REST
+      const accRes = await fetch(`${REPUBLIC_CHAIN.rest}/cosmos/auth/v1beta1/accounts/${userAddress}`);
+      const accData = await accRes.json();
+      const accountNumber = accData.account?.base_account?.account_number || accData.account?.account_number || '0';
+      const sequence = accData.account?.base_account?.sequence || accData.account?.sequence || '0';
 
-      // Verify payment on backend
+      // Build Amino TX
+      const aminoMsg = {
+        type: 'cosmos-sdk/MsgSend',
+        value: {
+          from_address: userAddress,
+          to_address: TREASURY,
+          amount: [{ denom: 'arai', amount: ARAI_FEE }]
+        }
+      };
+
+      const fee = {
+        amount: [{ denom: 'arai', amount: '200000000000000' }],
+        gas: '200000'
+      };
+
+      const signDoc = {
+        chain_id: REPUBLIC_CHAIN.chainId,
+        account_number: String(accountNumber),
+        sequence: String(sequence),
+        fee,
+        msgs: [aminoMsg],
+        memo: 'Hyperscale inference fee'
+      };
+
+      const signed = await window.keplr.signAmino(
+        REPUBLIC_CHAIN.chainId,
+        userAddress,
+        signDoc
+      );
+
+      // Broadcast via REST
+      const broadcastRes = await fetch(`${REPUBLIC_CHAIN.rest}/cosmos/tx/v1beta1/txs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tx_bytes: btoa(JSON.stringify(signed.signed)),
+          mode: 'BROADCAST_MODE_SYNC'
+        })
+      });
+      const broadcastData = await broadcastRes.json();
+      
+      // Try direct RPC broadcast
+      const txRes = await fetch(`${REPUBLIC_CHAIN.rest}/cosmos/tx/v1beta1/txs`, {
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tx: {
+            body: {
+              messages: [{ '@type': '/cosmos.bank.v1beta1.MsgSend', from_address: userAddress, to_address: TREASURY, amount: [{ denom: 'arai', amount: ARAI_FEE }] }],
+              memo: 'Hyperscale inference fee',
+              timeout_height: '0',
+              extension_options: [],
+              non_critical_extension_options: []
+            },
+            auth_info: {
+              signer_infos: [],
+              fee: { amount: [{ denom: 'arai', amount: '200000000000000' }], gas_limit: '200000' }
+            },
+            signatures: []
+          },
+          mode: 'BROADCAST_MODE_SYNC'
+        })
+      });
+
+      const txhash = broadcastData?.tx_response?.txhash || '';
+      const code = broadcastData?.tx_response?.code || 1;
+      
+      if (!txhash) throw new Error('TX broadcast failed');
+      if (code !== 0) throw new Error(`TX failed code ${code}: ${broadcastData?.tx_response?.raw_log}`);
+      
+      paymentTxHash = txhash;
+      paymentStep = 'verifying';
+      
+      // Wait for TX
+      await new Promise(r => setTimeout(r, 5000));
+
       const vr = await fetch(`${API}/api/hyperscale/verify-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ txhash: paymentTxHash, user_address: userAddress })
       });
       const vd = await vr.json();
-      if (!vd.success) throw new Error(vd.error || 'Payment verification failed');
+      if (!vd.success) throw new Error(vd.error || 'Verification failed');
 
       paymentStep = 'ready';
-      // Now submit inference
       await submitJob();
 
     } catch(e) {
       paymentError = e.message;
       paymentStep = 'idle';
+      loading = false;
     }
   }
 
