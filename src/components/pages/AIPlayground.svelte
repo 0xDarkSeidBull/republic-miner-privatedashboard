@@ -77,42 +77,60 @@
 
   async function payAndInfer() {
     if (!keplrConnected) { await connectKeplr(); return; }
+    if (!prompt.trim()) return;
     paymentStep = 'paying';
     paymentError = '';
+    loading = true;
     try {
-      // Send 10 RAI to treasury
-      const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
-      const { SigningStargateClient } = await import('@cosmjs/stargate');
+      // Keplr directly use karo — cosmjs mat use karo
+      const chainId = REPUBLIC_CHAIN.chainId;
+      await window.keplr.enable(chainId);
+      
+      const offlineSigner = window.keplr.getOfflineSignerAuto(chainId);
+      const accounts = await offlineSigner.getAccounts();
+      userAddress = accounts[0].address;
+
+      // Amino sign use karo EVM chains ke liye
+      const { coins } = await import('@cosmjs/amino');
+      const { SigningStargateClient, defaultRegistryTypes } = await import('@cosmjs/stargate');
+      const { Registry } = await import('@cosmjs/proto-signing');
+
+      const registry = new Registry(defaultRegistryTypes);
+      
       const client = await SigningStargateClient.connectWithSigner(
-        REPUBLIC_CHAIN.rpc, offlineSigner
+        REPUBLIC_CHAIN.rpc,
+        offlineSigner,
+        { registry }
       );
+
       const tx = await client.sendTokens(
         userAddress,
         TREASURY,
         [{ denom: 'arai', amount: ARAI_FEE }],
         { amount: [{ denom: 'arai', amount: '200000000000000' }], gas: '200000' },
-        `Hyperscale inference fee - ${selectedModel}`
+        `Hyperscale inference fee`
       );
+
       if (tx.code !== 0) throw new Error(`TX failed: ${tx.rawLog}`);
       paymentTxHash = tx.transactionHash;
       paymentStep = 'verifying';
 
-      // Verify payment on backend
+      // Verify
       const vr = await fetch(`${API}/api/hyperscale/verify-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ txhash: paymentTxHash, user_address: userAddress })
       });
       const vd = await vr.json();
-      if (!vd.success) throw new Error(vd.error || 'Payment verification failed');
+      if (!vd.success) throw new Error(vd.error || 'Verification failed');
 
       paymentStep = 'ready';
-      // Now submit inference
       await submitJob();
 
     } catch(e) {
       paymentError = e.message;
       paymentStep = 'idle';
+      loading = false;
     }
   }
 
