@@ -81,7 +81,7 @@
     paymentError = '';
     try {
       // Send 10 RAI to treasury
-      const offlineSigner = window.keplr.getOfflineSigner(chainId);
+      const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
       const { SigningStargateClient } = await import('@cosmjs/stargate');
       const client = await SigningStargateClient.connectWithSigner(
         REPUBLIC_CHAIN.rpc, offlineSigner
