@@ -83,12 +83,12 @@
     loading = true;
     try {
       await window.keplr.enable(REPUBLIC_CHAIN.chainId);
-      
-      // Get account info from REST
-      const accRes = await fetch(`${REPUBLIC_CHAIN.rest}/cosmos/auth/v1beta1/accounts/${userAddress}`);
+
+      // Get account info
+      const accRes = await fetch(`${API}/api/hyperscale/account/${userAddress}`);
       const accData = await accRes.json();
-      const accountNumber = accData.account?.base_account?.account_number || accData.account?.account_number || '0';
-      const sequence = accData.account?.base_account?.sequence || accData.account?.sequence || '0';
+      const accountNumber = String(accData.account_number || '0');
+      const sequence = String(accData.sequence || '0');
 
       // Build Amino TX
       const aminoMsg = {
@@ -107,65 +107,39 @@
 
       const signDoc = {
         chain_id: REPUBLIC_CHAIN.chainId,
-        account_number: String(accountNumber),
-        sequence: String(sequence),
+        account_number: accountNumber,
+        sequence: sequence,
         fee,
         msgs: [aminoMsg],
         memo: 'Hyperscale inference fee'
       };
 
+      // Keplr sign
       const signed = await window.keplr.signAmino(
         REPUBLIC_CHAIN.chainId,
         userAddress,
         signDoc
       );
 
-      // Broadcast via REST
-      const broadcastRes = await fetch(`${REPUBLIC_CHAIN.rest}/cosmos/tx/v1beta1/txs`, {
+      // Backend se broadcast
+      const broadcastRes = await fetch(`${API}/api/hyperscale/broadcast-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tx_bytes: btoa(JSON.stringify(signed.signed)),
-          mode: 'BROADCAST_MODE_SYNC'
+          signed_tx: signed,
+          user_address: userAddress
         })
       });
       const broadcastData = await broadcastRes.json();
-      
-      // Try direct RPC broadcast
-      const txRes = await fetch(`${REPUBLIC_CHAIN.rest}/cosmos/tx/v1beta1/txs`, {
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tx: {
-            body: {
-              messages: [{ '@type': '/cosmos.bank.v1beta1.MsgSend', from_address: userAddress, to_address: TREASURY, amount: [{ denom: 'arai', amount: ARAI_FEE }] }],
-              memo: 'Hyperscale inference fee',
-              timeout_height: '0',
-              extension_options: [],
-              non_critical_extension_options: []
-            },
-            auth_info: {
-              signer_infos: [],
-              fee: { amount: [{ denom: 'arai', amount: '200000000000000' }], gas_limit: '200000' }
-            },
-            signatures: []
-          },
-          mode: 'BROADCAST_MODE_SYNC'
-        })
-      });
+      if (!broadcastData.success) throw new Error(broadcastData.error);
 
-      const txhash = broadcastData?.tx_response?.txhash || '';
-      const code = broadcastData?.tx_response?.code || 1;
-      
-      if (!txhash) throw new Error('TX broadcast failed');
-      if (code !== 0) throw new Error(`TX failed code ${code}: ${broadcastData?.tx_response?.raw_log}`);
-      
-      paymentTxHash = txhash;
+      paymentTxHash = broadcastData.txhash;
       paymentStep = 'verifying';
-      
-      // Wait for TX
+
+      // Wait for chain confirm
       await new Promise(r => setTimeout(r, 5000));
 
+      // Verify payment
       const vr = await fetch(`${API}/api/hyperscale/verify-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
