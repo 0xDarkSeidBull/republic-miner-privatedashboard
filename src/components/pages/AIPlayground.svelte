@@ -2,7 +2,6 @@
   import { onMount, onDestroy } from 'svelte';
   import { API, fmt, shortAddr } from '../../stores/app.js';
   import { marked } from 'marked';
-  import { SigningStargateClient } from '@cosmjs/stargate';
 
   // ---------------- CONFIG ----------------
   const RPC = 'https://rpc-republic.onenov.xyz';
@@ -44,9 +43,11 @@
 
   $: selectedModelInfo = models.find(m => m.id === selectedModel);
 
-  // ---------------- CHAIN CONFIG (WORKING) ----------------
+  // ---------------- SIMPLE CHAIN CONFIG ----------------
+  const CHAIN_ID = 'raitestnet_77701-1';
+  
   const CHAIN_CONFIG = {
-    chainId: 'raitestnet_77701-1',
+    chainId: CHAIN_ID,
     chainName: 'Republic Testnet',
     rpc: RPC,
     rest: REST,
@@ -85,34 +86,35 @@
     }
   }
 
-  // ---------------- WALLET CONNECTION ----------------
+  // ---------------- SIMPLE KEPLR CONNECT (NO CosmJS in connect) ----------------
   async function connectWallet() {
     payError = '';
     try {
       if (!window.keplr) {
-        throw new Error('Keplr wallet not installed. Please install Keplr extension.');
+        throw new Error('Keplr wallet not installed. Please install Keplr extension from keplr.app');
       }
 
-      // Remove existing chain config to avoid conflicts
+      // Remove existing chain to force fresh config
       try {
-        await window.keplr.removeChain('raitestnet_77701-1');
+        await window.keplr.removeChain(CHAIN_ID);
+        console.log('Removed existing chain');
       } catch(e) {
-        console.log('Chain not found, adding fresh');
+        console.log('No existing chain, adding fresh');
       }
 
       await new Promise(r => setTimeout(r, 500));
 
-      // Suggest chain
+      // Add chain
       await window.keplr.experimentalSuggestChain(CHAIN_CONFIG);
+      console.log('Chain suggested');
       
       // Enable chain
-      await window.keplr.enable('raitestnet_77701-1');
+      await window.keplr.enable(CHAIN_ID);
+      console.log('Chain enabled');
       
-      // Get signer and accounts
-      const offlineSigner = window.keplr.getOfflineSigner('raitestnet_77701-1');
-      const accounts = await offlineSigner.getAccounts();
-      
-      walletAddress = accounts[0].address;
+      // Get key directly (simpler)
+      const key = await window.keplr.getKey(CHAIN_ID);
+      walletAddress = key.bech32Address;
       walletConnected = true;
       step = 2;
       
@@ -150,7 +152,7 @@
     }
   }
 
-  // ---------------- PAYMENT + SUBMIT ----------------
+  // ---------------- PAYMENT (Dynamic import CosmJS only when needed) ----------------
   async function payAndSubmit() {
     if (!prompt.trim()) {
       payError = 'Please enter a prompt first';
@@ -164,10 +166,11 @@
     try {
       if (!window.keplr) throw new Error('Keplr not found');
 
-      // Ensure chain is enabled
-      await window.keplr.enable('raitestnet_77701-1');
+      // Dynamic import CosmJS (loads only when needed)
+      const { SigningStargateClient } = await import('@cosmjs/stargate');
       
-      const offlineSigner = window.keplr.getOfflineSigner('raitestnet_77701-1');
+      // Get signer
+      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
       const accounts = await offlineSigner.getAccounts();
       const signerAddress = accounts[0].address;
       
@@ -181,6 +184,8 @@
       const fee = { amount: [{ denom: 'arai', amount: '10000000000' }], gas: '200000' };
       const memo = `RepublicStats Hyperscale Job | ${prompt.slice(0, 40)}`;
 
+      console.log(`Sending ${FEE_RAI} RAI to treasury...`);
+      
       const tx = await client.sendTokens(
         signerAddress,
         TREASURY,
@@ -194,6 +199,8 @@
       }
 
       payTxHash = tx.transactionHash;
+      console.log('✅ Payment successful:', payTxHash);
+      
       step = 3;
       await fetchBalance();
 
