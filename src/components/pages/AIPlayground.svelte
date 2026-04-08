@@ -3,32 +3,42 @@
   import { API, fmt, shortAddr } from '../../stores/app.js';
   import { marked } from 'marked';
 
-  const CHAIN_ID = 'raitestnet_77701-1';
+  // --- Chain / payment config ---
+  const PRIMARY_CHAIN_ID = 'raitestnet_77701-1';
+  const FALLBACK_CHAIN_IDS = ['republic_77701-1']; // some wallet setups may use alt id
   const RPC = 'https://rpc-test.republic.vinjan-inc.com';
   const REST = 'https://api-test.republic.vinjan-inc.com';
   const TREASURY = 'rai1alt2884lvwzlzg6l03eaplry7a0ytx0wf3k889';
-  const FEE_RAI = 5;
-  const FEE_ARAI = '5000000000000000000';
 
+  const FEE_RAI = 5;
+  const FEE_ARAI = '5000000000000000000'; // 5 * 1e18
+
+  // --- State ---
   let prompt = '';
   let loading = false;
   let result = null;
   let error = '';
   let trackingId = null;
   let pollInterval = null;
+
   let miners = [];
   let selectedMiner = null;
+
   let models = [];
   let selectedModel = 'nex-agi/deepseek-v3.1-nex-n1';
   let modelsLoading = true;
   let modelSearch = '';
+
   let walletAddress = '';
   let walletConnected = false;
   let walletBalance = '';
+
   let payLoading = false;
   let payError = '';
   let payTxHash = '';
+
   let step = 1; // 1=connect, 2=configure, 3=pay, 4=result
+  let activeChainId = PRIMARY_CHAIN_ID;
 
   $: filteredModels = models.filter(m =>
     (m.id || '').toLowerCase().includes(modelSearch.toLowerCase()) ||
@@ -37,73 +47,103 @@
 
   $: selectedModelInfo = models.find(m => m.id === selectedModel);
 
-  async function suggestChainIfNeeded() {
-    if (!window?.keplr?.experimentalSuggestChain) return;
-    try {
-      await window.keplr.experimentalSuggestChain({
-        chainId: CHAIN_ID,
-        chainName: 'Republic Testnet',
-        rpc: RPC,
-        rest: REST,
-        bip44: { coinType: 60 },
-        bech32Config: {
-          bech32PrefixAccAddr: 'rai',
-          bech32PrefixAccPub: 'raipub',
-          bech32PrefixValAddr: 'raivaloper',
-          bech32PrefixValPub: 'raivaloperpub',
-          bech32PrefixConsAddr: 'raivalcons',
-          bech32PrefixConsPub: 'raivalconspub'
-        },
-        currencies: [
-          {
-            coinDenom: 'RAI',
-            coinMinimalDenom: 'arai',
-            coinDecimals: 18,
-            coinGeckoId: ''
-          }
-        ],
-        feeCurrencies: [
-          {
-            coinDenom: 'RAI',
-            coinMinimalDenom: 'arai',
-            coinDecimals: 18,
-            coinGeckoId: ''
-          }
-        ],
-        stakeCurrency: {
-          coinDenom: 'RAI',
-          coinMinimalDenom: 'arai',
-          coinDecimals: 18,
-          coinGeckoId: ''
-        },
-        gasPriceStep: { low: 10000000000, average: 25000000000, high: 40000000000 }
-      });
-    } catch (_) {
-      // ignore suggest errors
+  // --- Utils ---
+  function clearPoller() {
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      pollInterval = null;
     }
   }
 
+  // Suggest + enable chain robustly
+  async function ensureKeplrChain() {
+    if (!window?.keplr) throw new Error('Keplr wallet not found. Please install Keplr.');
+
+    const chainInfo = {
+      chainId: PRIMARY_CHAIN_ID,
+      chainName: 'Republic Testnet',
+      rpc: RPC,
+      rest: REST,
+      bip44: { coinType: 60 },
+      bech32Config: {
+        bech32PrefixAccAddr: 'rai',
+        bech32PrefixAccPub: 'raipub',
+        bech32PrefixValAddr: 'raivaloper',
+        bech32PrefixValPub: 'raivaloperpub',
+        bech32PrefixConsAddr: 'raivalcons',
+        bech32PrefixConsPub: 'raivalconspub'
+      },
+      currencies: [
+        { coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18, coinGeckoId: '' }
+      ],
+      feeCurrencies: [
+        { coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18, coinGeckoId: '' }
+      ],
+      stakeCurrency: {
+        coinDenom: 'RAI',
+        coinMinimalDenom: 'arai',
+        coinDecimals: 18,
+        coinGeckoId: ''
+      },
+      gasPriceStep: { low: 10000000000, average: 25000000000, high: 40000000000 }
+    };
+
+    // 1) try suggest
+    try {
+      if (window.keplr.experimentalSuggestChain) {
+        await window.keplr.experimentalSuggestChain(chainInfo);
+      }
+    } catch (e) {
+      console.warn('suggestChain failed:', e);
+    }
+
+    // 2) try enable primary + fallbacks
+    const candidates = [PRIMARY_CHAIN_ID, ...FALLBACK_CHAIN_IDS];
+    let lastErr = null;
+
+    for (const cid of candidates) {
+      try {
+        await window.keplr.enable(cid);
+        activeChainId = cid;
+        return cid;
+      } catch (e) {
+        lastErr = e;
+        console.warn(`enable failed for ${cid}:`, e);
+      }
+    }
+
+    throw new Error(
+      `Network not found in Keplr. Tried: ${candidates.join(', ')}. ` +
+      `Please add/import Republic Testnet manually and retry. Last error: ${lastErr?.message || lastErr}`
+    );
+  }
+
   async function getFreshSignerAndAddress() {
-    if (!window?.keplr) throw new Error('Keplr wallet not found');
-    await window.keplr.enable(CHAIN_ID);
+    const chainId = await ensureKeplrChain();
 
     const signer =
-      (await window.keplr.getOfflineSignerAuto?.(CHAIN_ID)) ||
-      window.keplr.getOfflineSigner(CHAIN_ID);
+      (await window.keplr.getOfflineSignerAuto?.(chainId)) ||
+      window.getOfflineSigner?.(chainId) ||
+      window.keplr.getOfflineSigner(chainId);
+
+    if (!signer) throw new Error('Unable to get signer from Keplr');
 
     const accounts = await signer.getAccounts();
     const signerAddress = accounts?.[0]?.address;
     if (!signerAddress) throw new Error('No account found in Keplr');
 
-    return { signer, signerAddress };
+    return { signer, signerAddress, chainId };
   }
 
+  // --- Data loaders ---
   async function loadMiners() {
     try {
       const r = await fetch(`${API}/api/leaderboard?limit=200`);
       const d = await r.json();
       miners = (d.data || []).filter(m => m.submit_job_result > 0);
-    } catch (_) {}
+    } catch (_) {
+      // silent
+    }
   }
 
   async function loadModels() {
@@ -111,20 +151,20 @@
     try {
       const r = await fetch(`${API}/api/hyperscale/models`);
       models = await r.json();
-    } catch (_) {}
+    } catch (_) {
+      // silent
+    }
     modelsLoading = false;
   }
 
+  // --- Wallet ---
   async function connectWallet() {
     payError = '';
     try {
-      await suggestChainIfNeeded();
       const { signerAddress } = await getFreshSignerAndAddress();
-
       walletAddress = signerAddress;
       walletConnected = true;
       step = 2;
-
       await fetchBalance();
     } catch (e) {
       payError = 'Failed to connect: ' + (e?.message || e);
@@ -140,7 +180,7 @@
     try {
       const r = await fetch(`${REST}/cosmos/bank/v1beta1/balances/${walletAddress}`);
       const d = await r.json();
-      const arai = d.balances?.find(b => b.denom === 'arai');
+      const arai = d?.balances?.find(b => b.denom === 'arai');
 
       if (arai?.amount) {
         const base = BigInt('1000000000000000000');
@@ -156,6 +196,7 @@
     }
   }
 
+  // --- Main flow: pay then submit ---
   async function payAndSubmit() {
     if (!prompt.trim()) {
       payError = 'Please enter a prompt first';
@@ -167,14 +208,14 @@
     payTxHash = '';
 
     try {
-      await suggestChainIfNeeded();
+      if (!window?.keplr) throw new Error('Keplr not found');
 
       const { SigningStargateClient, GasPrice } = await import('@cosmjs/stargate');
 
-      // ✅ Always fresh signer + address before tx
+      // always fresh signer + address per tx (fixes pubKey/signer mismatch)
       const { signer, signerAddress } = await getFreshSignerAndAddress();
 
-      // keep UI synced to actual signer
+      // sync UI state to actual signer
       walletAddress = signerAddress;
       walletConnected = true;
 
@@ -187,7 +228,7 @@
       const memo = `RepublicStats Hyperscale Job | ${prompt.slice(0, 40)}`;
 
       const tx = await client.sendTokens(
-        signerAddress, // ✅ never stale state
+        signerAddress, // IMPORTANT: use fresh signer address
         TREASURY,
         [{ denom: 'arai', amount: FEE_ARAI }],
         { amount: [{ denom: 'arai', amount: '8000000000000000' }], gas: '200000' },
@@ -195,14 +236,14 @@
       );
 
       if (tx.code !== 0) {
-        throw new Error('TX failed: ' + (tx.rawLog || tx.code));
+        throw new Error(`TX failed (${tx.code}): ${tx.rawLog || 'Unknown error'}`);
       }
 
       payTxHash = tx.transactionHash;
       step = 3;
       await fetchBalance();
 
-      // submit inference only after successful payment
+      // submit inference only after payment success
       loading = true;
       const r = await fetch(`${API}/api/hyperscale/submit`, {
         method: 'POST',
@@ -212,15 +253,16 @@
           miner_address: selectedMiner?.address || '',
           model: selectedModel,
           payment_txhash: payTxHash,
-          payer_address: signerAddress
+          payer_address: signerAddress,
+          chain_id: activeChainId
         })
       });
 
       const d = await r.json();
-      if (!d.success) throw new Error(d.error || 'Failed');
+      if (!d.success) throw new Error(d.error || 'Failed to submit inference');
 
       trackingId = d.tracking_id;
-      if (pollInterval) clearInterval(pollInterval);
+      clearPoller();
       pollInterval = setInterval(pollStatus, 3000);
     } catch (e) {
       payError = 'Error: ' + (e?.message || e);
@@ -237,22 +279,19 @@
       const d = await r.json();
 
       if (d.status === 'completed' || d.status === 'inferred_only' || d.status === 'failed') {
-        if (pollInterval) {
-          clearInterval(pollInterval);
-          pollInterval = null;
-        }
+        clearPoller();
         result = d;
         loading = false;
         step = 4;
       }
-    } catch (_) {}
+    } catch (_) {
+      // silent
+    }
   }
 
+  // --- UI reset ---
   function reset() {
-    if (pollInterval) {
-      clearInterval(pollInterval);
-      pollInterval = null;
-    }
+    clearPoller();
     result = null;
     error = '';
     payError = '';
@@ -266,10 +305,7 @@
   }
 
   function disconnectWallet() {
-    if (pollInterval) {
-      clearInterval(pollInterval);
-      pollInterval = null;
-    }
+    clearPoller();
     walletAddress = '';
     walletConnected = false;
     walletBalance = '';
@@ -286,13 +322,18 @@
   }
 
   onMount(async () => {
-    await suggestChainIfNeeded();
+    try {
+      await ensureKeplrChain();
+    } catch (e) {
+      // don't block UI; connect button will show exact error if needed
+      console.warn('Keplr chain init warning:', e?.message || e);
+    }
     loadMiners();
     loadModels();
   });
 
   onDestroy(() => {
-    if (pollInterval) clearInterval(pollInterval);
+    clearPoller();
   });
 </script>
 
