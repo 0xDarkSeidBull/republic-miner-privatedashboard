@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { API, fmt, shortAddr } from '../../stores/app.js';
   import { marked } from 'marked';
 
@@ -15,7 +15,7 @@
   let result = null;
   let error = '';
   let trackingId = null;
-  let pollInterval;
+  let pollInterval = null;
   let miners = [];
   let selectedMiner = null;
   let models = [];
@@ -31,16 +31,79 @@
   let step = 1; // 1=connect, 2=configure, 3=pay, 4=result
 
   $: filteredModels = models.filter(m =>
-    m.id.toLowerCase().includes(modelSearch.toLowerCase()) ||
-    m.name.toLowerCase().includes(modelSearch.toLowerCase())
+    (m.id || '').toLowerCase().includes(modelSearch.toLowerCase()) ||
+    (m.name || '').toLowerCase().includes(modelSearch.toLowerCase())
   );
+
+  $: selectedModelInfo = models.find(m => m.id === selectedModel);
+
+  async function suggestChainIfNeeded() {
+    if (!window?.keplr?.experimentalSuggestChain) return;
+    try {
+      await window.keplr.experimentalSuggestChain({
+        chainId: CHAIN_ID,
+        chainName: 'Republic Testnet',
+        rpc: RPC,
+        rest: REST,
+        bip44: { coinType: 60 },
+        bech32Config: {
+          bech32PrefixAccAddr: 'rai',
+          bech32PrefixAccPub: 'raipub',
+          bech32PrefixValAddr: 'raivaloper',
+          bech32PrefixValPub: 'raivaloperpub',
+          bech32PrefixConsAddr: 'raivalcons',
+          bech32PrefixConsPub: 'raivalconspub'
+        },
+        currencies: [
+          {
+            coinDenom: 'RAI',
+            coinMinimalDenom: 'arai',
+            coinDecimals: 18,
+            coinGeckoId: ''
+          }
+        ],
+        feeCurrencies: [
+          {
+            coinDenom: 'RAI',
+            coinMinimalDenom: 'arai',
+            coinDecimals: 18,
+            coinGeckoId: ''
+          }
+        ],
+        stakeCurrency: {
+          coinDenom: 'RAI',
+          coinMinimalDenom: 'arai',
+          coinDecimals: 18,
+          coinGeckoId: ''
+        },
+        gasPriceStep: { low: 10000000000, average: 25000000000, high: 40000000000 }
+      });
+    } catch (_) {
+      // ignore suggest errors
+    }
+  }
+
+  async function getFreshSignerAndAddress() {
+    if (!window?.keplr) throw new Error('Keplr wallet not found');
+    await window.keplr.enable(CHAIN_ID);
+
+    const signer =
+      (await window.keplr.getOfflineSignerAuto?.(CHAIN_ID)) ||
+      window.keplr.getOfflineSigner(CHAIN_ID);
+
+    const accounts = await signer.getAccounts();
+    const signerAddress = accounts?.[0]?.address;
+    if (!signerAddress) throw new Error('No account found in Keplr');
+
+    return { signer, signerAddress };
+  }
 
   async function loadMiners() {
     try {
       const r = await fetch(`${API}/api/leaderboard?limit=200`);
       const d = await r.json();
       miners = (d.data || []).filter(m => m.submit_job_result > 0);
-    } catch(e) {}
+    } catch (_) {}
   }
 
   async function loadModels() {
@@ -48,83 +111,98 @@
     try {
       const r = await fetch(`${API}/api/hyperscale/models`);
       models = await r.json();
-    } catch(e) {}
+    } catch (_) {}
     modelsLoading = false;
   }
 
   async function connectWallet() {
     payError = '';
     try {
-      if (!window.keplr) {
-        payError = 'Keplr wallet not found! Please install Keplr extension.';
-        return;
-      }
-      await window.keplr.enable(CHAIN_ID);
-      const key = await window.keplr.getKey(CHAIN_ID);
-      walletAddress = key.bech32Address;
+      await suggestChainIfNeeded();
+      const { signerAddress } = await getFreshSignerAndAddress();
+
+      walletAddress = signerAddress;
       walletConnected = true;
       step = 2;
+
       await fetchBalance();
-    } catch(e) {
-      payError = 'Failed to connect: ' + e.message;
+    } catch (e) {
+      payError = 'Failed to connect: ' + (e?.message || e);
     }
   }
 
   async function fetchBalance() {
+    if (!walletAddress) {
+      walletBalance = '0 RAI';
+      return;
+    }
+
     try {
       const r = await fetch(`${REST}/cosmos/bank/v1beta1/balances/${walletAddress}`);
       const d = await r.json();
       const arai = d.balances?.find(b => b.denom === 'arai');
-      if (arai) {
-        const rai = (BigInt(arai.amount) / BigInt('1000000000000000000')).toString();
-        const decimal = (BigInt(arai.amount) % BigInt('1000000000000000000')).toString().padStart(18, '0').slice(0, 4);
+
+      if (arai?.amount) {
+        const base = BigInt('1000000000000000000');
+        const amount = BigInt(arai.amount);
+        const rai = (amount / base).toString();
+        const decimal = (amount % base).toString().padStart(18, '0').slice(0, 4);
         walletBalance = `${rai}.${decimal} RAI`;
       } else {
         walletBalance = '0 RAI';
       }
-    } catch(e) {
+    } catch (_) {
       walletBalance = '—';
     }
   }
 
   async function payAndSubmit() {
-    if (!prompt.trim()) { payError = 'Please enter a prompt first'; return; }
+    if (!prompt.trim()) {
+      payError = 'Please enter a prompt first';
+      return;
+    }
+
     payLoading = true;
     payError = '';
     payTxHash = '';
 
     try {
-      if (!window.keplr) throw new Error('Keplr not found');
-      await window.keplr.enable(CHAIN_ID);
+      await suggestChainIfNeeded();
 
-      // Load cosmjs from CDN
       const { SigningStargateClient, GasPrice } = await import('@cosmjs/stargate');
 
-      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
+      // ✅ Always fresh signer + address before tx
+      const { signer, signerAddress } = await getFreshSignerAndAddress();
+
+      // keep UI synced to actual signer
+      walletAddress = signerAddress;
+      walletConnected = true;
 
       const client = await SigningStargateClient.connectWithSigner(
         RPC,
-        offlineSigner,
+        signer,
         { gasPrice: GasPrice.fromString('25000000000arai') }
       );
 
       const memo = `RepublicStats Hyperscale Job | ${prompt.slice(0, 40)}`;
 
-      const result = await client.sendTokens(
-        walletAddress,
+      const tx = await client.sendTokens(
+        signerAddress, // ✅ never stale state
         TREASURY,
         [{ denom: 'arai', amount: FEE_ARAI }],
         { amount: [{ denom: 'arai', amount: '8000000000000000' }], gas: '200000' },
         memo
       );
 
-      if (result.code !== 0) throw new Error('TX failed: ' + result.rawLog);
+      if (tx.code !== 0) {
+        throw new Error('TX failed: ' + (tx.rawLog || tx.code));
+      }
 
-      payTxHash = result.transactionHash;
+      payTxHash = tx.transactionHash;
       step = 3;
       await fetchBalance();
 
-      // Now submit inference job
+      // submit inference only after successful payment
       loading = true;
       const r = await fetch(`${API}/api/hyperscale/submit`, {
         method: 'POST',
@@ -134,20 +212,22 @@
           miner_address: selectedMiner?.address || '',
           model: selectedModel,
           payment_txhash: payTxHash,
-          payer_address: walletAddress
+          payer_address: signerAddress
         })
       });
+
       const d = await r.json();
       if (!d.success) throw new Error(d.error || 'Failed');
-      trackingId = d.tracking_id;
-      pollInterval = setInterval(pollStatus, 3000);
 
-    } catch(e) {
-      payError = 'Error: ' + e.message;
-      payLoading = false;
+      trackingId = d.tracking_id;
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(pollStatus, 3000);
+    } catch (e) {
+      payError = 'Error: ' + (e?.message || e);
       loading = false;
+    } finally {
+      payLoading = false;
     }
-    payLoading = false;
   }
 
   async function pollStatus() {
@@ -155,16 +235,24 @@
     try {
       const r = await fetch(`${API}/api/hyperscale/status/${trackingId}`);
       const d = await r.json();
+
       if (d.status === 'completed' || d.status === 'inferred_only' || d.status === 'failed') {
-        clearInterval(pollInterval);
+        if (pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+        }
         result = d;
         loading = false;
         step = 4;
       }
-    } catch(e) {}
+    } catch (_) {}
   }
 
   function reset() {
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      pollInterval = null;
+    }
     result = null;
     error = '';
     payError = '';
@@ -178,16 +266,34 @@
   }
 
   function disconnectWallet() {
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      pollInterval = null;
+    }
     walletAddress = '';
     walletConnected = false;
     walletBalance = '';
+    result = null;
+    error = '';
+    payError = '';
+    payTxHash = '';
+    trackingId = null;
+    prompt = '';
+    loading = false;
+    selectedMiner = null;
+    selectedModel = 'nex-agi/deepseek-v3.1-nex-n1';
     step = 1;
-    reset();
   }
 
-  $: selectedModelInfo = models.find(m => m.id === selectedModel);
+  onMount(async () => {
+    await suggestChainIfNeeded();
+    loadMiners();
+    loadModels();
+  });
 
-  onMount(() => { loadMiners(); loadModels(); });
+  onDestroy(() => {
+    if (pollInterval) clearInterval(pollInterval);
+  });
 </script>
 
 <div class="hero">
