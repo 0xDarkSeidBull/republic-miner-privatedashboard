@@ -76,67 +76,67 @@
   }
 
   async function payAndInfer() {
-  if (!prompt.trim()) return;
+    if (!prompt.trim()) return;
 
-  paymentError = '';
-  paymentStep = 'paying';
-  loading = true;
+    paymentError = '';
+    paymentStep = 'paying';
+    loading = true;
 
-  try {
-    if (!keplrConnected) {
-      await connectKeplr();
+    try {
+      if (!keplrConnected) {
+        await connectKeplr();
+      }
+
+      await window.keplr.enable(REPUBLIC_CHAIN.chainId);
+
+      // 🔥 USE SAME RPC AS CHAIN
+      const rpc = REPUBLIC_CHAIN.rpc;
+
+      // 🔥 signer
+      const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
+
+      // 🔥 import ONLY ON CLICK (safe)
+      const { SigningStargateClient } = await import("https://esm.sh/@cosmjs/stargate");
+
+      const client = await SigningStargateClient.connectWithSigner(
+        rpc,
+        offlineSigner
+      );
+
+      // 💸 SEND TOKENS (MAIN FIX)
+      const result = await client.sendTokens(
+        userAddress,
+        TREASURY,
+        [{ denom: "arai", amount: ARAI_FEE }],
+        {
+          amount: [{ denom: "arai", amount: "200000000000000" }],
+          gas: "200000"
+        },
+        "Hyperscale inference fee"
+      );
+
+      if (result.code !== 0) {
+        throw new Error(result.rawLog || "TX Failed");
+      }
+
+      paymentTxHash = result.transactionHash;
+
+      paymentStep = 'verifying';
+
+      // optional delay (UI smooth)
+      await new Promise(r => setTimeout(r, 3000));
+
+      paymentStep = 'ready';
+
+      // 🚀 SAME TERA EXISTING FLOW
+      await submitJob();
+
+    } catch (e) {
+      paymentError = e.message;
+      paymentStep = 'idle';
+      loading = false;
     }
-
-    await window.keplr.enable(REPUBLIC_CHAIN.chainId);
-
-    // 🔥 USE SAME RPC AS CHAIN
-    const rpc = REPUBLIC_CHAIN.rpc;
-
-    // 🔥 signer
-    const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
-
-    // 🔥 import ONLY ON CLICK (safe)
-    const { SigningStargateClient } = await import("https://esm.sh/@cosmjs/stargate");
-
-    const client = await SigningStargateClient.connectWithSigner(
-      rpc,
-      offlineSigner
-    );
-
-    // 💸 SEND TOKENS (MAIN FIX)
-    const result = await client.sendTokens(
-      userAddress,
-      TREASURY,
-      [{ denom: "arai", amount: ARAI_FEE }],
-      {
-        amount: [{ denom: "arai", amount: "200000000000000" }],
-        gas: "200000"
-      },
-      "Hyperscale inference fee"
-    );
-
-    if (result.code !== 0) {
-      throw new Error(result.rawLog || "TX Failed");
-    }
-
-    paymentTxHash = result.transactionHash;
-
-    paymentStep = 'verifying';
-
-    // optional delay (UI smooth)
-    await new Promise(r => setTimeout(r, 3000));
-
-    paymentStep = 'ready';
-
-    // 🚀 SAME TERA EXISTING FLOW
-    await submitJob();
-
-  } catch (e) {
-    paymentError = e.message;
-    paymentStep = 'idle';
-    loading = false;
   }
-}
 
   async function loadMiners() {
     try {
@@ -350,73 +350,43 @@
     </div>
   {/if}
 
-  <!-- RESULT -->
+  <!-- RESULT (SINGLE COPY) -->
   {#if result}
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <!-- HEADER -->
       <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:10px">
           <div style="width:8px;height:8px;border-radius:50%;background:{result.status === 'completed' ? '#4ADE80' : result.status === 'failed' ? '#EF4444' : 'var(--accent)'}"></div>
           <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">
-            {result.status === 'completed' ? '✅ Completed & On-Chain' : result.status === 'inferred_only' ? '⚡ Inferred (Chain pending)' : '❌ Failed'}
+            {result.status === 'completed' ? '✅ Completed & On-Chain' : result.status === 'inferred_only' ? '⚡ Inferred' : '❌ Failed'}
           </span>
         </div>
         <button on:click={reset} style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;font-family:var(--font-mono);font-size:10px;cursor:pointer;border-radius:4px">↩ New Job</button>
       </div>
 
+      <!-- PROMPT -->
       <div style="padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(255,107,0,0.03)">
         <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:6px;letter-spacing:1px">PROMPT</div>
         <div style="font-size:14px;color:var(--muted)">{result.prompt}</div>
       </div>
 
+      <!-- RESPONSE -->
       <div style="padding:20px">
         <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:10px;letter-spacing:1px">AI RESPONSE</div>
         <div class="markdown-body">{@html marked(result.result?.content || result.error || '')}</div>
       </div>
 
-      <!-- RESULT -->
-{#if result}
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
-
-    <!-- HEADER -->
-    <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:8px;height:8px;border-radius:50%;background:{result.status === 'completed' ? '#4ADE80' : result.status === 'failed' ? '#EF4444' : 'var(--accent)'}"></div>
-        <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">
-          {result.status === 'completed' ? '✅ Completed & On-Chain' : result.status === 'inferred_only' ? '⚡ Inferred' : '❌ Failed'}
-        </span>
-      </div>
-
-      <button on:click={reset} style="border:1px solid var(--border);padding:5px 12px;border-radius:4px">
-        ↩ New Job
-      </button>
+      <!-- TX BLOCK -->
+      {#if result.txhash || paymentTxHash}
+        <div style="padding:16px 20px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10px">
+          {#if result.txhash}
+            <div>TX: {result.txhash}</div>
+          {/if}
+          {#if paymentTxHash}
+            <div style="margin-top:4px">Payment TX: {paymentTxHash}</div>
+          {/if}
+        </div>
+      {/if}
     </div>
-
-    <!-- PROMPT -->
-    <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
-      <div style="font-size:12px;color:var(--muted)">PROMPT</div>
-      <div>{result.prompt}</div>
-    </div>
-
-    <!-- RESPONSE -->
-    <div style="padding:20px">
-      <div style="font-size:12px;color:var(--muted)">AI RESPONSE</div>
-      <div class="markdown-body">
-        {@html marked(result.result?.content || result.error || '')}
-      </div>
-    </div>
-
-    <!-- TX BLOCK -->
-    {#if result.txhash}
-      <div style="padding:16px 20px;border-top:1px solid var(--border)">
-
-        <div>TX: {result.txhash}</div>
-
-        {#if paymentTxHash}
-          <div>Payment TX: {paymentTxHash}</div>
-        {/if}
-
-      </div>
-    {/if}
-
-  </div>
-{/if}
+  {/if}
+</div>
