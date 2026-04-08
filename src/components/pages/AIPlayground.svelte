@@ -374,31 +374,49 @@
       </div>
 
       {#if result.txhash}
-        <div style="padding:16px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,0.2)">
-          <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:8px;letter-spacing:1px">ON-CHAIN PROOF</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-            <div>
-              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">TX HASH</div>
-              <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent3);word-break:break-all">{result.txhash}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">HYPERSCALE JOB ID</div>
-              <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent3);word-break:break-all">{result.result?.hyperscale_job_id || '—'}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">COST</div>
-              <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">{result.result?.cost?.toFixed(6)} RAI</div>
-            </div>
-          </div>
-          <div style="margin-top:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-  <a href={result.explorer} target="_blank" rel="noopener">View on Explorer ↗</a>
+  <div style="padding:16px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,0.2)">
+    
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:8px;letter-spacing:1px">
+      ON-CHAIN PROOF
+    </div>
 
-  {#if paymentTxHash}
-    <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{paymentTxHash}" target="_blank">
-      Payment TX ↗
-    </a>
-  {/if}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">TX HASH</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent3);word-break:break-all">
+          {result.txhash}
+        </div>
+      </div>
 
-  <span>Verified by: Hyperscale SDK + Republic AI Chain</span>
-</div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">HYPERSCALE JOB ID</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent3);word-break:break-all">
+          {result.result?.hyperscale_job_id || '—'}
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">COST</div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">
+          {result.result?.cost?.toFixed(6)} RAI
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <a href={result.explorer} target="_blank" rel="noopener">
+        View on Explorer ↗
+      </a>
+
+      {#if paymentTxHash}
+        <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{paymentTxHash}" target="_blank" rel="noopener">
+          Payment TX ↗
+        </a>
+      {/if}
+
+      <span>Verified by: Hyperscale SDK + Republic AI Chain</span>
+    </div>
+
+  </div>
+{/if}
           	
