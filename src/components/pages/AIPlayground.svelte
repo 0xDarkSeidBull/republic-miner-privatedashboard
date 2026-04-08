@@ -1,4 +1,5 @@
 <script>
+  import { SigningStargateClient } from "@cosmjs/stargate";
   import { onMount } from 'svelte';
   import { API, fmt, shortAddr } from '../../stores/app.js';
   import { marked } from 'marked';
@@ -67,7 +68,6 @@
         await connectKeplr();
       }
 
-      const { SigningStargateClient } = await import("https://esm.sh/@cosmjs/stargate");
 
       const signer = window.keplr.getOfflineSigner(CHAIN_ID);
 
