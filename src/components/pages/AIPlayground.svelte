@@ -98,7 +98,9 @@
       await window.keplr.enable(CHAIN_ID);
 
       // Load cosmjs from CDN
-      const { SigningStargateClient, GasPrice } = await import('https://esm.sh/@cosmjs/stargate@0.29.5');
+      const cosmjs = await import('https://cdn.jsdelivr.net/npm/@cosmjs/stargate@0.29.5/+esm');
+const SigningStargateClient = cosmjs.SigningStargateClient;
+const GasPrice = cosmjs.GasPrice;
 
       const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
 
