@@ -71,106 +71,157 @@
   };
 
   async function connectKeplr() {
-    paymentStep = 'connecting';
-    keplrError = '';
-    try {
-      if (!window.keplr) {
-        throw new Error('Keplr not installed!');
-      }
-      
-      await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN);
-      await window.keplr.enable(REPUBLIC_CHAIN.chainId);
-      
-      const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
-      const accounts = await offlineSigner.getAccounts();
-      userAddress = accounts[0].address;
-      keplrConnected = true;
-      paymentStep = 'idle';
-      
-      console.log("✅ Connected:", userAddress);
-      
-    } catch(e) {
-      console.error('Connection error:', e);
-      keplrError = e.message;
-      paymentStep = 'idle';
+  paymentStep = 'connecting';
+  keplrError = '';
+  try {
+    if (!window.keplr) {
+      throw new Error('Keplr not installed!');
     }
+    
+    // Remove existing chain config
+    try {
+      await window.keplr.removeChain("raitestnet_77701-1");
+    } catch(e) {}
+    
+    await new Promise(r => setTimeout(r, 300));
+    
+    await window.keplr.experimentalSuggestChain({
+      chainId: 'raitestnet_77701-1',
+      chainName: 'Republic Testnet',
+      rpc: 'https://rpc-republic.onenov.xyz',
+      rest: 'https://api-republic.onenov.xyz',
+      bip44: { coinType: 60 },
+      bech32Config: {
+        bech32PrefixAccAddr: 'rai',
+        bech32PrefixAccPub: 'raipub',
+        bech32PrefixValAddr: 'raivaloper',
+        bech32PrefixValPub: 'raivaloperpub',
+        bech32PrefixConsAddr: 'raivalcons',
+        bech32PrefixConsPub: 'raivalconspub',
+      },
+      currencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 }],
+      feeCurrencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18, gasPriceStep: { low: 10000000000, average: 25000000000, high: 40000000000 } }],
+      stakeCurrency: { coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 },
+    });
+    
+    await window.keplr.enable(REPUBLIC_CHAIN.chainId);
+    
+    const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
+    const accounts = await offlineSigner.getAccounts();
+    userAddress = accounts[0].address;
+    keplrConnected = true;
+    paymentStep = 'idle';
+    
+    console.log("✅ Connected:", userAddress);
+    
+  } catch(e) {
+    console.error('Connection error:', e);
+    keplrError = e.message;
+    paymentStep = 'idle';
   }
+}
 
   async function payAndInfer() {
-    if (!prompt.trim()) {
-      error = 'Please enter a prompt';
-      return;
-    }
-
-    paymentError = '';
-    paymentStep = 'paying';
-    loading = true;
-    error = '';
-
-    try {
-      if (!window.keplr) {
-        throw new Error('Keplr not installed!');
-      }
-
-      await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN);
-      await window.keplr.enable(REPUBLIC_CHAIN.chainId);
-      
-      const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
-      const accounts = await offlineSigner.getAccounts();
-      const fromAddress = accounts[0].address;
-      
-      console.log("From address:", fromAddress);
-      console.log("To treasury:", TREASURY);
-      
-      userAddress = fromAddress;
-      keplrConnected = true;
-      
-      const client = await SigningStargateClient.connectWithSigner(
-        REPUBLIC_CHAIN.rpc,
-        offlineSigner
-      );
-
-      // 🔥 EXACT SAME AS HIS WORKING CODE
-      const amount = [{ 
-        denom: "arai", 
-        amount: Math.floor(RAI_FEE * 1e18).toString() 
-      }];
-      
-      const fee = { 
-        amount: [{ denom: "arai", amount: "10000000000" }], 
-        gas: "200000" 
-      };
-
-      console.log(`Sending ${RAI_FEE} RAI...`);
-      
-      const txResult = await client.sendTokens(
-        fromAddress,
-        TREASURY,
-        amount,
-        fee,
-        "Hyperscale inference fee"
-      );
-
-      if (txResult.code !== 0) {
-        throw new Error(txResult.rawLog || "Transaction failed");
-      }
-
-      paymentTxHash = txResult.transactionHash;
-      console.log("✅ Payment successful!", paymentTxHash);
-      
-      paymentStep = 'verifying';
-      await new Promise(r => setTimeout(r, 3000));
-      paymentStep = 'ready';
-      
-      await submitJob();
-
-    } catch (e) {
-      console.error("Error:", e);
-      paymentError = e.message;
-      paymentStep = 'idle';
-      loading = false;
-    }
+  if (!prompt.trim()) {
+    error = 'Please enter a prompt';
+    return;
   }
+
+  paymentError = '';
+  paymentStep = 'paying';
+  loading = true;
+  error = '';
+
+  try {
+    if (!window.keplr) {
+      throw new Error('Keplr not installed!');
+    }
+
+    // 🔥 FIX 1: Force remove chain and re-add
+    try {
+      await window.keplr.removeChain("raitestnet_77701-1");
+    } catch(e) {}
+    
+    await new Promise(r => setTimeout(r, 500));
+    
+    // 🔥 FIX 2: Suggest chain with CORRECT config
+    await window.keplr.experimentalSuggestChain({
+      chainId: 'raitestnet_77701-1',
+      chainName: 'Republic Testnet',
+      rpc: 'https://rpc-republic.onenov.xyz',
+      rest: 'https://api-republic.onenov.xyz',
+      bip44: { coinType: 60 },
+      bech32Config: {
+        bech32PrefixAccAddr: 'rai',
+        bech32PrefixAccPub: 'raipub',
+        bech32PrefixValAddr: 'raivaloper',
+        bech32PrefixValPub: 'raivaloperpub',
+        bech32PrefixConsAddr: 'raivalcons',
+        bech32PrefixConsPub: 'raivalconspub',
+      },
+      currencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 }],
+      feeCurrencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18, gasPriceStep: { low: 10000000000, average: 25000000000, high: 40000000000 } }],
+      stakeCurrency: { coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 },
+    });
+    
+    await window.keplr.enable(REPUBLIC_CHAIN.chainId);
+    
+    // 🔥 FIX 3: Get signer and accounts with delay
+    const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
+    await new Promise(r => setTimeout(r, 500));
+    const accounts = await offlineSigner.getAccounts();
+    const fromAddress = accounts[0].address;
+    
+    console.log("From address:", fromAddress);
+    console.log("To treasury:", TREASURY);
+    
+    userAddress = fromAddress;
+    keplrConnected = true;
+    
+    // 🔥 FIX 4: Use DIRECT Keplr send (not CosmJS)
+    const amountInArai = Math.floor(RAI_FEE * 1e18).toString();
+    
+    // Direct Keplr transaction object
+    const tx = {
+      chainId: REPUBLIC_CHAIN.chainId,
+      msgs: [{
+        typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+        value: {
+          fromAddress: fromAddress,
+          toAddress: TREASURY,
+          amount: [{ denom: "arai", amount: amountInArai }]
+        }
+      }],
+      fee: {
+        amount: [{ denom: "arai", amount: "10000000000" }],
+        gas: "200000"
+      },
+      memo: "Hyperscale inference fee"
+    };
+    
+    // 🔥 FIX 5: Use Keplr's native sendTx
+    const result = await window.keplr.sendTx(
+      REPUBLIC_CHAIN.chainId,
+      tx,
+      "sync"
+    );
+    
+    console.log("Transaction result:", result);
+    
+    paymentTxHash = result.transactionHash || result.txhash;
+    paymentStep = 'verifying';
+    await new Promise(r => setTimeout(r, 3000));
+    paymentStep = 'ready';
+    
+    await submitJob();
+
+  } catch (e) {
+    console.error("Error:", e);
+    paymentError = e.message;
+    paymentStep = 'idle';
+    loading = false;
+  }
+}
 
   async function loadMiners() {
     try {
