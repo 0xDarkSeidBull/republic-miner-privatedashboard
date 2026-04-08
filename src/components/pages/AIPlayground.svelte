@@ -101,76 +101,78 @@
   error = '';
 
   try {
-    // Connect if not connected
-    if (!keplrConnected) {
-      await connectKeplr();
-      if (!keplrConnected) {
-        throw new Error('Failed to connect wallet');
-      }
+    // Check Keplr
+    if (!window.keplr) {
+      throw new Error('Keplr not installed!');
     }
 
-    // IMPORTANT: Fresh signer and accounts
+    // Suggest chain
+    await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN);
+    
+    // Enable chain
+    await window.keplr.enable(REPUBLIC_CHAIN.chainId);
+    
+    // Get offline signer
     const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
+    
+    // Get accounts
     const accounts = await offlineSigner.getAccounts();
     const fromAddress = accounts[0].address;
     
     console.log("From address:", fromAddress);
     console.log("To treasury:", TREASURY);
     
-    // Update userAddress
     userAddress = fromAddress;
+    keplrConnected = true;
     
-    // Create client with the signer
+    // Create client
     const client = await SigningStargateClient.connectWithSigner(
       REPUBLIC_CHAIN.rpc,
       offlineSigner
     );
 
-    // Amount in arai (10^18 arai = 1 RAI)
+    // Amount
     const amountInArai = (BigInt(RAI_FEE) * BigInt(10 ** 18)).toString();
     
+    // 🔥 CRITICAL FIX: Use proper fee denom
+    const fee = {
+      amount: [{ 
+        denom: "arai", 
+        amount: "10000000000000"  // 0.00001 RAI
+      }],
+      gas: "200000"
+    };
+
     const sendAmount = [{ 
       denom: "arai", 
       amount: amountInArai 
     }];
-    
-    // Fee
-    const fee = {
-      amount: [{ 
-        denom: "arai", 
-        amount: "100000000000000"  // 0.0001 RAI
-      }],
-      gas: "300000"
-    };
 
-    console.log(`Sending ${RAI_FEE} RAI to ${TREASURY}...`);
+    console.log(`Sending ${RAI_FEE} RAI...`);
     
-    // SEND TRANSACTION
+    // 🔥 TRY THIS - Simple sendTokens
     const txResult = await client.sendTokens(
-      fromAddress,     // SENDER (Keplr connected wallet)
-      TREASURY,        // RECIPIENT (your treasury address)
+      fromAddress,
+      TREASURY,
       sendAmount,
       fee,
-      "Hyperscale inference fee"
+      "Hyperscale inference"
     );
 
     if (txResult.code !== 0) {
-      throw new Error(txResult.rawLog || "Transaction failed");
+      throw new Error(txResult.rawLog);
     }
 
     paymentTxHash = txResult.transactionHash;
-    console.log("✅ Payment successful!", paymentTxHash);
-    
     paymentStep = 'verifying';
     await new Promise(r => setTimeout(r, 3000));
     paymentStep = 'ready';
     
-    // Submit inference job
     await submitJob();
 
   } catch (e) {
-    console.error("Payment error:", e);
-    paymentError = e.message || "Transaction failed. Please try again.";
+    console.error("Error:", e);
+    paymentError = e.message;
     paymentStep = 'idle';
     loading = false;
   }
