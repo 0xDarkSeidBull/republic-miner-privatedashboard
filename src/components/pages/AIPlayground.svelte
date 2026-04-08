@@ -75,100 +75,50 @@
     }
   }
 
-  async function payAndInfer() {
-    if (!keplrConnected) { await connectKeplr(); return; }
-    if (!prompt.trim()) return;
-    paymentStep = 'paying';
-    paymentError = '';
-    loading = true;
-    try {
-      await window.keplr.enable(REPUBLIC_CHAIN.chainId);
-      
-      // Use Keplr's sendTx directly
-      const offlineSigner = window.keplr.getOfflineSignerOnlyAmino(REPUBLIC_CHAIN.chainId);
-      const accounts = await offlineSigner.getAccounts();
-      
-      // Get account info
-      const accRes = await fetch(`${API}/api/hyperscale/account/${userAddress}`);
-      const accData = await accRes.json();
-      
-      const signDoc = {
-        chain_id: REPUBLIC_CHAIN.chainId,
-        account_number: String(accData.account_number || '0'),
-        sequence: String(accData.sequence || '0'),
-        fee: {
-          amount: [{ denom: 'arai', amount: '200000000000000' }],
-          gas: '200000'
-        },
-        msgs: [{
-          type: 'cosmos-sdk/MsgSend',
-          value: {
-            from_address: userAddress,
-            to_address: TREASURY,
-            amount: [{ denom: 'arai', amount: ARAI_FEE }]
-          }
-        }],
-        memo: 'Hyperscale inference fee'
-      };
+  import { SigningStargateClient } from "https://esm.sh/@cosmjs/stargate";
 
-      const { signed, signature } = await window.keplr.signAmino(
-        REPUBLIC_CHAIN.chainId,
-        userAddress,
-        signDoc
-      );
+async function payAndInfer() {
+  if (!keplrConnected) { await connectKeplr(); return; }
+  if (!prompt.trim()) return;
 
-      // Encode TX using Keplr's cosmos package
-      const protoTxHelper = await import('https://esm.sh/@keplr-wallet/cosmos@0.12.80');
-      
-      const signedTxBytes = protoTxHelper.cosmos.tx.v1beta1.TxRaw.encode({
-        bodyBytes: protoTxHelper.cosmos.tx.v1beta1.TxBody.encode({
-          messages: [{
-            typeUrl: '/cosmos.bank.v1beta1.MsgSend',
-            value: protoTxHelper.cosmos.bank.v1beta1.MsgSend.encode({
-              fromAddress: userAddress,
-              toAddress: TREASURY,
-              amount: [{ denom: 'arai', amount: ARAI_FEE }]
-            }).finish()
-          }],
-          memo: 'Hyperscale inference fee'
-        }).finish(),
-        authInfoBytes: protoTxHelper.cosmos.tx.v1beta1.AuthInfo.encode({
-          signerInfos: [{
-            publicKey: {
-              typeUrl: '/ethermint.crypto.v1.ethsecp256k1.PubKey',
-              value: Buffer.from(signature.pub_key.value, 'base64')
-            },
-            modeInfo: { single: { mode: 1 } },
-            sequence: BigInt(signed.sequence)
-          }],
-          fee: {
-            amount: [{ denom: 'arai', amount: '200000000000000' }],
-            gasLimit: BigInt(200000)
-          }
-        }).finish(),
-        signatures: [Buffer.from(signature.signature, 'base64')]
-      }).finish();
+  paymentStep = 'paying';
+  loading = true;
 
-      // Broadcast via Keplr
-      const txHashBytes = await window.keplr.sendTx(
-        REPUBLIC_CHAIN.chainId,
-        signedTxBytes,
-        'sync'
-      );
-      
-      paymentTxHash = Buffer.from(txHashBytes).toString('hex').toUpperCase();
-      paymentStep = 'verifying';
-      await new Promise(r => setTimeout(r, 5000));
-      
-      paymentStep = 'ready';
-      await submitJob();
+  try {
+    await window.keplr.enable(REPUBLIC_CHAIN.chainId);
 
-    } catch(e) {
-      paymentError = e.message;
-      paymentStep = 'idle';
-      loading = false;
-    }
+    const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
+
+    const client = await SigningStargateClient.connectWithSigner(
+      REPUBLIC_CHAIN.rpc,
+      offlineSigner
+    );
+
+    const result = await client.sendTokens(
+      userAddress,
+      TREASURY,
+      [{ denom: "arai", amount: ARAI_FEE }],
+      {
+        amount: [{ denom: "arai", amount: "200000000000000" }],
+        gas: "200000",
+      },
+      "Hyperscale inference fee"
+    );
+
+    paymentTxHash = result.transactionHash;
+
+    paymentStep = 'verifying';
+    await new Promise(r => setTimeout(r, 5000));
+
+    paymentStep = 'ready';
+    await submitJob();
+
+  } catch (e) {
+    paymentError = e.message;
+    paymentStep = 'idle';
+    loading = false;
   }
+}
 
   async function loadMiners() {
     try {
