@@ -83,18 +83,19 @@
     loading = true;
     try {
       await window.keplr.enable(REPUBLIC_CHAIN.chainId);
-
-      // Get account info from backend
+      
+      // Use Keplr's sendTx directly
+      const offlineSigner = window.keplr.getOfflineSignerOnlyAmino(REPUBLIC_CHAIN.chainId);
+      const accounts = await offlineSigner.getAccounts();
+      
+      // Get account info
       const accRes = await fetch(`${API}/api/hyperscale/account/${userAddress}`);
       const accData = await accRes.json();
-      const accountNumber = String(accData.account_number || '0');
-      const sequence = String(accData.sequence || '0');
-
-      // Sign amino
+      
       const signDoc = {
         chain_id: REPUBLIC_CHAIN.chainId,
-        account_number: accountNumber,
-        sequence: sequence,
+        account_number: String(accData.account_number || '0'),
+        sequence: String(accData.sequence || '0'),
         fee: {
           amount: [{ denom: 'arai', amount: '200000000000000' }],
           gas: '200000'
@@ -110,48 +111,55 @@
         memo: 'Hyperscale inference fee'
       };
 
-      const signed = await window.keplr.signAmino(
+      const { signed, signature } = await window.keplr.signAmino(
         REPUBLIC_CHAIN.chainId,
         userAddress,
         signDoc
       );
 
-      // sendTx directly via Keplr
-      const { cosmos } = await import('https://esm.sh/@keplr-wallet/cosmos@0.12.80');
+      // Encode TX using Keplr's cosmos package
+      const protoTxHelper = await import('https://esm.sh/@keplr-wallet/cosmos@0.12.80');
       
-      // Encode to protobuf bytes
-      const pubKeyAny = {
-        typeUrl: '/ethermint.crypto.v1.ethsecp256k1.PubKey',
-        value: signed.signature.pub_key.value
-      };
+      const signedTxBytes = protoTxHelper.cosmos.tx.v1beta1.TxRaw.encode({
+        bodyBytes: protoTxHelper.cosmos.tx.v1beta1.TxBody.encode({
+          messages: [{
+            typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+            value: protoTxHelper.cosmos.bank.v1beta1.MsgSend.encode({
+              fromAddress: userAddress,
+              toAddress: TREASURY,
+              amount: [{ denom: 'arai', amount: ARAI_FEE }]
+            }).finish()
+          }],
+          memo: 'Hyperscale inference fee'
+        }).finish(),
+        authInfoBytes: protoTxHelper.cosmos.tx.v1beta1.AuthInfo.encode({
+          signerInfos: [{
+            publicKey: {
+              typeUrl: '/ethermint.crypto.v1.ethsecp256k1.PubKey',
+              value: Buffer.from(signature.pub_key.value, 'base64')
+            },
+            modeInfo: { single: { mode: 1 } },
+            sequence: BigInt(signed.sequence)
+          }],
+          fee: {
+            amount: [{ denom: 'arai', amount: '200000000000000' }],
+            gasLimit: BigInt(200000)
+          }
+        }).finish(),
+        signatures: [Buffer.from(signature.signature, 'base64')]
+      }).finish();
 
-      // Send via backend with amino format
-      const broadcastRes = await fetch(`${API}/api/hyperscale/broadcast-amino`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          signed: signed.signed,
-          signature: signed.signature.signature,
-          pub_key_value: signed.signature.pub_key.value,
-          pub_key_type: signed.signature.pub_key.type,
-          user_address: userAddress
-        })
-      });
-      const broadcastData = await broadcastRes.json();
-      if (!broadcastData.success) throw new Error(broadcastData.error);
-
-      paymentTxHash = broadcastData.txhash;
+      // Broadcast via Keplr
+      const txHashBytes = await window.keplr.sendTx(
+        REPUBLIC_CHAIN.chainId,
+        signedTxBytes,
+        'sync'
+      );
+      
+      paymentTxHash = Buffer.from(txHashBytes).toString('hex').toUpperCase();
       paymentStep = 'verifying';
       await new Promise(r => setTimeout(r, 5000));
-
-      const vr = await fetch(`${API}/api/hyperscale/verify-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ txhash: paymentTxHash, user_address: userAddress })
-      });
-      const vd = await vr.json();
-      if (!vd.success) throw new Error(vd.error || 'Verification failed');
-
+      
       paymentStep = 'ready';
       await submitJob();
 
