@@ -391,9 +391,14 @@
             </div>
           </div>
           <div style="margin-top:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-            <a href={result.explorer} target="_blank" rel="noopener" style="color:var(--blue);font-family:var(--font-mono);font-size:11px">View on Explorer ↗</a>
-            {#if paymentTxHash}
-              <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{paymentTxHash}" target="_blank" rel="noopener" style="color:var(--accent3);font-family:var(--font-mono);font-size:11px">Payment TX ↗</a>
-            {/if}
-            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">Verified by: Hyperscale SDK + Republic AI Chain</span>
+  <a href={result.explorer} target="_blank" rel="noopener">View on Explorer ↗</a>
+
+  {#if paymentTxHash}
+    <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{paymentTxHash}" target="_blank">
+      Payment TX ↗
+    </a>
+  {/if}
+
+  <span>Verified by: Hyperscale SDK + Republic AI Chain</span>
+</div>
           	
