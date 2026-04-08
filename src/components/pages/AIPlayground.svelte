@@ -1,5 +1,4 @@
 <script>
-  import { SigningStargateClient } from "@cosmjs/stargate";
   import { onMount } from 'svelte';
   import { API, fmt, shortAddr } from '../../stores/app.js';
   import { marked } from 'marked';
@@ -22,13 +21,11 @@
 
   // ---------------- KEPLR ----------------
   let keplrConnected = false;
-  let userAddress = '';
+  let userAddress = "";
 
   const CHAIN_ID = "raitestnet_77701-1";
-  const RPC = "https://rpc-test.republic.vinjan-inc.com";
-
   const TREASURY = "rai1alt2884lvwzlzg6l03eaplry7a0ytx0wf3k889";
-  const RAI_FEE = "10000000000000000000"; // 10 RAI
+  const AMOUNT = "10000000000000000000"; // 10 RAI
 
   // ---------------- COMPUTED ----------------
   $: filteredModels = models.filter(m =>
@@ -38,25 +35,23 @@
 
   $: selectedModelInfo = models.find(m => m.id === selectedModel);
 
-  // ---------------- KEPLR CONNECT ----------------
+  // ---------------- KEPLR ----------------
   async function connectKeplr() {
-    try {
-      if (!window.keplr) throw new Error("Install Keplr wallet");
-
-      await window.keplr.enable(CHAIN_ID);
-
-      const signer = window.keplr.getOfflineSigner(CHAIN_ID);
-      const accounts = await signer.getAccounts();
-
-      userAddress = accounts[0].address;
-      keplrConnected = true;
-
-    } catch (e) {
-      error = e.message;
+    if (!window.keplr) {
+      alert("Install Keplr");
+      return;
     }
+
+    await window.keplr.enable(CHAIN_ID);
+
+    const signer = window.keplr.getOfflineSignerOnlyAmino(CHAIN_ID);
+    const accounts = await signer.getAccounts();
+
+    userAddress = accounts[0].address;
+    keplrConnected = true;
   }
 
-  // ---------------- PAYMENT + INFERENCE ----------------
+  // ---------------- PAYMENT + SUBMIT ----------------
   async function payAndSubmit() {
     if (!prompt.trim()) return;
 
@@ -68,26 +63,69 @@
         await connectKeplr();
       }
 
+      await window.keplr.enable(CHAIN_ID);
 
-      const signer = window.keplr.getOfflineSigner(CHAIN_ID);
+      const signer = window.keplr.getOfflineSignerOnlyAmino(CHAIN_ID);
+      const accounts = await signer.getAccounts();
 
-      const client = await SigningStargateClient.connectWithSigner(RPC, signer);
+      // fetch account info
+      const accRes = await fetch(`${API}/api/hyperscale/account/${userAddress}`);
+      const accData = await accRes.json();
 
-      // 💸 SEND 10 RAI
-      const tx = await client.sendTokens(
-        userAddress,
-        TREASURY,
-        [{ denom: "arai", amount: RAI_FEE }],
-        {
+      const signDoc = {
+        chain_id: CHAIN_ID,
+        account_number: String(accData.account_number || "0"),
+        sequence: String(accData.sequence || "0"),
+        fee: {
           amount: [{ denom: "arai", amount: "200000000000000" }],
-          gas: "200000"
+          gas: "200000",
         },
-        "Hyperscale fee"
+        msgs: [
+          {
+            type: "cosmos-sdk/MsgSend",
+            value: {
+              from_address: userAddress,
+              to_address: TREASURY,
+              amount: [{ denom: "arai", amount: AMOUNT }],
+            },
+          },
+        ],
+        memo: "Hyperscale fee",
+      };
+
+      const { signed, signature } = await window.keplr.signAmino(
+        CHAIN_ID,
+        userAddress,
+        signDoc
       );
 
-      console.log("TX SUCCESS:", tx.transactionHash);
+      // broadcast (safe way)
+      const broadcastRes = await fetch(
+        "https://api-test.republic.vinjan-inc.com/cosmos/tx/v1beta1/txs",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tx: {
+              msg: signed.msgs,
+              fee: signed.fee,
+              signatures: [signature.signature],
+              memo: signed.memo,
+            },
+            mode: "BROADCAST_MODE_SYNC",
+          }),
+        }
+      );
 
-      // 🚀 AFTER PAYMENT → SUBMIT JOB
+      const txResult = await broadcastRes.json();
+
+      if (txResult.code) {
+        throw new Error(txResult.raw_log || "TX Failed");
+      }
+
+      console.log("TX SUCCESS");
+
+      // 👉 payment success → inference
       await submitJob();
 
     } catch (e) {
@@ -96,7 +134,7 @@
     }
   }
 
-  // ---------------- LOAD DATA ----------------
+  // ---------------- LOAD ----------------
   async function loadMiners() {
     try {
       const r = await fetch(`${API}/api/leaderboard?limit=200`);
@@ -111,7 +149,7 @@
       const r = await fetch(`${API}/api/hyperscale/models`);
       models = await r.json();
     } catch(e) {
-      // fallback
+      // fallback so UI never breaks
       models = [{
         id: "fallback",
         name: "Fallback Model",
@@ -122,7 +160,7 @@
     modelsLoading = false;
   }
 
-  // ---------------- SUBMIT JOB ----------------
+  // ---------------- SUBMIT ----------------
   async function submitJob() {
     try {
       const r = await fetch(`${API}/api/hyperscale/submit`, {
