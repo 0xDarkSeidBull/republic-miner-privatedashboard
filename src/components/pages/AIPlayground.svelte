@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import { API, fmt, shortAddr } from '../../stores/app.js';
   import { marked } from 'marked';
-  import { SigningStargateClient } from '@cosmjs/stargate';
 
   // ── STATE ──
   let prompt = '';
@@ -31,30 +30,30 @@
   let keplrConnected = false;
   let userAddress = '';
   let keplrError = '';
-  let paymentStep = 'idle';
+  let paymentStep = 'idle'; // idle | connecting | paying | verifying | ready
   let paymentTxHash = '';
   let paymentError = '';
 
   const TREASURY = 'rai1alt2884lvwzlzg6l03eaplry7a0ytx0wf3k889';
   const RAI_FEE = 10;
+  const ARAI_FEE = (BigInt(RAI_FEE) * BigInt(10 ** 18)).toString();
 
-  // 🔥 WORKING CONFIG - Copy paste exact
   const REPUBLIC_CHAIN = {
     chainId: 'raitestnet_77701-1',
-    chainName: 'Republic Testnet',
-    rpc: 'https://rpc-republic.onenov.xyz',
-    rest: 'https://api-republic.onenov.xyz',
+    chainName: 'Republic AI Testnet',
+    rpc: 'https://rpc-test.republic.vinjan-inc.com',
+    rest: 'https://api-test.republic.vinjan-inc.com',
     bip44: { coinType: 60 },
     bech32Config: {
-      bech32PrefixAccAddr: 'rai',
-      bech32PrefixAccPub: 'raipub',
-      bech32PrefixValAddr: 'raivaloper',
-      bech32PrefixValPub: 'raivaloperpub',
-      bech32PrefixConsAddr: 'raivalcons',
-      bech32PrefixConsPub: 'raivalconspub',
+      bech32PrefixAccAddr: 'rai1',
+      bech32PrefixAccPub: 'rai1pub',
+      bech32PrefixValAddr: 'raivaloper1',
+      bech32PrefixValPub: 'raivaloper1pub',
+      bech32PrefixConsAddr: 'raivalcons1',
+      bech32PrefixConsPub: 'raivalcons1pub',
     },
     currencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 }],
-    feeCurrencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18, gasPriceStep: { low: 10000000000, average: 25000000000, high: 40000000000 } }],
+    feeCurrencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18, gasPriceStep: { low: 0.01, average: 0.025, high: 0.04 } }],
     stakeCurrency: { coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 },
   };
 
@@ -62,16 +61,27 @@
     paymentStep = 'connecting';
     keplrError = '';
     try {
-      if (!window.keplr) {
-        throw new Error('Keplr not installed!');
-      }
-      
-      // Remove old chain config to avoid conflicts
-      try {
-        await window.keplr.removeChain("raitestnet_77701-1");
-      } catch(e) {}
-      
-      await new Promise(r => setTimeout(r, 500));
+      if (!window.keplr) throw new Error('Keplr not installed! Install from keplr.app');
+      await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN);
+      await window.keplr.enable(REPUBLIC_CHAIN.chainId);
+      const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
+      const accounts = await offlineSigner.getAccounts();
+      userAddress = accounts[0].address;
+      keplrConnected = true;
+      paymentStep = 'idle';
+    } catch(e) {
+      keplrError = e.message;
+      paymentStep = 'idle';
+    }
+  }
+
+  async function payAndInfer() {
+    if (!prompt.trim()) return;
+    paymentStep = 'connecting';
+    paymentError = '';
+    loading = true;
+    try {
+      if (!window.keplr) throw new Error('Keplr not installed!');
       
       await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN);
       await window.keplr.enable(REPUBLIC_CHAIN.chainId);
@@ -80,93 +90,41 @@
       const accounts = await offlineSigner.getAccounts();
       userAddress = accounts[0].address;
       keplrConnected = true;
-      paymentStep = 'idle';
-      
-      console.log("✅ Connected:", userAddress);
-      
-    } catch(e) {
-      console.error('Connection error:', e);
-      keplrError = e.message;
-      paymentStep = 'idle';
-    }
-  }
 
-  // 🔥 MAIN PAYMENT FUNCTION - WORKING
-  async function payAndInfer() {
-    if (!prompt.trim()) {
-      error = 'Please enter a prompt';
-      return;
-    }
+      paymentStep = 'paying';
 
-    paymentError = '';
-    paymentStep = 'paying';
-    loading = true;
-    error = '';
-
-    try {
-      if (!window.keplr) {
-        throw new Error('Keplr not installed!');
-      }
-
-      // Ensure chain is enabled
-      await window.keplr.enable(REPUBLIC_CHAIN.chainId);
+      // Load SigningStargateClient from CDN
+      const { SigningStargateClient } = await import('https://esm.sh/@cosmjs/stargate@0.32.4');
       
-      const offlineSigner = window.keplr.getOfflineSigner(REPUBLIC_CHAIN.chainId);
-      const accounts = await offlineSigner.getAccounts();
-      const fromAddress = accounts[0].address;
-      
-      console.log("From address:", fromAddress);
-      console.log("To treasury:", TREASURY);
-      
-      userAddress = fromAddress;
-      keplrConnected = true;
-      
-      // Create client with REST endpoint
       const client = await SigningStargateClient.connectWithSigner(
-        REPUBLIC_CHAIN.rpc,
+        'https://rpc-republic.onenov.xyz',
         offlineSigner
       );
 
-      // 🔥 CORRECT AMOUNT CALCULATION
-      const amountInArai = Math.floor(RAI_FEE * 1e18).toString();
-      
-      const amount = [{ 
-        denom: "arai", 
-        amount: amountInArai 
-      }];
-      
-      // 🔥 CORRECT FEE
+      const amount = [{ denom: 'arai', amount: ARAI_FEE }];
       const fee = { 
-        amount: [{ denom: "arai", amount: "10000000000" }], 
-        gas: "200000" 
+        amount: [{ denom: 'arai', amount: '200000000000000' }], 
+        gas: '200000' 
       };
 
-      console.log(`Sending ${RAI_FEE} RAI...`);
-      console.log("Amount in arai:", amountInArai);
-      
-      const txResult = await client.sendTokens(
-        fromAddress,
+      const result = await client.sendTokens(
+        userAddress,
         TREASURY,
         amount,
         fee,
-        "Hyperscale inference fee"
+        'Hyperscale inference fee'
       );
 
-      if (txResult.code !== 0) {
-        throw new Error(txResult.rawLog || "Transaction failed");
-      }
-
-      paymentTxHash = txResult.transactionHash;
-      console.log("✅ Payment successful!", paymentTxHash);
+      if (result.code !== 0) throw new Error(`TX failed: ${result.rawLog}`);
       
+      paymentTxHash = result.transactionHash;
       paymentStep = 'verifying';
       await new Promise(r => setTimeout(r, 3000));
-      paymentStep = 'ready';
       
+      paymentStep = 'ready';
       await submitJob();
 
-    } catch (e) {
-      console.error("Error:", e);
+    } catch(e) {
       paymentError = e.message;
       paymentStep = 'idle';
       loading = false;
@@ -178,9 +136,7 @@
       const r = await fetch(`${API}/api/leaderboard?limit=200`);
       const d = await r.json();
       miners = (d.data || []).filter(m => m.submit_job_result > 0);
-    } catch(e) {
-      console.error('Error loading miners:', e);
-    }
+    } catch(e) {}
   }
 
   async function loadModels() {
@@ -188,15 +144,15 @@
     try {
       const r = await fetch(`${API}/api/hyperscale/models`);
       models = await r.json();
-    } catch(e) {
-      console.error('Error loading models:', e);
-    }
+    } catch(e) {}
     modelsLoading = false;
   }
 
   async function submitJob() {
     if (!prompt.trim()) return;
-    
+    loading = true;
+    error = '';
+    result = null;
     try {
       const r = await fetch(`${API}/api/hyperscale/submit`, {
         method: 'POST',
@@ -208,8 +164,7 @@
         })
       });
       const d = await r.json();
-      if (!d.success) throw new Error(d.error || 'Failed to submit job');
-      
+      if (!d.success) throw new Error(d.error || 'Failed');
       trackingId = d.tracking_id;
       pollInterval = setInterval(pollStatus, 3000);
     } catch(e) {
@@ -230,28 +185,17 @@
         loading = false;
         paymentStep = 'idle';
       }
-    } catch(e) {
-      console.error('Polling error:', e);
-    }
+    } catch(e) {}
   }
 
   function reset() {
-    result = null;
-    error = '';
-    trackingId = null;
-    prompt = '';
-    loading = false;
-    selectedMiner = null;
+    result = null; error = ''; trackingId = null;
+    prompt = ''; loading = false; selectedMiner = null;
     selectedModel = 'nex-agi/deepseek-v3.1-nex-n1';
-    paymentStep = 'idle';
-    paymentTxHash = '';
-    paymentError = '';
+    paymentStep = 'idle'; paymentTxHash = ''; paymentError = '';
   }
 
-  onMount(() => { 
-    loadMiners(); 
-    loadModels();
-  });
+  onMount(() => { loadMiners(); loadModels(); });
 </script>
 
 <div class="hero">
@@ -270,12 +214,12 @@
     <div style="font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:12px">HOW IT WORKS</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center">
       <div><div style="font-size:24px;margin-bottom:8px">🔗</div><div style="font-size:13px;font-weight:600;margin-bottom:4px">1. Connect Keplr</div><div style="font-size:11px;color:var(--muted)">Connect your Republic AI wallet</div></div>
-      <div><div style="font-size:24px;margin-bottom:8px">💸</div><div style="font-size:13px;font-weight:600;margin-bottom:4px">2. Pay {RAI_FEE} RAI</div><div style="font-size:11px;color:var(--muted)">Sign payment on Republic chain</div></div>
+      <div><div style="font-size:24px;margin-bottom:8px">💸</div><div style="font-size:13px;font-weight:600;margin-bottom:4px">2. Pay 10 RAI</div><div style="font-size:11px;color:var(--muted)">Sign payment on Republic chain</div></div>
       <div><div style="font-size:24px;margin-bottom:8px">⛓️</div><div style="font-size:13px;font-weight:600;margin-bottom:4px">3. Get Response</div><div style="font-size:11px;color:var(--muted)">AI inference recorded on-chain</div></div>
     </div>
   </div>
 
-  <!-- KEPLR CONNECT STATUS -->
+  <!-- KEPLR CONNECT -->
   <div style="background:var(--bg2);border:1px solid {keplrConnected ? 'rgba(74,222,128,.3)' : 'var(--border)'};border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
     <div>
       <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">WALLET</div>
@@ -385,11 +329,6 @@
             : paymentStep === 'verifying' ? 'Confirming on-chain payment...'
             : selectedMiner ? `Sending to ${selectedMiner.moniker || shortAddr(selectedMiner.address)}...` : 'Submitting to Republic chain (~30s)'}
           </div>
-          {#if paymentTxHash && paymentStep === 'verifying'}
-            <div style="font-size:10px;color:var(--muted);margin-top:8px;font-family:monospace">
-              Tx: {paymentTxHash.slice(0, 20)}...
-            </div>
-          {/if}
         </div>
       {:else}
         <button on:click={payAndInfer}
@@ -427,21 +366,27 @@
         <div class="markdown-body">{@html marked(result.result?.content || result.error || '')}</div>
       </div>
 
-      {#if result.txhash || paymentTxHash}
+      {#if result.txhash}
         <div style="padding:16px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,0.2)">
-          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:8px">TRANSACTIONS</div>
-          {#if paymentTxHash}
-            <div style="font-family:monospace;font-size:10px;word-break:break-all;color:#4ADE80">
-              💸 Payment: {paymentTxHash}
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:8px;letter-spacing:1px">ON-CHAIN PROOF</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">TX HASH</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent3);word-break:break-all">{result.txhash}</div>
             </div>
-          {/if}
-          {#if result.txhash}
-            <div style="font-family:monospace;font-size:10px;word-break:break-all;color:var(--accent);margin-top:4px">
-              ⛓️ Inference: {result.txhash}
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">HYPERSCALE JOB ID</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent3);word-break:break-all">{result.result?.hyperscale_job_id || '—'}</div>
             </div>
-          {/if}
-        </div>
-      {/if}
-    </div>
-  {/if}
-</div>
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">COST</div>
+              <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">{result.result?.cost?.toFixed(6)} RAI</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <a href={result.explorer} target="_blank" rel="noopener" style="color:var(--blue);font-family:var(--font-mono);font-size:11px">View on Explorer ↗</a>
+            {#if paymentTxHash}
+              <a href="https://explorer.vinjan-inc.com/republic-testnet/tx/{paymentTxHash}" target="_blank" rel="noopener" style="color:var(--accent3);font-family:var(--font-mono);font-size:11px">Payment TX ↗</a>
+            {/if}
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">Verified by: Hyperscale SDK + Republic AI Chain</span>
+          	
