@@ -78,7 +78,7 @@
 
     try {
       // ✅ Transfer using the fixed hook
-      const txResult = await keplr.transfer(TREASURY_ADDRESS, RAI_FEE);
+      const txResult = await keplr.transfer(TREASURY_ADDRESS, RAI_FEE, API);
       
       if (!txResult || txResult.code !== 0) {
         throw new Error('Transaction failed');

@@ -1,10 +1,5 @@
 // src/lib/hooks/useKeplrTransfer.js
-
 import { writable } from 'svelte/store';
-import { SigningStargateClient } from '@cosmjs/stargate';
-import { fromBase64, toBase64 } from '@cosmjs/encoding';
-import { Registry } from '@cosmjs/proto-signing';
-import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { 
   CHAIN_ID, 
   RPC_URL, 
@@ -27,7 +22,6 @@ export function useKeplrTransfer() {
       const araiBalance = data.balances?.find(b => b.denom === 'arai');
       return araiBalance ? araiToRai(araiBalance.amount) : '0.0000';
     } catch(e) {
-      console.error('Balance fetch error:', e);
       return '0.0000';
     }
   }
@@ -37,8 +31,8 @@ export function useKeplrTransfer() {
     const data = await res.json();
     const acc = data.account?.base_account || data.account;
     return {
-      accountNumber: parseInt(acc.account_number || '0'),
-      sequence: parseInt(acc.sequence || '0'),
+      accountNumber: acc.account_number || '0',
+      sequence: acc.sequence || '0',
     };
   }
 
@@ -55,9 +49,8 @@ export function useKeplrTransfer() {
       await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN_CONFIG);
       await window.keplr.enable(CHAIN_ID);
       
-      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
-      const accounts = await offlineSigner.getAccounts();
-      const userAddress = accounts[0].address;
+      const key = await window.keplr.getKey(CHAIN_ID);
+      const userAddress = key.bech32Address;
       
       address.set(userAddress);
       
@@ -65,7 +58,7 @@ export function useKeplrTransfer() {
       balance.set(bal);
       
       loading.set(false);
-      return { offlineSigner, address: userAddress };
+      return { address: userAddress };
       
     } catch (e) {
       console.error('Connection error:', e);
@@ -75,64 +68,76 @@ export function useKeplrTransfer() {
     }
   }
 
-  async function transfer(recipientAddress, amountInRAI) {
+  async function transfer(recipientAddress, amountInRAI, API_BASE) {
     loading.set(true);
     error.set('');
     
     try {
-      // 1. Connect and get signer
       const connection = await connectWallet();
       if (!connection) throw new Error('Wallet not connected');
       
-      const { offlineSigner, address: fromAddress } = connection;
+      const fromAddress = connection.address;
       
-      // 2. Get account info for sequence
+      // Get account info
       const { accountNumber, sequence } = await fetchAccountInfo(fromAddress);
       
-      // 3. Create registry with Ethermint types
-      const registry = new Registry(defaultRegistryTypes);
-      
-      // 4. Create message
+      // Prepare amount
       const araiAmount = raiToArai(amountInRAI);
-      const sendMsg = {
-        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
-        value: {
-          fromAddress: fromAddress,
-          toAddress: recipientAddress,
-          amount: [{ denom: 'arai', amount: araiAmount }]
-        }
+      
+      // Create signDoc (Amino format - works with Ethermint)
+      const signDoc = {
+        chain_id: CHAIN_ID,
+        account_number: accountNumber,
+        sequence: sequence,
+        fee: {
+          amount: [{ denom: 'arai', amount: '4000000000000000' }],
+          gas: '250000',
+        },
+        msgs: [{
+          type: 'cosmos-sdk/MsgSend',
+          value: {
+            from_address: fromAddress,
+            to_address: recipientAddress,
+            amount: [{ denom: 'arai', amount: araiAmount }],
+          },
+        }],
+        memo: 'Hyperscale inference fee — republicstats.xyz',
       };
-      
-      // 5. Setup client with signer
-      const client = await SigningStargateClient.connectWithSigner(
-        RPC_URL,
-        offlineSigner,
-        { registry }
+
+      // Sign with Keplr (Amino)
+      const signed = await window.keplr.signAmino(
+        CHAIN_ID, 
+        fromAddress, 
+        signDoc,
+        { preferNoSetFee: true }
       );
+
+      // Broadcast via backend (CRITICAL for Ethermint)
+      const broadcastRes = await fetch(`/api/hyperscale/broadcast`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          signed_doc: signed.signed,
+          signature: signed.signature,
+          user_address: fromAddress,
+        }),
+      });
       
-      // 6. Send transaction
-      const fee = {
-        amount: [{ denom: 'arai', amount: '5000000000000000' }],
-        gas: '250000'
-      };
+      const broadcastData = await broadcastRes.json();
       
-      const result = await client.signAndBroadcast(
-        fromAddress,
-        [sendMsg],
-        fee,
-        'Hyperscale inference fee — republicstats.xyz'
-      );
-      
-      if (result.code !== 0) {
-        throw new Error(`Transaction failed: ${result.rawLog}`);
+      if (!broadcastData.success) {
+        throw new Error(broadcastData.error || 'Broadcast failed');
       }
       
-      // 7. Update balance
+      // Update balance
       const newBalance = await fetchBalance(fromAddress);
       balance.set(newBalance);
       
       loading.set(false);
-      return result;
+      return { 
+        code: 0, 
+        transactionHash: broadcastData.txhash 
+      };
       
     } catch (e) {
       console.error('Transfer error:', e);
