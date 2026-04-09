@@ -1,7 +1,11 @@
 import { defineConfig } from 'astro/config';
 import svelte from '@astrojs/svelte';
+import node from '@astrojs/node';
 
 export default defineConfig({
   integrations: [svelte()],
-  output: 'server', // ✅ ADD THIS - API endpoints ke liye zaroori hai
+  output: 'server',
+  adapter: node({
+    mode: 'standalone'
+  })
 });

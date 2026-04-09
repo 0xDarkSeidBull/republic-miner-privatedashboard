@@ -1,5 +1,5 @@
-// src/lib/hooks/useKeplrTransfer.js
 import { writable } from 'svelte/store';
+import { SigningStargateClient } from '@cosmjs/stargate';
 import { 
   CHAIN_ID, 
   RPC_URL, 
@@ -26,16 +26,6 @@ export function useKeplrTransfer() {
     }
   }
 
-  async function fetchAccountInfo(addr) {
-    const res = await fetch(`${REST_URL}/cosmos/auth/v1beta1/accounts/${addr}`);
-    const data = await res.json();
-    const acc = data.account?.base_account || data.account;
-    return {
-      accountNumber: acc.account_number || '0',
-      sequence: acc.sequence || '0',
-    };
-  }
-
   async function connectWallet() {
     if (!window.keplr) {
       error.set('Please install Keplr wallet extension');
@@ -49,8 +39,10 @@ export function useKeplrTransfer() {
       await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN_CONFIG);
       await window.keplr.enable(CHAIN_ID);
       
-      const key = await window.keplr.getKey(CHAIN_ID);
-      const userAddress = key.bech32Address;
+      // ✅ OneNov exactly yahi use kar raha hai
+      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
+      const accounts = await offlineSigner.getAccounts();
+      const userAddress = accounts[0].address;
       
       address.set(userAddress);
       
@@ -58,7 +50,7 @@ export function useKeplrTransfer() {
       balance.set(bal);
       
       loading.set(false);
-      return { address: userAddress };
+      return { offlineSigner, address: userAddress };
       
     } catch (e) {
       console.error('Connection error:', e);
@@ -68,7 +60,7 @@ export function useKeplrTransfer() {
     }
   }
 
-  async function transfer(recipientAddress, amountInRAI, API_BASE) {
+  async function transfer(recipientAddress, amountInRAI) {
     loading.set(true);
     error.set('');
     
@@ -76,68 +68,52 @@ export function useKeplrTransfer() {
       const connection = await connectWallet();
       if (!connection) throw new Error('Wallet not connected');
       
-      const fromAddress = connection.address;
+      const { offlineSigner, address: fromAddress } = connection;
       
-      // Get account info
-      const { accountNumber, sequence } = await fetchAccountInfo(fromAddress);
-      
-      // Prepare amount
-      const araiAmount = raiToArai(amountInRAI);
-      
-      // Create signDoc (Amino format - works with Ethermint)
-      const signDoc = {
-        chain_id: CHAIN_ID,
-        account_number: accountNumber,
-        sequence: sequence,
-        fee: {
-          amount: [{ denom: 'arai', amount: '4000000000000000' }],
-          gas: '250000',
-        },
-        msgs: [{
-          type: 'cosmos-sdk/MsgSend',
-          value: {
-            from_address: fromAddress,
-            to_address: recipientAddress,
-            amount: [{ denom: 'arai', amount: araiAmount }],
-          },
-        }],
-        memo: 'Hyperscale inference fee — republicstats.xyz',
-      };
-
-      // Sign with Keplr (Amino)
-      const signed = await window.keplr.signAmino(
-        CHAIN_ID, 
-        fromAddress, 
-        signDoc,
-        { preferNoSetFee: true }
+      // ✅ OneNov ka exact method - signAndBroadcast
+      const client = await SigningStargateClient.connectWithSigner(
+        RPC_URL,
+        offlineSigner
       );
 
-      // Broadcast via backend (CRITICAL for Ethermint)
-      const broadcastRes = await fetch(`/api/hyperscale/broadcast`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          signed_doc: signed.signed,
-          signature: signed.signature,
-          user_address: fromAddress,
-        }),
-      });
+      const araiAmount = raiToArai(amountInRAI);
       
-      const broadcastData = await broadcastRes.json();
-      
-      if (!broadcastData.success) {
-        throw new Error(broadcastData.error || 'Broadcast failed');
+      // Create message exactly like OneNov
+      const sendMsg = {
+        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+        value: {
+          fromAddress: fromAddress,
+          toAddress: recipientAddress,
+          amount: [{ denom: 'arai', amount: araiAmount }]
+        }
+      };
+
+      // Fee structure exactly like OneNov
+      const fee = {
+        amount: [{ 
+          denom: 'arai', 
+          amount: (0.01 * 10 ** 18).toFixed(0)  // 0.01 RAI
+        }],
+        gas: '400000'  // OneNov uses 400000 gas
+      };
+
+      // ✅ Use signAndBroadcast - NOT sendTokens
+      const result = await client.signAndBroadcast(
+        fromAddress,
+        [sendMsg],
+        fee,
+        'Hyperscale inference fee — republicstats.xyz'
+      );
+
+      if (result.code !== 0) {
+        throw new Error(`Transaction failed: ${result.rawLog}`);
       }
-      
-      // Update balance
+
       const newBalance = await fetchBalance(fromAddress);
       balance.set(newBalance);
       
       loading.set(false);
-      return { 
-        code: 0, 
-        transactionHash: broadcastData.txhash 
-      };
+      return result;
       
     } catch (e) {
       console.error('Transfer error:', e);
