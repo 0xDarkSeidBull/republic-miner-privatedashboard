@@ -1,11 +1,9 @@
 import { defineConfig } from 'astro/config';
 import svelte from '@astrojs/svelte';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel';  // ← Node ki jagah Vercel
 
 export default defineConfig({
   integrations: [svelte()],
   output: 'server',
-  adapter: node({
-    mode: 'standalone'
-  })
+  adapter: vercel()  // ← Node ki jagah Vercel
 });
