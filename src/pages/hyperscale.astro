@@ -1,10 +1,15 @@
 ---
-import Layout from '../layouts/Layout.astro';
 import Hyperscale from '../components/pages/Hyperscale.svelte';
+import '../styles/global.css';
 ---
-
-<Layout title="Hyperscale AI - Republic Stats">
-  <main>
-    <Hyperscale client:load />
-  </main>
-</Layout>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hyperscale Jobs · Republic Stats</title>
+</head>
+<body>
+  <Hyperscale client:load />
+</body>
+</html>
