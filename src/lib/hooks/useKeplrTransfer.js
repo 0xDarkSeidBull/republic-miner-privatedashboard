@@ -41,29 +41,67 @@ export function useKeplrTransfer() {
     }
 
     async function transfer(recipientAddress, amountInRAI) {
-        loading.set(true);
-        error.set('');
-        
-        try {
-            await window.keplr.enable(CHAIN_ID);
-            const key = await window.keplr.getKey(CHAIN_ID);
-            const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
+    loading.set(true);
+    error.set('');
+    
+    try {
+        const keplr = window.keplr;
+        if (!keplr) throw new Error("Keplr not found");
 
-            // ✅ CRITICAL FIX: The OneNov Fixed Signer Wrapper
-            const fixedSigner = {
-                getAccounts: async () => [{
-                    address: key.bech32Address,
-                    algo: "ethsecp256k1", // This is the secret sauce
-                    pubkey: key.pubKey,
-                }],
-                signDirect: async (signerAddress, signDoc) => {
-                    return offlineSigner.signDirect(signerAddress, signDoc);
-                },
-                // For Amino support if needed
-                signAmino: async (signerAddress, signDoc) => {
-                    return offlineSigner.signAmino(signerAddress, signDoc);
-                }
-            };
+        await keplr.enable(CHAIN_ID);
+        const key = await keplr.getKey(CHAIN_ID);
+        const offlineSigner = keplr.getOfflineSigner(CHAIN_ID);
+
+        // ✅ YE HAI ASLI FIX: Fixed Signer Wrapper
+        // Isse CosmJS ko force kiya jata hai ki wo Ethereum-style key use kare
+        const fixedSigner = {
+            getAccounts: async () => [{
+                address: key.bech32Address,
+                algo: "ethsecp256k1", // Force Ethermint algorithm
+                pubkey: key.pubKey,
+            }],
+            signDirect: async (signerAddress, signDoc) => {
+                return offlineSigner.signDirect(signerAddress, signDoc);
+            }
+        };
+
+        const client = await SigningStargateClient.connectWithSigner(RPC_URL, fixedSigner);
+
+        const araiAmount = raiToArai(amountInRAI);
+        
+        const msgSend = {
+            typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+            value: {
+                fromAddress: key.bech32Address,
+                toAddress: recipientAddress,
+                amount: [{ denom: 'arai', amount: araiAmount }]
+            }
+        };
+
+        const fee = {
+            amount: [{ denom: 'arai', amount: "10000000000000000" }], // 0.01 RAI
+            gas: "250000"
+        };
+
+        // signAndBroadcast use karo jaise OneNov kar raha hai
+        const result = await client.signAndBroadcast(
+            key.bech32Address,
+            [msgSend],
+            fee,
+            'Hyperscale Job Fee'
+        );
+
+        if (result.code !== 0) throw new Error(result.rawLog);
+
+        return result;
+    } catch (e) {
+        console.error("Transfer Error:", e);
+        error.set(e.message);
+        throw e;
+    } finally {
+        loading.set(false);
+    }
+}
 
             const client = await SigningStargateClient.connectWithSigner(RPC_URL, fixedSigner);
 
