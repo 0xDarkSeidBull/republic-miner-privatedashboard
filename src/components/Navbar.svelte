@@ -3,11 +3,19 @@
 
   let menuOpen = false;
 
+  const pageUrls = {
+    'home': '/', 'leaderboard': '/leaderboard', 'weekly': '/weekly',
+    'fastgpu': '/fastgpu', 'hyperscale': '/hyperscale', 'userdashboard': '/userdashboard',
+    'ecosystem': '/ecosystem', 'guides': '/guides', 'submitjob': '/submitjob',
+    'walletjobs': '/walletjobs', 'submit': '/submit'
+  };
+
   function navigate(page) {
     currentPage.set(page);
     menuOpen = false;
     document.body.style.overflow = '';
     window.scrollTo(0, 0);
+    window.history.pushState({}, '', pageUrls[page] || '/');
   }
 
   function toggleMenu() {
