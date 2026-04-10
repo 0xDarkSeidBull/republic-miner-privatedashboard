@@ -3,18 +3,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
-  "framework": "astro",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://api.republicstats.xyz/api/$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ]
+  "framework": "astro"
 }
