@@ -195,10 +195,9 @@
       console.log('Sending transaction...');
       
       // Send tokens - this will trigger Keplr popup
-      const txResult = await client.sendTokens(
+      const txResult = await client.signAndBroadcast(
         userAddress,
-        TREASURY,
-        amount,
+        [{ typeUrl: '/cosmos.bank.v1beta1.MsgSend', value: { fromAddress: userAddress, toAddress: TREASURY, amount: amount } }],
         fee,
         'Hyperscale inference fee — republicstats.xyz'
       );
