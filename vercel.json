@@ -8,6 +8,13 @@
     {
       "src": "/api/(.*)",
       "dest": "https://api.republicstats.xyz/api/$1"
+    },
+    {
+      "handle": "files"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/"
     }
   ]
 }
