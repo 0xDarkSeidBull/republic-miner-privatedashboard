@@ -156,21 +156,23 @@
     try {
       // Import required packages
       const { SigningStargateClient } = await import('@cosmjs/stargate');
-      
-      // Enable and get signer
-      await window.keplr.enable(CHAIN_ID);
-      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
-      const accounts = await offlineSigner.getAccounts();
-      userAddress = accounts[0].address;
+await window.keplr.enable(CHAIN_ID);
+const key = await window.keplr.getKey(CHAIN_ID);
+const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
+userAddress = key.bech32Address;
 
-      // ✅ Connect with signer - proper config for Ethermint
-      const client = await SigningStargateClient.connectWithSigner(
-        RPC_URL,
-        offlineSigner,
-        {
-          gasPrice: { amount: '25000000000', denom: 'arai' }
-        }
-      );
+const fixedSigner = {
+  getAccounts: async () => [{
+    address: key.bech32Address,
+    algo: 'ethsecp256k1',
+    pubkey: key.pubKey,
+  }],
+  signDirect: async (signerAddress, signDoc) => {
+    return offlineSigner.signDirect(signerAddress, signDoc);
+  }
+};
+
+const client = await SigningStargateClient.connectWithSigner(RPC_URL, fixedSigner);
 
       // Prepare amount (RAI has 18 decimals)
       const araiAmount = (BigInt(RAI_FEE) * BigInt(10n ** 18n)).toString();
