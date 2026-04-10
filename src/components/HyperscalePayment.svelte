@@ -1,243 +1,123 @@
-<script lang="ts">
-  import { onMount } from 'svelte';
-  
-  export let treasuryAddress: string;
-  export let priceInRAI: number = 0.1;
-  export let onPaymentSuccess: (txHash: string) => void;
-  export let onPaymentError: (error: string) => void;
-  
+<script>
+  export let treasuryAddress;
+  export let priceInRAI = 10;
+  export let onPaymentSuccess;
+  export let onPaymentError;
+
   let loading = false;
-  let address: string | null = null;
-  let balance: string = "0";
+  let address = null;
+  let balance = '0';
   let isPaid = false;
-  let txHash: string | null = null;
-  
-  let keplr: any;
-  let client: any;
-  
+  let txHash = null;
+
   const CHAIN_CONFIG = {
-    chainId: "raitestnet_77701-1",
-    chainName: "Republic AI Testnet",
-    rpc: "https://rpc.republicai.io",
-    rest: "https://rest.republicai.io",
-    bech32Prefix: "rai",
-    currencies: [{
-      coinDenom: "RAI",
-      coinMinimalDenom: "arai",
-      coinDecimals: 18,
-    }],
-    feeCurrencies: [{
-      coinDenom: "RAI",
-      coinMinimalDenom: "arai",
-      coinDecimals: 18,
-    }],
-    gasPriceStep: { low: 1, average: 1.5, high: 2 },
+    chainId: 'raitestnet_77701-1',
+    chainName: 'Republic Testnet',
+    rpc: 'https://rpc-republic.onenov.xyz',
+    rest: 'https://api-republic.onenov.xyz',
+    bip44: { coinType: 60 },
+    bech32Config: {
+      bech32PrefixAccAddr: 'rai',
+      bech32PrefixAccPub: 'raipub',
+      bech32PrefixValAddr: 'raivaloper',
+      bech32PrefixValPub: 'raivaloperpub',
+      bech32PrefixConsAddr: 'raivalcons',
+      bech32PrefixConsPub: 'raivalconspub',
+    },
+    currencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 }],
+    feeCurrencies: [{ coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 }],
+    gasPriceStep: { low: 10000000000, average: 25000000000, high: 40000000000 },
+    stakeCurrency: { coinDenom: 'RAI', coinMinimalDenom: 'arai', coinDecimals: 18 },
   };
-  
+
+  let client = null;
+
   const connectWallet = async () => {
     if (!window.keplr) {
-      alert("Please install Keplr wallet extension from keplr.app");
-      window.open("https://www.keplr.app/download", "_blank");
+      alert('Please install Keplr wallet');
       return;
     }
-    
     loading = true;
     try {
-      keplr = window.keplr;
-      
-      // Suggest chain
-      await keplr.experimentalSuggestChain({
-        chainId: CHAIN_CONFIG.chainId,
-        chainName: CHAIN_CONFIG.chainName,
-        rpc: CHAIN_CONFIG.rpc,
-        rest: CHAIN_CONFIG.rest,
-        bip44: { coinType: 118 },
-        bech32Config: {
-          bech32PrefixAccAddr: CHAIN_CONFIG.bech32Prefix,
-          bech32PrefixAccPub: `${CHAIN_CONFIG.bech32Prefix}pub`,
-          bech32PrefixValAddr: `${CHAIN_CONFIG.bech32Prefix}valoper`,
-          bech32PrefixValPub: `${CHAIN_CONFIG.bech32Prefix}valoperpub`,
-          bech32PrefixConsAddr: `${CHAIN_CONFIG.bech32Prefix}valcons`,
-          bech32PrefixConsPub: `${CHAIN_CONFIG.bech32Prefix}valconspub`,
-        },
-        currencies: CHAIN_CONFIG.currencies,
-        feeCurrencies: CHAIN_CONFIG.feeCurrencies,
-        gasPriceStep: CHAIN_CONFIG.gasPriceStep,
-      });
-      
-      await keplr.enable(CHAIN_CONFIG.chainId);
-      const offlineSigner = keplr.getOfflineSigner(CHAIN_CONFIG.chainId);
+      await window.keplr.experimentalSuggestChain(CHAIN_CONFIG);
+      await window.keplr.enable(CHAIN_CONFIG.chainId);
+
+      const offlineSigner = window.keplr.getOfflineSignerOnlyAmino(CHAIN_CONFIG.chainId);
       const accounts = await offlineSigner.getAccounts();
       address = accounts[0].address;
-      
-      // Import SigningStargateClient dynamically
+
       const { SigningStargateClient } = await import('@cosmjs/stargate');
-      client = await SigningStargateClient.connectWithSigner(
-        CHAIN_CONFIG.rpc,
-        offlineSigner
-      );
-      
-      const balanceResponse = await client.getBalance(address, "arai");
-      balance = (parseInt(balanceResponse.amount) / 1e18).toFixed(6);
-      
-    } catch (error) {
-      console.error(error);
-      alert(`Connection failed: ${error.message}`);
+      client = await SigningStargateClient.connectWithSigner(CHAIN_CONFIG.rpc, offlineSigner);
+
+      const bal = await client.getBalance(address, 'arai');
+      balance = (parseInt(bal.amount) / 1e18).toFixed(4);
+    } catch(e) {
+      alert(`Connection failed: ${e.message}`);
     } finally {
       loading = false;
     }
   };
-  
+
   const transfer = async () => {
-    if (!client || !address) {
-      await connectWallet();
-    }
-    
-    const currentBalance = parseFloat(balance);
-    if (currentBalance < priceInRAI) {
-      onPaymentError(`Insufficient balance! You have ${balance} RAI, need ${priceInRAI} RAI`);
+    if (!client || !address) await connectWallet();
+    if (!client) return;
+
+    if (parseFloat(balance) < priceInRAI) {
+      onPaymentError(`Insufficient balance. Have ${balance} RAI, need ${priceInRAI} RAI`);
       return;
     }
-    
+
     loading = true;
     try {
-      const amount = [{ 
-        denom: "arai", 
-        amount: Math.floor(priceInRAI * 1e18).toString() 
-      }];
-      
-      const fee = { 
-        amount: [{ denom: "arai", amount: "10000000000000000" }],
-        gas: "200000" 
-      };
-      
-      const result = await client.sendTokens(
+      const result = await client.signAndBroadcast(
         address,
-        treasuryAddress,
-        amount,
-        fee,
-        "Hyperscale AI Payment via Republic Stats"
+        [{
+          typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+          value: {
+            fromAddress: address,
+            toAddress: treasuryAddress,
+            amount: [{ denom: 'arai', amount: Math.floor(priceInRAI * 1e18).toString() }]
+          }
+        }],
+        {
+          amount: [{ denom: 'arai', amount: '10000000000000000' }],
+          gas: '200000'
+        },
+        'Hyperscale inference fee — republicstats.xyz'
       );
-      
+
       if (result.code === 0) {
         isPaid = true;
         txHash = result.transactionHash;
         onPaymentSuccess(result.transactionHash);
       } else {
-        onPaymentError(`Transfer failed: ${result.rawLog}`);
+        onPaymentError(`Failed: ${result.rawLog}`);
       }
-    } catch (error) {
-      onPaymentError(error.message);
+    } catch(e) {
+      onPaymentError(e.message);
     } finally {
       loading = false;
     }
   };
 </script>
 
-<div class="hyperscale-payment">
-  {#if !address}
-    <button
-      on:click={connectWallet}
-      disabled={loading}
-      class="btn btn-primary"
-    >
-      {loading ? '⏳ Connecting...' : '🔌 Connect Keplr Wallet'}
-    </button>
-  {:else if !isPaid}
-    <div class="wallet-info">
-      <div class="wallet-address">
-        📡 {address.slice(0, 10)}...{address.slice(-8)}
-      </div>
-      <div class="wallet-balance">
-        💰 Balance: {parseFloat(balance).toFixed(4)} RAI
-      </div>
-    </div>
-    <button
-      on:click={transfer}
-      disabled={loading}
-      class="btn btn-success"
-    >
-      {loading ? '⏳ Processing...' : `💸 Pay ${priceInRAI} RAI & Run Inference`}
-    </button>
-  {:else}
-    <div class="payment-success">
-      ✅ Payment successful!
-      <div class="tx-hash">TX: {txHash?.slice(0, 20)}...</div>
-    </div>
-  {/if}
-</div>
-
-<style>
-  .hyperscale-payment {
-    margin-top: 1rem;
-  }
-  
-  .btn {
-    width: 100%;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    color: white;
-  }
-  
-  .btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    opacity: 0.9;
-  }
-  
-  .btn-success {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-  }
-  
-  .btn-success:hover:not(:disabled) {
-    transform: translateY(-2px);
-    opacity: 0.9;
-  }
-  
-  button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  .wallet-info {
-    background: rgba(15, 15, 30, 0.6);
-    padding: 12px;
-    border-radius: 12px;
-    margin-bottom: 12px;
-  }
-  
-  .wallet-address {
-    font-family: monospace;
-    font-size: 13px;
-    color: white;
-  }
-  
-  .wallet-balance {
-    font-size: 12px;
-    color: #34d399;
-    margin-top: 4px;
-  }
-  
-  .payment-success {
-    padding: 12px;
-    background: rgba(16, 185, 129, 0.2);
-    border: 1px solid #10b981;
-    border-radius: 12px;
-    color: #34d399;
-    text-align: center;
-  }
-  
-  .tx-hash {
-    font-size: 11px;
-    color: #6b7280;
-    margin-top: 4px;
-  }
-</style>
+{#if !address}
+  <button on:click={connectWallet} disabled={loading}
+    style="width:100%;background:var(--accent);color:#000;border:none;padding:13px;font-family:var(--font-mono);font-size:13px;font-weight:700;border-radius:8px;cursor:pointer">
+    {loading ? '⏳ Connecting...' : '🔗 Connect Keplr'}
+  </button>
+{:else if !isPaid}
+  <div style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">
+    <div style="font-family:var(--font-mono);font-size:11px;color:#4ADE80">✅ {address.slice(0,14)}...{address.slice(-6)}</div>
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:4px">Balance: <span style="color:#4ADE80">{balance} RAI</span></div>
+  </div>
+  <button on:click={transfer} disabled={loading}
+    style="width:100%;background:var(--accent);color:#000;border:none;padding:13px;font-family:var(--font-mono);font-size:13px;font-weight:700;border-radius:8px;cursor:pointer">
+    {loading ? '⏳ Processing...' : `⚡ PAY ${priceInRAI} RAI & SUBMIT`}
+  </button>
+{:else}
+  <div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:8px;padding:12px;text-align:center">
+    <div style="color:#4ADE80;font-weight:700">✅ Payment Successful!</div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:4px">{txHash?.slice(0,30)}...</div>
+  </div>
+{/if}
