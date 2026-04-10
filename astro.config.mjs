@@ -1,9 +1,9 @@
 import { defineConfig } from 'astro/config';
 import svelte from '@astrojs/svelte';
-import vercel from '@astrojs/vercel/serverless';
+import node from '@astrojs/node';
 
 export default defineConfig({
   integrations: [svelte()],
-  output: 'server',
-  adapter: vercel()
+  output: 'static',
+  adapter: node({ mode: 'standalone' })
 });
