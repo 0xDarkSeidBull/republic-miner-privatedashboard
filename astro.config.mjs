@@ -1,10 +1,9 @@
-// astro.config.mjs
 import { defineConfig } from 'astro/config';
 import svelte from '@astrojs/svelte';
-import vercel from '@astrojs/vercel';
+import node from '@astrojs/node';
 
 export default defineConfig({
   integrations: [svelte()],
   output: 'server',
-  adapter: vercel()
+  adapter: node({ mode: 'standalone' })
 });

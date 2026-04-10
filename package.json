@@ -10,7 +10,6 @@
   "dependencies": {
     "@astrojs/node": "^8.3.4",
     "@astrojs/svelte": "^5.0.0",
-    "@astrojs/vercel": "^5.2.0",
     "@cosmjs/encoding": "^0.38.1",
     "@cosmjs/proto-signing": "^0.38.1",
     "@cosmjs/stargate": "^0.38.1",
