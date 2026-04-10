@@ -162,7 +162,7 @@
       
       // Enable and get signer
       await window.keplr.enable(CHAIN_ID);
-      const offlineSigner = window.keplr.getOfflineSignerOnlyAmino(CHAIN_ID);
+      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
       const accounts = await offlineSigner.getAccounts();
       userAddress = accounts[0].address;
 
