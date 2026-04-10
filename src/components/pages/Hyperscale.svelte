@@ -37,8 +37,8 @@
 
   const TREASURY = 'rai1alt2884lvwzlzg6l03eaplry7a0ytx0wf3k889';
   const RAI_FEE = 10;
-  const RPC_URL = 'https://rpc-republic.onenov.xyz';
-  const REST_URL = 'https://api-republic.onenov.xyz';
+  const RPC_URL = 'https://rpc.republicai.io';
+  const REST_URL = 'https://rest.republicai.io';
   const CHAIN_ID = 'raitestnet_77701-1';
 
   // ✅ FIXED: Chain config with ethsecp256k1 support
@@ -51,7 +51,7 @@
       coinType: 60  // Ethermint uses coinType 60 (Ethereum)
     },
     // ✅ CRITICAL FIX: Tell Keplr this is an Ethermint chain
-    features: ['ethsecp256k1'],
+    features: ['eth-address-gen', 'eth-key-sign', 'eth-secp256k1-cosmos'],
     bech32Config: {
       bech32PrefixAccAddr: 'rai',
       bech32PrefixAccPub: 'raipub',
