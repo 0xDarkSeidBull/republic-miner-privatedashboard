@@ -18,27 +18,33 @@ export function useKeplrTransfer() {
     }
 
     async function connectWallet() {
-        if (!window.keplr) {
-            error.set('Please install Keplr wallet extension');
-            return null;
-        }
-        try {
-            await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN_CONFIG);
-            await window.keplr.enable(CHAIN_ID);
-            
-            const key = await window.keplr.getKey(CHAIN_ID);
-            const userAddress = key.bech32Address;
-            
-            address.set(userAddress);
-            const bal = await fetchBalance(userAddress);
-            balance.set(bal);
-            
-            return { address: userAddress };
-        } catch (e) {
-            error.set(e.message);
-            return null;
-        }
+    if (!window.keplr) {
+        error.set('Please install Keplr wallet extension');
+        return null;
     }
+    try {
+        // ✅ STEP 1: Pehle chain details suggest karo (Details must be full)
+        await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN_CONFIG);
+        
+        // ✅ STEP 2: Phir enable karo
+        await window.keplr.enable(CHAIN_ID);
+        
+        const key = await window.keplr.getKey(CHAIN_ID);
+        // Is point par check karo console mein ki algo badla ya nahi
+        console.log("Connected Algo:", key.algo); 
+
+        const userAddress = key.bech32Address;
+        address.set(userAddress);
+        const bal = await fetchBalance(userAddress);
+        balance.set(bal);
+        
+        return { address: userAddress };
+    } catch (e) {
+        console.error("Connection Error:", e);
+        error.set(e.message);
+        return null;
+    }
+}
 
     async function transfer(recipientAddress, amountInRAI) {
     loading.set(true);
