@@ -2,8 +2,6 @@
   import { onMount } from 'svelte';
   import { API, fmt, shortAddr } from '../../stores/app.js';
   import { marked } from 'marked';
-  import { useKeplrTransfer } from '../../lib/hooks/useKeplrTransfer.js';
-  import { TREASURY_ADDRESS, RAI_FEE } from '../../lib/utils/chainConfig.js';
 
   // ── STATE ──
   let prompt = '';
@@ -28,68 +26,198 @@
   );
   $: selectedModelInfo = models.find(m => m.id === selectedModel);
 
-  // ── KEPLR HOOK ──
-  const keplr = useKeplrTransfer();
+  // ── KEPLR / PAYMENT ──
   let keplrConnected = false;
   let userAddress = '';
   let userBalance = '0';
   let keplrError = '';
-  let paymentStep = 'idle';
+  let paymentStep = 'idle'; // idle | connecting | paying | verifying | ready
   let paymentTxHash = '';
   let paymentError = '';
 
-  // Subscribe to stores
-  $: {
-    if ($keplr.address) {
-      keplrConnected = true;
-      userAddress = $keplr.address;
-      userBalance = $keplr.balance;
+  const TREASURY = 'rai1alt2884lvwzlzg6l03eaplry7a0ytx0wf3k889';
+  const RAI_FEE = 10;
+  const RPC_URL = 'https://rpc-republic.onenov.xyz';
+  const REST_URL = 'https://api-republic.onenov.xyz';
+  const CHAIN_ID = 'raitestnet_77701-1';
+
+  // ✅ FIXED: Chain config with ethsecp256k1 support
+  const REPUBLIC_CHAIN = {
+    chainId: CHAIN_ID,
+    chainName: 'Republic AI Testnet',
+    rpc: RPC_URL,
+    rest: REST_URL,
+    bip44: { 
+      coinType: 60  // Ethermint uses coinType 60 (Ethereum)
+    },
+    // ✅ CRITICAL FIX: Tell Keplr this is an Ethermint chain
+    features: ['ethsecp256k1'],
+    bech32Config: {
+      bech32PrefixAccAddr: 'rai',
+      bech32PrefixAccPub: 'raipub',
+      bech32PrefixValAddr: 'raivaloper',
+      bech32PrefixValPub: 'raivaloperpub',
+      bech32PrefixConsAddr: 'raivalcons',
+      bech32PrefixConsPub: 'raivalconspub',
+    },
+    currencies: [{ 
+      coinDenom: 'RAI', 
+      coinMinimalDenom: 'arai', 
+      coinDecimals: 18, 
+      coinGeckoId: '' 
+    }],
+    feeCurrencies: [{ 
+      coinDenom: 'RAI', 
+      coinMinimalDenom: 'arai', 
+      coinDecimals: 18, 
+      coinGeckoId: '',
+      gasPriceStep: { 
+        low: 10000000000, 
+        average: 25000000000, 
+        high: 40000000000 
+      }
+    }],
+    stakeCurrency: { 
+      coinDenom: 'RAI', 
+      coinMinimalDenom: 'arai', 
+      coinDecimals: 18 
+    },
+  };
+
+  // Fetch balance using REST API
+  async function fetchBalance(addr) {
+    try {
+      const res = await fetch(`${REST_URL}/cosmos/bank/v1beta1/balances/${addr}`);
+      const data = await res.json();
+      const araiBalance = data.balances?.find(b => b.denom === 'arai');
+      if (araiBalance) {
+        return (Number(BigInt(araiBalance.amount) / BigInt(10n ** 14n)) / 10000).toFixed(4);
+      }
+      return '0.0000';
+    } catch(e) { 
+      console.error('Balance fetch error:', e);
+      return '0.0000'; 
     }
-    keplrError = $keplr.error;
-    loading = $keplr.loading;
   }
 
-  async function handleConnectKeplr() {
+  // Connect Keplr wallet
+  async function connectKeplr() {
     paymentStep = 'connecting';
-    await keplr.connectWallet();
-    paymentStep = 'idle';
+    keplrError = '';
+    
+    try {
+      if (!window.keplr) {
+        throw new Error('Keplr wallet not found! Please install from keplr.app');
+      }
+
+      console.log('Suggesting Republic chain...');
+      await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN);
+      
+      console.log('Enabling chain...');
+      await window.keplr.enable(CHAIN_ID);
+      
+      console.log('Getting key...');
+      const key = await window.keplr.getKey(CHAIN_ID);
+      userAddress = key.bech32Address;
+      keplrConnected = true;
+      
+      console.log('Fetching balance...');
+      userBalance = await fetchBalance(userAddress);
+      
+      paymentStep = 'idle';
+      console.log('✅ Wallet connected:', userAddress);
+      
+    } catch(e) {
+      console.error('Connection error:', e);
+      keplrError = e.message;
+      paymentStep = 'idle';
+    }
   }
 
+  // ✅ FIXED: Payment function with proper Ethermint signing
   async function payAndInfer() {
     if (!keplrConnected) {
-      await handleConnectKeplr();
+      await connectKeplr();
       if (!keplrConnected) return;
     }
-
-    if (!prompt.trim()) {
-      error = 'Please enter a prompt first';
-      return;
+    
+    if (!prompt.trim()) { 
+      error = 'Please enter a prompt first'; 
+      return; 
     }
-
-    if (parseFloat(userBalance) < RAI_FEE) {
+    
+    if (userBalance !== '0.0000' && parseFloat(userBalance) < RAI_FEE) {
       paymentError = `Insufficient balance. You have ${userBalance} RAI, need ${RAI_FEE} RAI`;
       return;
     }
-
+    
     paymentStep = 'paying';
     paymentError = '';
     error = '';
     loading = true;
 
     try {
-      // ✅ Transfer using the fixed hook
-      const txResult = await keplr.transfer(TREASURY_ADDRESS, RAI_FEE);
+      // Import required packages
+      const { SigningStargateClient } = await import('@cosmjs/stargate');
       
-      if (!txResult || txResult.code !== 0) {
-        throw new Error('Transaction failed');
+      // Enable and get signer
+      await window.keplr.enable(CHAIN_ID);
+      const offlineSigner = window.keplr.getOfflineSignerOnlyAmino(CHAIN_ID);
+      const accounts = await offlineSigner.getAccounts();
+      userAddress = accounts[0].address;
+
+      // ✅ Connect with signer - proper config for Ethermint
+      const client = await SigningStargateClient.connectWithSigner(
+        RPC_URL,
+        offlineSigner,
+        {
+          gasPrice: { amount: '25000000000', denom: 'arai' }
+        }
+      );
+
+      // Prepare amount (RAI has 18 decimals)
+      const araiAmount = (BigInt(RAI_FEE) * BigInt(10n ** 18n)).toString();
+      
+      const amount = [{ 
+        denom: 'arai', 
+        amount: araiAmount 
+      }];
+      
+      // ✅ Increased gas for Ethermint
+      const fee = {
+        amount: [{ 
+          denom: 'arai', 
+          amount: '5000000000000000'  // 0.005 RAI for gas
+        }],
+        gas: '250000'
+      };
+
+      console.log('Sending transaction...');
+      
+      // Send tokens - this will trigger Keplr popup
+      const txResult = await client.signAndBroadcast(
+        userAddress,
+        [{ typeUrl: '/cosmos.bank.v1beta1.MsgSend', value: { fromAddress: userAddress, toAddress: TREASURY, amount: amount } }],
+        fee,
+        'Hyperscale inference fee — republicstats.xyz'
+      );
+
+      console.log('Transaction result:', txResult);
+
+      // Check if transaction succeeded
+      if (txResult.code !== 0) {
+        throw new Error(`Transaction failed with code ${txResult.code}: ${txResult.rawLog || 'Unknown error'}`);
       }
 
       paymentTxHash = txResult.transactionHash;
-      console.log('✅ Payment TX:', paymentTxHash);
+      console.log('✅ Payment TX Hash:', paymentTxHash);
 
-      // Verify payment
+      // Update balance after payment
+      userBalance = await fetchBalance(userAddress);
+
+      // Verify payment on backend
       paymentStep = 'verifying';
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise(r => setTimeout(r, 5000)); // Wait for indexing
 
       const vr = await fetch(`${API}/api/hyperscale/verify-payment`, {
         method: 'POST',
@@ -101,18 +229,28 @@
       });
       
       const vd = await vr.json();
-      if (!vd.success) throw new Error(vd.error || 'Payment verification failed');
+      
+      if (!vd.success) {
+        throw new Error(vd.error || 'Payment verification failed');
+      }
 
+      console.log('✅ Payment verified');
+      
+      // Payment verified — submit inference job
       paymentStep = 'ready';
       await submitJob();
       
-    } catch (e) {
+    } catch(e) {
       console.error('Payment error:', e);
-      if (e.message?.includes('rejected')) {
-        paymentError = 'Transaction rejected in Keplr';
+      
+      if (e.message?.includes('Request rejected')) {
+        paymentError = 'Transaction was rejected in Keplr wallet';
+      } else if (e.message?.includes('pubKey does not match')) {
+        paymentError = 'Key mismatch error. Please disconnect and reconnect wallet.';
       } else {
         paymentError = e.message || 'Payment failed';
       }
+      
       paymentStep = 'idle';
       loading = false;
     }
@@ -258,8 +396,7 @@
     </div>
     {#if !keplrConnected}
       <button
-        on:click={handleConnectKeplr}
-        disabled={loading}
+        on:click={connectKeplr}
         style="background:var(--accent);color:#000;border:none;padding:10px 20px;font-family:var(--font-mono);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;letter-spacing:1px"
       >
         {paymentStep === 'connecting' ? '⏳ Connecting...' : '🔗 Connect Keplr'}
@@ -516,14 +653,3 @@
     </div>
   {/if}
 </div>
-
-<style>
-  .error-msg {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 8px;
-    padding: 12px;
-    color: #EF4444;
-    font-size: 13px;
-  }
-</style>
