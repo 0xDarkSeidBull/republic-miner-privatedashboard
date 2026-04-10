@@ -51,7 +51,7 @@
       coinType: 60  // Ethermint uses coinType 60 (Ethereum)
     },
     // ✅ CRITICAL FIX: Tell Keplr this is an Ethermint chain
-    features: ['eth-address-gen', 'eth-key-sign', 'eth-secp256k1-cosmos'],
+    features: ['eth-address-gen', 'eth-key-sign', 'eth-secp256k1-cosmos', 'stargate', 'no-legacy-stdTx'],
     bech32Config: {
       bech32PrefixAccAddr: 'rai',
       bech32PrefixAccPub: 'raipub',
