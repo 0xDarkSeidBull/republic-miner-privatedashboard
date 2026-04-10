@@ -32,13 +32,13 @@
     <div class="nav-logo-text">REPUBLIC<span>/STATS</span></div>
   </div>
   <div class="nav-links">
-    {#each ['home','leaderboard','weekly','fastgpu','aiplayground','userdashboard','ecosystem','guides','submitjob','walletjobs'] as page}
+    {#each ['home','leaderboard','weekly','fastgpu','hyperscale','userdashboard','ecosystem','guides','submitjob','walletjobs'] as page}
       <button class="nav-link {$currentPage === page ? 'active' : ''}" on:click={() => navigate(page)}>
         {page === 'home' ? 'Home'
         : page === 'leaderboard' ? 'Leaderboard'
         : page === 'weekly' ? 'Weekly Points'
         : page === 'fastgpu' ? '⚡ Fast GPU'
-        : page === 'aiplayground' ? '🤖 Hyperscale Jobs'
+        : page === 'hyperscale' ? '🤖 Hyperscale Jobs'
         : page === 'userdashboard' ? '👤 Dashboard'
         : page === 'ecosystem' ? 'Ecosystem'
         : page === 'guides' ? 'Guides'
@@ -68,7 +68,7 @@
       ['leaderboard','🏆 Leaderboard'],
       ['weekly','🏆 Weekly Points'],
       ['fastgpu','⚡ Fast GPU'],
-      ['aiplayground','🤖 Hyperscale Jobs'],
+      ['hyperscale','🤖 Hyperscale Jobs'],
       ['userdashboard','👤 Dashboard'],
       ['ecosystem','🌐 Ecosystem'],
       ['guides','📚 Guides'],
