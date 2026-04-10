@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte';
   import { currentPage } from '../stores/app.js';
   import Splash from './Splash.svelte';
   import ChainBanner from './ChainBanner.svelte';
@@ -18,9 +19,17 @@
   import UserDashboard from './pages/UserDashboard.svelte';
   import Hyperscale from './pages/Hyperscale.svelte';
 
-
+  export let initialPage = 'home';
   let showSplash = true;
   let appVisible = false;
+
+  onMount(() => {
+    currentPage.set(initialPage);
+    if (initialPage !== 'home') {
+      showSplash = false;
+      appVisible = true;
+    }
+  });
 
   function enterApp() {
     showSplash = false;
