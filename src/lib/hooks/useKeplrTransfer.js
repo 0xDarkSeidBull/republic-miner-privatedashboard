@@ -40,7 +40,7 @@ export function useKeplrTransfer() {
       await window.keplr.enable(CHAIN_ID);
       
       // ✅ OneNov exactly yahi use kar raha hai
-      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
+      const offlineSigner = window.keplr.getOfflineSignerOnlyAmino(CHAIN_ID);
       const accounts = await offlineSigner.getAccounts();
       const userAddress = accounts[0].address;
       
@@ -94,7 +94,7 @@ export function useKeplrTransfer() {
           denom: 'arai', 
           amount: (0.01 * 10 ** 18).toFixed(0)  // 0.01 RAI
         }],
-        gas: '400000'  // OneNov uses 400000 gas
+        gas: '200000'  // OneNov uses 400000 gas
       };
 
       // ✅ Use signAndBroadcast - NOT sendTokens
