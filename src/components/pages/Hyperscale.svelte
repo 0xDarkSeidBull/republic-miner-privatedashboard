@@ -110,9 +110,6 @@
         throw new Error('Keplr wallet not found! Please install from keplr.app');
       }
 
-      console.log('Suggesting Republic chain...');
-      await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN);
-      
       console.log('Enabling chain...');
       await window.keplr.enable(CHAIN_ID);
       
