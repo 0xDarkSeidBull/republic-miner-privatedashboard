@@ -37,8 +37,8 @@
 
   const TREASURY = 'rai1alt2884lvwzlzg6l03eaplry7a0ytx0wf3k889';
   const RAI_FEE = 10;
-  const RPC_URL = 'https://rpc-test.republic.vinjan-inc.com';
-  const REST_URL = 'https://api-test.republic.vinjan-inc.com';
+  const RPC_URL = 'https://rpc-republic.onenov.xyz';
+  const REST_URL = 'https://api-republic.onenov.xyz';
   const CHAIN_ID = 'raitestnet_77701-1';
 
   // ✅ FIXED: Chain config with ethsecp256k1 support
@@ -162,7 +162,7 @@
       
       // Enable and get signer
       await window.keplr.enable(CHAIN_ID);
-      const offlineSigner = window.keplr.getOfflineSigner(CHAIN_ID);
+      const offlineSigner = window.keplr.getOfflineSignerOnlyAmino(CHAIN_ID);
       const accounts = await offlineSigner.getAccounts();
       userAddress = accounts[0].address;
 
