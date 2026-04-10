@@ -3,7 +3,7 @@
   import { currentPage } from '../stores/app.js';
   import Splash from './Splash.svelte';
   import ChainBanner from './ChainBanner.svelte';
-  import Navbar from './Navbar.svelte';
+  import Sidebar from './Sidebar.svelte';
   import Toast from './Toast.svelte';
   import Footer from './Footer.svelte';
   import Home from './pages/Home.svelte';
@@ -42,38 +42,53 @@
 {/if}
 
 {#if appVisible}
-  <div id="app" style="position:relative;z-index:1">
-    <ChainBanner />
-    <Navbar />
-
-    {#if $currentPage === 'home'}
-      <Home />
-    {:else if $currentPage === 'leaderboard'}
-      <Leaderboard />
-    {:else if $currentPage === 'ecosystem'}
-      <Ecosystem />
-    {:else if $currentPage === 'guides'}
-      <Guides />
-    {:else if $currentPage === 'points'}
-      <Points />
-    {:else if $currentPage === 'submit'}
-      <Submit />
-    {:else if $currentPage === 'submitjob'}
-      <SubmitJob />
-    {:else if $currentPage === 'weekly'}
-      <Weekly />
-    {:else if $currentPage === 'hyperscale'}
-      <Hyperscale />
-    {:else if $currentPage === 'userdashboard'}
-      <UserDashboard />
-    {:else if $currentPage === 'fastgpu'}
-      <FastGeo />
-    {:else if $currentPage === 'walletjobs'}
-      <WalletJobs />
-    {/if}
-
-    <Footer />
+  <div id="app" style="display:flex;min-height:100vh;position:relative;z-index:1">
+    <Sidebar />
+    <div class="main-content">
+      <ChainBanner />
+      {#if $currentPage === 'home'}
+        <Home />
+      {:else if $currentPage === 'leaderboard'}
+        <Leaderboard />
+      {:else if $currentPage === 'ecosystem'}
+        <Ecosystem />
+      {:else if $currentPage === 'guides'}
+        <Guides />
+      {:else if $currentPage === 'points'}
+        <Points />
+      {:else if $currentPage === 'submit'}
+        <Submit />
+      {:else if $currentPage === 'submitjob'}
+        <SubmitJob />
+      {:else if $currentPage === 'weekly'}
+        <Weekly />
+      {:else if $currentPage === 'hyperscale'}
+        <Hyperscale />
+      {:else if $currentPage === 'userdashboard'}
+        <UserDashboard />
+      {:else if $currentPage === 'fastgpu'}
+        <FastGeo />
+      {:else if $currentPage === 'walletjobs'}
+        <WalletJobs />
+      {/if}
+      <Footer />
+    </div>
   </div>
 {/if}
 
 <Toast />
+
+<style>
+  .main-content {
+    margin-left: 220px;
+    flex: 1;
+    min-width: 0;
+    transition: margin-left 0.25s;
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+  }
+</style>
