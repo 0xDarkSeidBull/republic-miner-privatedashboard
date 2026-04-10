@@ -2,8 +2,8 @@
   import { onMount } from 'svelte';
   import { API, fmt, shortAddr } from '../../stores/app.js';
   import { marked } from 'marked';
-  import { useKeplrTransfer } from '$lib/hooks/useKeplrTransfer.js';
-  import { TREASURY_ADDRESS, RAI_FEE } from '$lib/utils/chainConfig.js';
+  import { useKeplrTransfer } from '../../lib/hooks/useKeplrTransfer.js';
+  import { TREASURY_ADDRESS, RAI_FEE } from '../../lib/utils/chainConfig.js';
 
   // ── STATE ──
   let prompt = '';
