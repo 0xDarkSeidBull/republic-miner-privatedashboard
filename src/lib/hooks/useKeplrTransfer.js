@@ -19,23 +19,18 @@ export function useKeplrTransfer() {
 
     async function connectWallet() {
     if (!window.keplr) {
-        error.set('Keplr not found');
+        error.set('Please install Keplr extension');
         return null;
     }
 
     try {
-        // ✅ Sabse pehle suggest chain call karo (Always)
-        console.log("Suggesting chain...");
+        // ✅ Popup trigger karne ke liye ye zaroori hai
         await window.keplr.experimentalSuggestChain(REPUBLIC_CHAIN_CONFIG);
         
-        // ✅ Thoda delay do (Keplr processing ke liye)
-        await new Promise(r => setTimeout(r, 500));
-
-        // ✅ Phir enable karo
         await window.keplr.enable(CHAIN_ID);
         
         const key = await window.keplr.getKey(CHAIN_ID);
-        console.log("Algo Picked:", key.algo); // Agar yahan secp256k1 hai toh error aayega hi
+        console.log("Connected Algo:", key.algo); // Ab ethsecp256k1 aana chahiye
 
         address.set(key.bech32Address);
         const bal = await fetchBalance(key.bech32Address);
@@ -43,7 +38,7 @@ export function useKeplrTransfer() {
         
         return { address: key.bech32Address };
     } catch (e) {
-        console.error("Keplr Error:", e);
+        console.error("Popup error:", e);
         error.set(e.message);
         return null;
     }
