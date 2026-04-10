@@ -7,7 +7,7 @@ import {
   REPUBLIC_CHAIN_CONFIG, 
   raiToArai, 
   araiToRai 
-} from '$lib/utils/chainConfig.js';
+} from '../utils/chainConfig.js';
 
 export function useKeplrTransfer() {
   const loading = writable(false);
