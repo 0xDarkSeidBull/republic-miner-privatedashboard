@@ -38,7 +38,7 @@
   const TREASURY = 'rai1alt2884lvwzlzg6l03eaplry7a0ytx0wf3k889';
   const RAI_FEE = 10;
   const RPC_URL = 'https://rpc.republicai.io';
-  const REST_URL = 'https://rest.republicai.io';
+  const REST_URL = 'https://api-republic.onenov.xyz';
   const CHAIN_ID = 'raitestnet_77701-1';
 
   // ✅ FIXED: Chain config with ethsecp256k1 support
