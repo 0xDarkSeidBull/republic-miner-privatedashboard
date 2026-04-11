@@ -18,6 +18,7 @@
   import FastGeo from './pages/FastGeo.svelte';
   import UserDashboard from './pages/UserDashboard.svelte';
   import Hyperscale from './pages/Hyperscale.svelte';
+  import Validators from './pages/Validators.svelte';
 
   export let initialPage = 'home';
   let showSplash = true;
@@ -70,6 +71,8 @@
         <FastGeo />
       {:else if $currentPage === 'walletjobs'}
         <WalletJobs />
+      {:else if $currentPage === 'validators'}
+        <Validators />
       {/if}
       <Footer />
     </div>

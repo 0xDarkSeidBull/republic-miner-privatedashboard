@@ -23,6 +23,7 @@
     { page: 'submitjob', label: 'Submit Job', icon: '⚡' },
     { page: 'walletjobs', label: 'Wallet Jobs', icon: '💼' },
     { page: 'userdashboard', label: 'Dashboard', icon: '👤' },
+    { page: 'validators', label: 'Validators', icon: '⚡' },
   ];
 
   const toolLinks = [
