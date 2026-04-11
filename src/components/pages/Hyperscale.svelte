@@ -217,7 +217,7 @@ const client = await SigningStargateClient.connectWithSigner(RPC_URL, fixedSigne
 
       // Verify payment on backend
       paymentStep = 'verifying';
-      await new Promise(r => setTimeout(r, 5000)); // Wait for indexing
+      await new Promise(r => setTimeout(r, 30000)); // Wait for indexing
 
       const vr = await fetch(`${API}/api/hyperscale/verify-payment`, {
         method: 'POST',
